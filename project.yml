@@ -1,0 +1,34 @@
+name: DailyBetter
+options:
+  minimumXcodeGenVersion: 2.42.0
+settings:
+  base:
+    SWIFT_VERSION: 5.0
+    MARKETING_VERSION: 1.0.0
+    CURRENT_PROJECT_VERSION: 1
+    IPHONEOS_DEPLOYMENT_TARGET: 17.0
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+    TARGETED_DEVICE_FAMILY: "1,2"
+targets:
+  DailyBetter:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - Sources
+    resources:
+      - Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.guoxl.DailyBetter
+        PRODUCT_NAME: DailyBetter
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Daily Better
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.healthcare-fitness
+        INFOPLIST_KEY_NSUserNotificationUsageDescription: Daily Better sends gentle reminders so you can check in with your mood and today's affirmation.
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        DEVELOPMENT_ASSET_PATHS: Resources/PreviewContent/Preview Assets.xcassets

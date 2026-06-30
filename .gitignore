@@ -19,3 +19,5 @@ build/
 # App Store local exports
 AppStore/TestRun/
 
+# Local Superpowers design companion
+.superpowers/

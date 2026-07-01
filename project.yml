@@ -8,7 +8,7 @@ settings:
     CURRENT_PROJECT_VERSION: 1
     IPHONEOS_DEPLOYMENT_TARGET: 17.0
     CODE_SIGN_STYLE: Automatic
-    DEVELOPMENT_TEAM: ""
+    DEVELOPMENT_TEAM: 6UYTZXY3H9
     TARGETED_DEVICE_FAMILY: "1,2"
 targets:
   DailyBetter:
@@ -31,4 +31,38 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
-        DEVELOPMENT_ASSET_PATHS: Resources/PreviewContent/Preview Assets.xcassets
+        DEVELOPMENT_ASSET_PATHS: '"Resources/PreviewContent/Preview Assets.xcassets"'
+  DailyBetterTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - Tests/DailyBetterTests
+    dependencies:
+      - target: DailyBetter
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+  DailyBetterUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - Tests/DailyBetterUITests
+    dependencies:
+      - target: DailyBetter
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  DailyBetter:
+    build:
+      targets:
+        DailyBetter: all
+        DailyBetterTests: all
+        DailyBetterUITests: all
+    test:
+      gatherCoverageData: true
+      targets:
+        - DailyBetterTests
+        - DailyBetterUITests

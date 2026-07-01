@@ -21,3 +21,6 @@ AppStore/TestRun/
 
 # Local Superpowers design companion
 .superpowers/
+
+# Local isolated implementation worktrees
+.worktrees/

@@ -21,6 +21,7 @@
 		86E79F079A7A2E4E759BBC39 /* AppEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC384A8558E6A3D31522CB7 /* AppEnums.swift */; };
 		88BF218482275A35039EAF44 /* LaunchSmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56F93B2CD45FDFB6BB597437 /* LaunchSmokeUITests.swift */; };
 		9406C6C2D2BDE5D3B7EEECDA /* GradientScreenBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB382DD8028604910FC2D8AB /* GradientScreenBackground.swift */; };
+		9503B53C1E2F2B9D64DF29DF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EB424E985894F56E5984AEB8 /* Assets.xcassets */; };
 		AE6ED28F0C5CB3B8C375F146 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42266BE38FA02290DE2F810E /* TodayView.swift */; };
 		AF71E0420B60C7CF68BA612F /* ProjectSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B51E3BE7EE198A5D67B0EEB /* ProjectSmokeTests.swift */; };
 		C4A037AE1EFBB543E08A42DD /* AffirmationCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FBDE88F2AF21B1DBD1D9282 /* AffirmationCardView.swift */; };
@@ -75,6 +76,7 @@
 		DEA01A09787C67900A18B8B9 /* AppBootstrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBootstrapper.swift; sourceTree = "<group>"; };
 		E4A6F5296AFF80CCD4FDCED9 /* DailyBetterTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DailyBetterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E6B0CAA0A4F9BAC13CCE50A8 /* TodayAffirmationSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayAffirmationSelection.swift; sourceTree = "<group>"; };
+		EB424E985894F56E5984AEB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FAD36C899644F58085C40A0E /* BrandMarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrandMarkView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -110,6 +112,14 @@
 			path = Library;
 			sourceTree = "<group>";
 		};
+		3D649F1ACB2EDB6F2438E622 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				EB424E985894F56E5984AEB8 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		43C516722997853D5E1E6306 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -123,6 +133,7 @@
 			children = (
 				DD8844C8ABCAFD64F0C96F65 /* DailyBetterTests */,
 				B68E55159254D5C81DE82443 /* DailyBetterUITests */,
+				3D649F1ACB2EDB6F2438E622 /* Resources */,
 				D7671A980A48719F852BD297 /* Sources */,
 				0C068E8AEDBDBCA8E468B846 /* Products */,
 			);
@@ -243,6 +254,7 @@
 			buildConfigurationList = E41BECEC33BA80BBBE0753FA /* Build configuration list for PBXNativeTarget "DailyBetter" */;
 			buildPhases = (
 				C091345A33944CB57F65C9E8 /* Sources */,
+				917B2ED118AC60E525B8B763 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -317,6 +329,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		917B2ED118AC60E525B8B763 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9503B53C1E2F2B9D64DF29DF /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		87D48C70166D6BDEC464A1DF /* Sources */ = {
@@ -491,8 +514,10 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Daily Better";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
-				INFOPLIST_KEY_NSUserNotificationUsageDescription = "Daily Better sends gentle reminders so you can check in with your mood and today's affirmation.";
+				INFOPLIST_KEY_NSUserNotificationUsageDescription = "Daily Better can send one optional daily reminder at the time you choose.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -503,6 +528,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.guoxl.DailyBetter;
 				PRODUCT_NAME = DailyBetter;
 				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -612,8 +638,10 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Daily Better";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
-				INFOPLIST_KEY_NSUserNotificationUsageDescription = "Daily Better sends gentle reminders so you can check in with your mood and today's affirmation.";
+				INFOPLIST_KEY_NSUserNotificationUsageDescription = "Daily Better can send one optional daily reminder at the time you choose.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -624,6 +652,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.guoxl.DailyBetter;
 				PRODUCT_NAME = DailyBetter;
 				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

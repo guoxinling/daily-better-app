@@ -10,11 +10,13 @@
 		0384B1923312CFB8BBF9306F /* SeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8B0E23D82ED987D0A73A239 /* SeedData.swift */; };
 		05909AE6073ED834C7793A5F /* SectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C16A16D80C14F97C1D1F6B0 /* SectionCard.swift */; };
 		097A04042F9052497F1FF330 /* MoodPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC31225566EF3033747F2B8D /* MoodPickerView.swift */; };
+		0A83F093734305EEFE1FBDA7 /* CheckInMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E45B9C0672D798AB10596A9 /* CheckInMigrationService.swift */; };
 		125AF3730087EAF60417A8D7 /* AddAffirmationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E304296458959E0E96EB166 /* AddAffirmationView.swift */; };
 		12D727B323D95877170913B2 /* Affirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FF345CDA8B90ADFEAD54C2A /* Affirmation.swift */; };
 		19350C9266A2D2F21FFE6288 /* BrandMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD36C899644F58085C40A0E /* BrandMarkView.swift */; };
 		23D5035A02EBB5986907105C /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45647BC46E58A1D023384127 /* AppPreferences.swift */; };
 		43154313CEDB22F3FEC92034 /* MoodEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6817227CCB36D035362C2DCA /* MoodEntry.swift */; };
+		4B7213F6D96F8C12D9B8B62D /* CheckInMigrationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FEF4EBFBC6FEA938D48877 /* CheckInMigrationServiceTests.swift */; };
 		545716580075099533CD399D /* DailyBetterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AF5CDD0CDD770C1730BC076 /* DailyBetterApp.swift */; };
 		54C925197745A8B9A1CDA8A6 /* MoodView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D3A9C24A4173FD3C18983F /* MoodView.swift */; };
 		804C9D1549D45268E9EC5FDA /* TodayAffirmationSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6B0CAA0A4F9BAC13CCE50A8 /* TodayAffirmationSelection.swift */; };
@@ -58,6 +60,7 @@
 		0238B90291B261E75A97C2DA /* ReflectionTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionTypes.swift; sourceTree = "<group>"; };
 		0A8A3CE88C14AD8CB17B8DAC /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		1007A6395A98431F5F94F166 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		22FEF4EBFBC6FEA938D48877 /* CheckInMigrationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInMigrationServiceTests.swift; sourceTree = "<group>"; };
 		29B8389D52FF69E45A813300 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		2E304296458959E0E96EB166 /* AddAffirmationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAffirmationView.swift; sourceTree = "<group>"; };
 		3B51E3BE7EE198A5D67B0EEB /* ProjectSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectSmokeTests.swift; sourceTree = "<group>"; };
@@ -69,6 +72,7 @@
 		5EC384A8558E6A3D31522CB7 /* AppEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnums.swift; sourceTree = "<group>"; };
 		60DF51C817D16334A5BADBEE /* CheckInEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInEntryTests.swift; sourceTree = "<group>"; };
 		6817227CCB36D035362C2DCA /* MoodEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodEntry.swift; sourceTree = "<group>"; };
+		6E45B9C0672D798AB10596A9 /* CheckInMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInMigrationService.swift; sourceTree = "<group>"; };
 		744D32A4E37DAF42E62662F9 /* CheckInMood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInMood.swift; sourceTree = "<group>"; };
 		790C340950A3A7B368A8E443 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		84689DB700CFCD4E9B606768 /* DailyBetterUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DailyBetterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -181,6 +185,7 @@
 			isa = PBXGroup;
 			children = (
 				DEA01A09787C67900A18B8B9 /* AppBootstrapper.swift */,
+				6E45B9C0672D798AB10596A9 /* CheckInMigrationService.swift */,
 				0A8A3CE88C14AD8CB17B8DAC /* NotificationManager.swift */,
 				C8B0E23D82ED987D0A73A239 /* SeedData.swift */,
 				89C7C2D7F103FAA528433B23 /* ThemePalette.swift */,
@@ -242,6 +247,7 @@
 			isa = PBXGroup;
 			children = (
 				60DF51C817D16334A5BADBEE /* CheckInEntryTests.swift */,
+				22FEF4EBFBC6FEA938D48877 /* CheckInMigrationServiceTests.swift */,
 				3B51E3BE7EE198A5D67B0EEB /* ProjectSmokeTests.swift */,
 			);
 			name = DailyBetterTests;
@@ -398,6 +404,7 @@
 				23D5035A02EBB5986907105C /* AppPreferences.swift in Sources */,
 				19350C9266A2D2F21FFE6288 /* BrandMarkView.swift in Sources */,
 				BAC3ACB982530E659D428214 /* CheckInEntry.swift in Sources */,
+				0A83F093734305EEFE1FBDA7 /* CheckInMigrationService.swift in Sources */,
 				8DEF120744ABE9BA3C705D75 /* CheckInMood.swift in Sources */,
 				545716580075099533CD399D /* DailyBetterApp.swift in Sources */,
 				9406C6C2D2BDE5D3B7EEECDA /* GradientScreenBackground.swift in Sources */,
@@ -422,6 +429,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BBEF1E089C9514EFA5B1585F /* CheckInEntryTests.swift in Sources */,
+				4B7213F6D96F8C12D9B8B62D /* CheckInMigrationServiceTests.swift in Sources */,
 				AF71E0420B60C7CF68BA612F /* ProjectSmokeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -7,6 +7,6 @@ struct DailyBetterApp: App {
     WindowGroup {
       RootTabView()
     }
-    .modelContainer(for: [Affirmation.self, MoodEntry.self, AppPreferences.self])
+    .modelContainer(for: [Affirmation.self, MoodEntry.self, CheckInEntry.self, AppPreferences.self])
   }
 }

@@ -4,35 +4,59 @@ import SwiftData
 enum AppBootstrapper {
   @MainActor
   static func bootstrapIfNeeded(in context: ModelContext) {
-    var affirmationDescriptor = FetchDescriptor<Affirmation>()
-    affirmationDescriptor.fetchLimit = 1
-    let hasAffirmations = (try? context.fetch(affirmationDescriptor).isEmpty) == false
+    let arguments = Set(ProcessInfo.processInfo.arguments)
+    let isUITesting = arguments.contains("-ui-testing")
+    let shouldResetStore = isUITesting && arguments.contains("-reset-store")
+    let shouldSeedCheckIns = isUITesting && arguments.contains("-seed-check-ins")
 
-    if !hasAffirmations {
-      for (index, seed) in SeedData.affirmations.enumerated() {
-        context.insert(
-          Affirmation(
-            text: seed.text,
-            category: seed.category,
-            createdAt: Date(timeIntervalSince1970: TimeInterval(index))
-          )
-        )
-      }
+    if shouldResetStore {
+      deleteAll(CheckInEntry.self, in: context)
+      deleteAll(MoodEntry.self, in: context)
+      deleteAll(AppPreferences.self, in: context)
+      try? context.save()
     }
 
-    var preferencesDescriptor = FetchDescriptor<AppPreferences>()
-    preferencesDescriptor.fetchLimit = 1
-    let hasPreferences = (try? context.fetch(preferencesDescriptor).isEmpty) == false
-
-    if !hasPreferences {
+    if (try? context.fetch(FetchDescriptor<AppPreferences>()).isEmpty) != false {
       context.insert(AppPreferences())
     }
+
+    try? context.save()
+    CheckInMigrationService.runIfNeeded(in: context)
 
     if AppLaunchOptions.screenshotMode {
       prepareScreenshotData(in: context)
     }
 
+    if shouldSeedCheckIns {
+      seedCheckInIfNeeded(in: context)
+    }
+
     try? context.save()
+  }
+
+  @MainActor
+  private static func deleteAll<T: PersistentModel>(_ modelType: T.Type, in context: ModelContext) {
+    let models = (try? context.fetch(FetchDescriptor<T>())) ?? []
+    for model in models {
+      context.delete(model)
+    }
+  }
+
+  @MainActor
+  private static func seedCheckInIfNeeded(in context: ModelContext) {
+    guard (try? context.fetch(FetchDescriptor<CheckInEntry>()).isEmpty) != false else {
+      return
+    }
+
+    let today = Calendar.current.startOfDay(for: .now)
+    context.insert(
+      CheckInEntry(
+        createdAt: today,
+        mood: .overwhelmed,
+        noteText: "Everything piled up today.",
+        reflectionSource: .none
+      )
+    )
   }
 
   @MainActor

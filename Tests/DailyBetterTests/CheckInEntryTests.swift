@@ -3,11 +3,17 @@ import XCTest
 
 final class CheckInEntryTests: XCTestCase {
   func testAllMoodsHaveStableLabelsAndEmoji() {
-    XCTAssertEqual(CheckInMood.allCases.map(\.rawValue), [
+    let moods = CheckInMood.allCases
+
+    XCTAssertEqual(moods.map(\.rawValue), [
       "anxious", "overwhelmed", "low", "frustrated", "drained", "good"
     ])
-    XCTAssertEqual(CheckInMood.overwhelmed.emoji, "😣")
-    XCTAssertEqual(CheckInMood.good.title, "Good")
+    XCTAssertEqual(moods.map(\.title), [
+      "Anxious", "Overwhelmed", "Low", "Frustrated", "Drained", "Good"
+    ])
+    XCTAssertEqual(moods.map(\.emoji), [
+      "😰", "😣", "😔", "😤", "😴", "😊"
+    ])
   }
 
   func testEntryExposesPersistedEnumValues() {

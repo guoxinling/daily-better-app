@@ -42,18 +42,15 @@ final class CheckInEntry {
   }
 
   var mood: CheckInMood {
-    get { CheckInMood(rawValue: moodKey) ?? .good }
-    set { moodKey = newValue.rawValue }
+    CheckInMood(rawValue: moodKey) ?? .good
   }
 
   var reflectionSource: ReflectionSource {
-    get { ReflectionSource(rawValue: reflectionSourceKey) ?? .none }
-    set { reflectionSourceKey = newValue.rawValue }
+    ReflectionSource(rawValue: reflectionSourceKey) ?? .none
   }
 
   var reflectionStatus: ReflectionStatus {
-    get { ReflectionStatus(rawValue: reflectionStatusKey) ?? .none }
-    set { reflectionStatusKey = newValue.rawValue }
+    ReflectionStatus(rawValue: reflectionStatusKey) ?? .none
   }
 
   var helpfulness: Helpfulness {

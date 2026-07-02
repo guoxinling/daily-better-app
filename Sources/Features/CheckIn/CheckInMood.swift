@@ -1,6 +1,6 @@
 import Foundation
 
-enum CheckInMood: String, CaseIterable, Codable, Identifiable {
+enum CheckInMood: String, CaseIterable, Codable, Identifiable, Sendable {
   case anxious
   case overwhelmed
   case low
@@ -11,7 +11,20 @@ enum CheckInMood: String, CaseIterable, Codable, Identifiable {
   var id: String { rawValue }
 
   var title: String {
-    rawValue.capitalized
+    switch self {
+    case .anxious:
+      "Anxious"
+    case .overwhelmed:
+      "Overwhelmed"
+    case .low:
+      "Low"
+    case .frustrated:
+      "Frustrated"
+    case .drained:
+      "Drained"
+    case .good:
+      "Good"
+    }
   }
 
   var emoji: String {

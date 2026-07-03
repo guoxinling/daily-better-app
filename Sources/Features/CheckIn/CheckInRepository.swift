@@ -11,7 +11,7 @@ final class SwiftDataCheckInRepository: CheckInRepository {
   private let context: ModelContext
 
   init(context: ModelContext) {
-    self.context = context
+    self.context = ModelContext(context.container)
   }
 
   func save(_ entry: CheckInEntry) throws {

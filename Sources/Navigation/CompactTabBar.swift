@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct CompactTabBar: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @Binding var selection: AppDestination
 
   var body: some View {
@@ -24,6 +25,7 @@ struct CompactTabBar: View {
       RoundedRectangle(cornerRadius: 20)
         .stroke(DailyBetterStyle.hairline, lineWidth: 1)
     }
+    .frame(maxWidth: 520)
     .padding(.horizontal, 24)
   }
 
@@ -36,9 +38,8 @@ struct CompactTabBar: View {
     Button {
       selection = destination
     } label: {
-      Label(title, systemImage: systemImage)
-        .font(.subheadline.weight(.semibold))
-        .frame(maxWidth: .infinity, minHeight: 48)
+      tabLabel(title: title, systemImage: systemImage)
+        .frame(maxWidth: .infinity, minHeight: dynamicTypeSize.isAccessibilitySize ? 68 : 48)
         .foregroundStyle(selection == destination ? Color.white : DailyBetterStyle.muted)
         .background(
           selection == destination ? DailyBetterStyle.tint : Color.clear,
@@ -46,6 +47,26 @@ struct CompactTabBar: View {
         )
     }
     .buttonStyle(.plain)
+    .accessibilityLabel(title)
+    .accessibilityAddTraits(selection == destination ? .isSelected : [])
     .accessibilityIdentifier(accessibilityIdentifier)
+  }
+
+  @ViewBuilder
+  private func tabLabel(title: String, systemImage: String) -> some View {
+    if dynamicTypeSize.isAccessibilitySize {
+      VStack(spacing: 2) {
+        Image(systemName: systemImage)
+        Text(title)
+          .lineLimit(1)
+          .minimumScaleFactor(0.8)
+      }
+      .font(.caption.weight(.semibold))
+      .padding(.horizontal, 4)
+    } else {
+      Label(title, systemImage: systemImage)
+        .font(.subheadline.weight(.semibold))
+        .lineLimit(1)
+    }
   }
 }

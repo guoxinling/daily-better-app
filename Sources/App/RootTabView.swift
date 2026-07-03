@@ -8,36 +8,47 @@ struct RootTabView: View {
   @State private var selectedDestination: AppDestination = .checkIn
 
   var body: some View {
-    ZStack(alignment: .bottom) {
-      Group {
-        switch selectedDestination {
-        case .checkIn:
-          placeholderNavigationStack(title: "Daily Better", placeholder: "Check In")
-        case .timeline:
-          placeholderNavigationStack(title: "Timeline", placeholder: "Timeline")
-        }
+    destinationPages
+      .safeAreaInset(edge: .bottom, spacing: 0) {
+        CompactTabBar(selection: $selectedDestination)
+          .padding(.bottom, 8)
       }
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-      CompactTabBar(selection: $selectedDestination)
-        .padding(.bottom, 8)
-    }
-    .dailyBetterBackground()
-    .task {
-      guard !hasBootstrapped else { return }
-      hasBootstrapped = true
-      AppBootstrapper.bootstrapIfNeeded(in: modelContext)
-    }
+      .dailyBetterBackground()
+      .task {
+        guard !hasBootstrapped else { return }
+        hasBootstrapped = true
+        AppBootstrapper.bootstrapIfNeeded(in: modelContext)
+      }
   }
 
-  private func placeholderNavigationStack(title: String, placeholder: String) -> some View {
-    NavigationStack {
-      Text(placeholder)
-        .foregroundStyle(DailyBetterStyle.ink)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.clear)
-        .navigationTitle(title)
-        .toolbarBackground(.hidden, for: .navigationBar)
+  private var destinationPages: some View {
+    ZStack {
+      destinationPage(.checkIn, title: "Daily Better", placeholder: "Check In")
+      destinationPage(.timeline, title: "Timeline", placeholder: "Timeline")
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+  }
+
+  private func destinationPage(
+    _ destination: AppDestination,
+    title: String,
+    placeholder: String
+  ) -> some View {
+    let isSelected = selectedDestination == destination
+
+    return NavigationStack {
+      ZStack {
+        DailyBetterBackground()
+
+        Text(placeholder)
+          .foregroundStyle(DailyBetterStyle.ink)
+      }
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
+      .navigationTitle(title)
+      .toolbarBackground(.hidden, for: .navigationBar)
+    }
+    .opacity(isSelected ? 1 : 0)
+    .allowsHitTesting(isSelected)
+    .accessibilityHidden(!isSelected)
   }
 }

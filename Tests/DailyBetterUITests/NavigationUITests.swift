@@ -2,13 +2,34 @@ import XCTest
 
 final class NavigationUITests: XCTestCase {
   func testRootHasOnlyCheckInAndTimelineDestinations() {
+    let app = launchApp()
+    let checkInTab = app.buttons["tab.checkIn"]
+    let timelineTab = app.buttons["tab.timeline"]
+
+    XCTAssertTrue(checkInTab.waitForExistence(timeout: 5))
+    XCTAssertTrue(timelineTab.exists)
+    XCTAssertFalse(app.tabBars.buttons["Library"].exists)
+    XCTAssertFalse(app.tabBars.buttons["Settings"].exists)
+    XCTAssertTrue(checkInTab.isSelected)
+    XCTAssertFalse(timelineTab.isSelected)
+
+    timelineTab.tap()
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 2))
+    XCTAssertTrue(app.staticTexts["Timeline"].exists)
+    XCTAssertTrue(timelineTab.isSelected)
+    XCTAssertFalse(checkInTab.isSelected)
+
+    checkInTab.tap()
+    XCTAssertTrue(app.navigationBars["Daily Better"].waitForExistence(timeout: 2))
+    XCTAssertTrue(app.staticTexts["Check In"].exists)
+    XCTAssertTrue(checkInTab.isSelected)
+    XCTAssertFalse(timelineTab.isSelected)
+  }
+
+  private func launchApp() -> XCUIApplication {
     let app = XCUIApplication()
     app.launchArguments = ["-ui-testing", "-reset-store"]
     app.launch()
-
-    XCTAssertTrue(app.buttons["tab.checkIn"].waitForExistence(timeout: 5))
-    XCTAssertTrue(app.buttons["tab.timeline"].exists)
-    XCTAssertFalse(app.buttons["tab.library"].exists)
-    XCTAssertFalse(app.buttons["tab.settings"].exists)
+    return app
   }
 }

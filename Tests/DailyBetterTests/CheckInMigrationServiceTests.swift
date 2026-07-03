@@ -18,8 +18,8 @@ final class CheckInMigrationServiceTests: XCTestCase {
     context.insert(preferences)
     try context.save()
 
-    CheckInMigrationService.runIfNeeded(in: context)
-    CheckInMigrationService.runIfNeeded(in: context)
+    try CheckInMigrationService.runIfNeeded(in: context)
+    try CheckInMigrationService.runIfNeeded(in: context)
 
     let checkIns = try context.fetch(FetchDescriptor<CheckInEntry>())
     let storedPreferences = try XCTUnwrap(context.fetch(FetchDescriptor<AppPreferences>()).first)
@@ -55,7 +55,7 @@ final class CheckInMigrationServiceTests: XCTestCase {
     }
     try context.save()
 
-    CheckInMigrationService.runIfNeeded(in: context)
+    try CheckInMigrationService.runIfNeeded(in: context)
 
     let checkIns = try context.fetch(FetchDescriptor<CheckInEntry>())
     let moodsByLegacyID = Dictionary(
@@ -123,6 +123,24 @@ final class CheckInMigrationServiceTests: XCTestCase {
     XCTAssertEqual(stored.migrationVersion, 7)
     XCTAssertEqual(stored.aiConsentVersion, 3)
     XCTAssertEqual(stored.aiConsentAcceptedAt, acceptedAt)
+  }
+
+  func testRunIfNeededCreatesSinglePreferencesRecordWhenMissing() throws {
+    let container = try makeInMemoryContainer()
+    let context = ModelContext(container)
+
+    context.insert(MoodEntry(date: Date(timeIntervalSince1970: 1_735_689_600), mood: .steady))
+    try context.save()
+
+    try CheckInMigrationService.runIfNeeded(in: context)
+
+    let refetchContext = ModelContext(container)
+    let storedPreferences = try refetchContext.fetch(FetchDescriptor<AppPreferences>())
+    let storedCheckIns = try refetchContext.fetch(FetchDescriptor<CheckInEntry>())
+
+    XCTAssertEqual(storedPreferences.count, 1)
+    XCTAssertEqual(storedPreferences.first?.migrationVersion, 1)
+    XCTAssertEqual(storedCheckIns.count, 1)
   }
 
   private func makeInMemoryContainer() throws -> ModelContainer {

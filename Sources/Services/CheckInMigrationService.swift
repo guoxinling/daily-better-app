@@ -5,15 +5,15 @@ enum CheckInMigrationService {
   static let currentVersion = 1
 
   @MainActor
-  static func runIfNeeded(in context: ModelContext) {
-    let preferences = fetchOrCreatePreferences(in: context)
+  static func runIfNeeded(in context: ModelContext) throws {
+    let preferences = try fetchOrCreatePreferences(in: context)
 
     guard preferences.migrationVersion < currentVersion else {
       return
     }
 
-    let legacyEntries = (try? context.fetch(FetchDescriptor<MoodEntry>())) ?? []
-    let existingCheckIns = (try? context.fetch(FetchDescriptor<CheckInEntry>())) ?? []
+    let legacyEntries = try context.fetch(FetchDescriptor<MoodEntry>())
+    let existingCheckIns = try context.fetch(FetchDescriptor<CheckInEntry>())
     let migratedLegacyIDs = Set(existingCheckIns.compactMap(\.legacyMoodEntryID))
 
     for legacy in legacyEntries where !migratedLegacyIDs.contains(legacy.id) {
@@ -28,12 +28,15 @@ enum CheckInMigrationService {
     }
 
     preferences.migrationVersion = currentVersion
-    try? context.save()
+    try context.save()
   }
 
   @MainActor
-  private static func fetchOrCreatePreferences(in context: ModelContext) -> AppPreferences {
-    if let preferences = try? context.fetch(FetchDescriptor<AppPreferences>()).first {
+  private static func fetchOrCreatePreferences(in context: ModelContext) throws -> AppPreferences {
+    var descriptor = FetchDescriptor<AppPreferences>()
+    descriptor.fetchLimit = 1
+
+    if let preferences = try context.fetch(descriptor).first {
       return preferences
     }
 

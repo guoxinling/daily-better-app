@@ -21,7 +21,7 @@ enum AppBootstrapper {
     }
 
     try? context.save()
-    CheckInMigrationService.runIfNeeded(in: context)
+    try? CheckInMigrationService.runIfNeeded(in: context)
 
     if AppLaunchOptions.screenshotMode {
       prepareScreenshotData(in: context)

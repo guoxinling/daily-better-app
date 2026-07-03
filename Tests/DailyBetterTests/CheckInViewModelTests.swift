@@ -21,6 +21,8 @@ final class CheckInViewModelTests: XCTestCase {
     )
     viewModel.selectedMood = .frustrated
     viewModel.noteText = "  The meeting ran long. \n"
+    viewModel.failure = .invalidResponse
+    viewModel.presentedEntry = CheckInEntry(mood: .low)
 
     viewModel.saveWithoutReflection()
 
@@ -32,6 +34,8 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertEqual(repository.entries.first?.reflectionStatus, ReflectionStatus.none)
     XCTAssertNil(viewModel.selectedMood)
     XCTAssertEqual(viewModel.noteText, "")
+    XCTAssertNil(viewModel.failure)
+    XCTAssertNil(viewModel.presentedEntry)
     XCTAssertEqual(localCallCount, 0)
     XCTAssertEqual(remoteCallCount, 0)
   }
@@ -147,13 +151,14 @@ final class CheckInViewModelTests: XCTestCase {
 
   func testReflectIgnoresReentrantCallUntilActiveRequestCompletes() async {
     let repository = InMemoryCheckInRepository()
-    let remoteProvider = ControllableReflectionProvider()
+    let requestStarted = expectation(description: "Reflection request started")
+    let remoteProvider = ControllableReflectionProvider { requestStarted.fulfill() }
     let viewModel = CheckInViewModel(repository: repository, remoteProvider: remoteProvider)
     viewModel.selectedMood = .overwhelmed
     viewModel.noteText = "Several things need attention."
 
     let firstReflection = Task { await viewModel.reflect() }
-    await remoteProvider.waitUntilFirstRequestStarts()
+    await fulfillment(of: [requestStarted], timeout: 1)
     XCTAssertTrue(viewModel.isReflecting)
 
     await viewModel.reflect()
@@ -169,6 +174,76 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertEqual(finalCallCount, 1)
     XCTAssertFalse(viewModel.isReflecting)
     XCTAssertEqual(repository.entries.count, 1)
+  }
+
+  func testSuccessfulReflectionPreservesDraftChangedWhileRequestIsActive() async {
+    let repository = InMemoryCheckInRepository()
+    let requestStarted = expectation(description: "Reflection request started")
+    let remoteProvider = ControllableReflectionProvider { requestStarted.fulfill() }
+    let viewModel = CheckInViewModel(repository: repository, remoteProvider: remoteProvider)
+    viewModel.selectedMood = .anxious
+    viewModel.noteText = "  Original concern.  "
+
+    let reflection = Task { await viewModel.reflect() }
+    await fulfillment(of: [requestStarted], timeout: 1)
+    viewModel.selectedMood = .good
+    viewModel.noteText = "A newer draft"
+
+    await remoteProvider.completeFirstRequest(with: .stub(source: .ai))
+    await reflection.value
+
+    XCTAssertEqual(repository.entries.count, 1)
+    XCTAssertEqual(repository.entries.first?.mood, .anxious)
+    XCTAssertEqual(repository.entries.first?.noteText, "Original concern.")
+    XCTAssertTrue(viewModel.presentedEntry === repository.entries.first)
+    XCTAssertEqual(viewModel.selectedMood, .good)
+    XCTAssertEqual(viewModel.noteText, "A newer draft")
+  }
+
+  func testSaveWithoutReflectionIsNoOpWhileReflectionIsActive() async {
+    let repository = InMemoryCheckInRepository()
+    let requestStarted = expectation(description: "Reflection request started")
+    let remoteProvider = ControllableReflectionProvider { requestStarted.fulfill() }
+    let viewModel = CheckInViewModel(repository: repository, remoteProvider: remoteProvider)
+    viewModel.selectedMood = .low
+    viewModel.noteText = "Keep this active draft"
+
+    let reflection = Task { await viewModel.reflect() }
+    await fulfillment(of: [requestStarted], timeout: 1)
+
+    viewModel.saveWithoutReflection()
+
+    XCTAssertTrue(repository.entries.isEmpty)
+    XCTAssertEqual(viewModel.selectedMood, .low)
+    XCTAssertEqual(viewModel.noteText, "Keep this active draft")
+    XCTAssertTrue(viewModel.isReflecting)
+
+    await remoteProvider.completeFirstRequest(with: .stub(source: .ai))
+    await reflection.value
+    XCTAssertEqual(repository.entries.count, 1)
+  }
+
+  func testCancellationAfterProviderReturnsDoesNotPersistOrClearDraft() async {
+    let repository = InMemoryCheckInRepository()
+    let requestStarted = expectation(description: "Reflection request started")
+    let remoteProvider = ControllableReflectionProvider { requestStarted.fulfill() }
+    let viewModel = CheckInViewModel(repository: repository, remoteProvider: remoteProvider)
+    viewModel.selectedMood = .frustrated
+    viewModel.noteText = "Keep this cancelled draft"
+
+    let reflection = Task { await viewModel.reflect() }
+    await fulfillment(of: [requestStarted], timeout: 1)
+    reflection.cancel()
+
+    await remoteProvider.completeFirstRequest(with: .stub(source: .ai))
+    await reflection.value
+
+    XCTAssertTrue(repository.entries.isEmpty)
+    XCTAssertNil(viewModel.presentedEntry)
+    XCTAssertEqual(viewModel.selectedMood, .frustrated)
+    XCTAssertEqual(viewModel.noteText, "Keep this cancelled draft")
+    XCTAssertFalse(viewModel.isReflecting)
+    XCTAssertNil(viewModel.failure)
   }
 
   func testMissingMoodIsNoOp() async {
@@ -247,20 +322,27 @@ private actor ReflectionProviderSpy: ReflectionProviding {
 
 private actor ControllableReflectionProvider: ReflectionProviding {
   private(set) var requests: [ReflectionRequest] = []
+  private let onRequest: @Sendable () -> Void
   private var firstRequestContinuation: CheckedContinuation<ReflectionResult, Never>?
-  private var startWaiters: [CheckedContinuation<Void, Never>] = []
+  private var queuedResult: ReflectionResult?
+
+  init(onRequest: @escaping @Sendable () -> Void) {
+    self.onRequest = onRequest
+  }
 
   var callCount: Int { requests.count }
 
   func reflect(_ request: ReflectionRequest) async throws -> ReflectionResult {
     requests.append(request)
-
-    let waiters = startWaiters
-    startWaiters.removeAll()
-    waiters.forEach { $0.resume() }
+    onRequest()
 
     guard requests.count == 1 else {
       throw ReflectionError.unavailable
+    }
+
+    if let queuedResult {
+      self.queuedResult = nil
+      return queuedResult
     }
 
     return await withCheckedContinuation { continuation in
@@ -268,17 +350,13 @@ private actor ControllableReflectionProvider: ReflectionProviding {
     }
   }
 
-  func waitUntilFirstRequestStarts() async {
-    guard requests.isEmpty else { return }
-
-    await withCheckedContinuation { continuation in
-      startWaiters.append(continuation)
-    }
-  }
-
   func completeFirstRequest(with result: ReflectionResult) {
-    firstRequestContinuation?.resume(returning: result)
-    firstRequestContinuation = nil
+    if let firstRequestContinuation {
+      firstRequestContinuation.resume(returning: result)
+      self.firstRequestContinuation = nil
+    } else {
+      queuedResult = result
+    }
   }
 }
 

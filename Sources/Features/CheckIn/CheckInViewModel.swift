@@ -25,7 +25,10 @@ final class CheckInViewModel {
   }
 
   func saveWithoutReflection() {
-    guard let selectedMood else { return }
+    guard let selectedMood, !isReflecting else { return }
+
+    failure = nil
+    presentedEntry = nil
 
     let normalizedNote = CheckInDraft(
       mood: selectedMood,
@@ -46,16 +49,14 @@ final class CheckInViewModel {
 
   func reflect() async {
     guard let selectedMood, !isReflecting else { return }
+    let draft = CheckInDraft(mood: selectedMood, noteText: noteText)
 
     failure = nil
     presentedEntry = nil
     isReflecting = true
     defer { isReflecting = false }
 
-    let normalizedNote = CheckInDraft(
-      mood: selectedMood,
-      noteText: noteText
-    ).trimmedNote
+    let normalizedNote = draft.trimmedNote
     let request = ReflectionRequest(
       mood: selectedMood,
       noteText: normalizedNote,
@@ -66,6 +67,7 @@ final class CheckInViewModel {
     do {
       let provider = normalizedNote.isEmpty ? localProvider : remoteProvider
       let result = try await provider.reflect(request)
+      try Task.checkCancellation()
       let entry = CheckInEntry(
         mood: selectedMood,
         noteText: normalizedNote.isEmpty ? nil : normalizedNote,
@@ -76,7 +78,11 @@ final class CheckInViewModel {
       )
       try repository.save(entry)
       presentedEntry = entry
-      resetDraft()
+      if currentDraft == draft {
+        resetDraft()
+      }
+    } catch is CancellationError {
+      return
     } catch let error as ReflectionError {
       failure = error
     } catch {
@@ -87,5 +93,9 @@ final class CheckInViewModel {
   private func resetDraft() {
     selectedMood = nil
     noteText = ""
+  }
+
+  private var currentDraft: CheckInDraft {
+    CheckInDraft(mood: selectedMood, noteText: noteText)
   }
 }

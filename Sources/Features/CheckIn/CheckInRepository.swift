@@ -15,12 +15,22 @@ final class SwiftDataCheckInRepository: CheckInRepository {
   }
 
   func save(_ entry: CheckInEntry) throws {
-    context.insert(entry)
-    try context.save()
+    do {
+      context.insert(entry)
+      try context.save()
+    } catch {
+      context.rollback()
+      throw error
+    }
   }
 
   func deleteAll() throws {
-    try context.delete(model: CheckInEntry.self)
-    try context.save()
+    do {
+      try context.delete(model: CheckInEntry.self)
+      try context.save()
+    } catch {
+      context.rollback()
+      throw error
+    }
   }
 }

@@ -16,6 +16,7 @@
 		12D727B323D95877170913B2 /* Affirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FF345CDA8B90ADFEAD54C2A /* Affirmation.swift */; };
 		19350C9266A2D2F21FFE6288 /* BrandMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD36C899644F58085C40A0E /* BrandMarkView.swift */; };
 		23D5035A02EBB5986907105C /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45647BC46E58A1D023384127 /* AppPreferences.swift */; };
+		3630D9F9BBBB492C244A2FDE /* CheckInRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFA7225FF424D0A3E3EE40E3 /* CheckInRepositoryTests.swift */; };
 		3F586E5C75CA155E74B9C289 /* ReflectionProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590D0756320218108663A660 /* ReflectionProviding.swift */; };
 		43154313CEDB22F3FEC92034 /* MoodEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6817227CCB36D035362C2DCA /* MoodEntry.swift */; };
 		4B7213F6D96F8C12D9B8B62D /* CheckInMigrationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FEF4EBFBC6FEA938D48877 /* CheckInMigrationServiceTests.swift */; };
@@ -104,6 +105,7 @@
 		E4A6F5296AFF80CCD4FDCED9 /* DailyBetterTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DailyBetterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E6B0CAA0A4F9BAC13CCE50A8 /* TodayAffirmationSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayAffirmationSelection.swift; sourceTree = "<group>"; };
 		EB424E985894F56E5984AEB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		EFA7225FF424D0A3E3EE40E3 /* CheckInRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInRepositoryTests.swift; sourceTree = "<group>"; };
 		F327535148702B9178285129 /* CheckInDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInDraft.swift; sourceTree = "<group>"; };
 		FAD36C899644F58085C40A0E /* BrandMarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrandMarkView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -267,6 +269,7 @@
 			children = (
 				60DF51C817D16334A5BADBEE /* CheckInEntryTests.swift */,
 				22FEF4EBFBC6FEA938D48877 /* CheckInMigrationServiceTests.swift */,
+				EFA7225FF424D0A3E3EE40E3 /* CheckInRepositoryTests.swift */,
 				3A5F981D53BC8C75AC25F86F /* CheckInViewModelTests.swift */,
 				0A7A707C8287C938A517673D /* LocalReflectionProviderTests.swift */,
 				3B51E3BE7EE198A5D67B0EEB /* ProjectSmokeTests.swift */,
@@ -460,6 +463,7 @@
 			files = (
 				BBEF1E089C9514EFA5B1585F /* CheckInEntryTests.swift in Sources */,
 				4B7213F6D96F8C12D9B8B62D /* CheckInMigrationServiceTests.swift in Sources */,
+				3630D9F9BBBB492C244A2FDE /* CheckInRepositoryTests.swift in Sources */,
 				0E932B60F9BAE8ED27EAE84F /* CheckInViewModelTests.swift in Sources */,
 				5579930E15F330E3A89AA0A0 /* LocalReflectionProviderTests.swift in Sources */,
 				AF71E0420B60C7CF68BA612F /* ProjectSmokeTests.swift in Sources */,

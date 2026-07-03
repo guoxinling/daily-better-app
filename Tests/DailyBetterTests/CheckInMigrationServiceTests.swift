@@ -104,6 +104,27 @@ final class CheckInMigrationServiceTests: XCTestCase {
     XCTAssertEqual(stored.helpfulnessKey, "maybe")
   }
 
+  func testAppPreferencesPersistsMigrationAndConsentFieldsAfterSaveAndRefetch() throws {
+    let container = try makeInMemoryContainer()
+    let context = ModelContext(container)
+    let acceptedAt = Date(timeIntervalSince1970: 1_735_689_600)
+    let preferences = AppPreferences()
+
+    preferences.migrationVersion = 7
+    preferences.aiConsentVersion = 3
+    preferences.aiConsentAcceptedAt = acceptedAt
+
+    context.insert(preferences)
+    try context.save()
+
+    let refetchContext = ModelContext(container)
+    let stored = try XCTUnwrap(refetchContext.fetch(FetchDescriptor<AppPreferences>()).first)
+
+    XCTAssertEqual(stored.migrationVersion, 7)
+    XCTAssertEqual(stored.aiConsentVersion, 3)
+    XCTAssertEqual(stored.aiConsentAcceptedAt, acceptedAt)
+  }
+
   private func makeInMemoryContainer() throws -> ModelContainer {
     let schema = Schema([
       Affirmation.self,

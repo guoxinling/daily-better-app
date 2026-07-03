@@ -45,9 +45,10 @@ final class CheckInViewModel {
   }
 
   func reflect() async {
-    guard let selectedMood else { return }
+    guard let selectedMood, !isReflecting else { return }
 
     failure = nil
+    presentedEntry = nil
     isReflecting = true
     defer { isReflecting = false }
 

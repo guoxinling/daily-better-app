@@ -121,6 +121,56 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertEqual(viewModel.failure, .unavailable)
   }
 
+  func testFailedReflectionClearsPreviouslyPresentedEntryAndPreservesNewDraft() async {
+    let repository = InMemoryCheckInRepository()
+    let remoteProvider = ReflectionProviderSpy(result: .success(.stub(source: .ai)))
+    let viewModel = CheckInViewModel(repository: repository, remoteProvider: remoteProvider)
+    viewModel.selectedMood = .good
+    viewModel.noteText = "A good morning."
+    await viewModel.reflect()
+    XCTAssertNotNil(viewModel.presentedEntry)
+
+    await remoteProvider.setResult(.failure(.invalidResponse))
+    viewModel.selectedMood = .anxious
+    viewModel.noteText = "  A difficult afternoon.  "
+
+    await viewModel.reflect()
+
+    let remoteCallCount = await remoteProvider.callCount
+    XCTAssertNil(viewModel.presentedEntry)
+    XCTAssertEqual(viewModel.failure, .invalidResponse)
+    XCTAssertEqual(viewModel.selectedMood, .anxious)
+    XCTAssertEqual(viewModel.noteText, "  A difficult afternoon.  ")
+    XCTAssertEqual(repository.entries.count, 1)
+    XCTAssertEqual(remoteCallCount, 2)
+  }
+
+  func testReflectIgnoresReentrantCallUntilActiveRequestCompletes() async {
+    let repository = InMemoryCheckInRepository()
+    let remoteProvider = ControllableReflectionProvider()
+    let viewModel = CheckInViewModel(repository: repository, remoteProvider: remoteProvider)
+    viewModel.selectedMood = .overwhelmed
+    viewModel.noteText = "Several things need attention."
+
+    let firstReflection = Task { await viewModel.reflect() }
+    await remoteProvider.waitUntilFirstRequestStarts()
+    XCTAssertTrue(viewModel.isReflecting)
+
+    await viewModel.reflect()
+
+    let callCountWhileFirstRequestIsActive = await remoteProvider.callCount
+    XCTAssertEqual(callCountWhileFirstRequestIsActive, 1)
+    XCTAssertTrue(viewModel.isReflecting)
+
+    await remoteProvider.completeFirstRequest(with: .stub(source: .ai))
+    await firstReflection.value
+
+    let finalCallCount = await remoteProvider.callCount
+    XCTAssertEqual(finalCallCount, 1)
+    XCTAssertFalse(viewModel.isReflecting)
+    XCTAssertEqual(repository.entries.count, 1)
+  }
+
   func testMissingMoodIsNoOp() async {
     let repository = InMemoryCheckInRepository()
     let localProvider = ReflectionProviderSpy(result: .success(.stub(source: .local)))
@@ -172,13 +222,17 @@ private actor ReflectionProviderSpy: ReflectionProviding {
   }
 
   private(set) var requests: [ReflectionRequest] = []
-  private let result: Result
+  private var result: Result
 
   init(result: Result) {
     self.result = result
   }
 
   var callCount: Int { requests.count }
+
+  func setResult(_ result: Result) {
+    self.result = result
+  }
 
   func reflect(_ request: ReflectionRequest) async throws -> ReflectionResult {
     requests.append(request)
@@ -188,6 +242,43 @@ private actor ReflectionProviderSpy: ReflectionProviding {
     case .failure(let error):
       throw error
     }
+  }
+}
+
+private actor ControllableReflectionProvider: ReflectionProviding {
+  private(set) var requests: [ReflectionRequest] = []
+  private var firstRequestContinuation: CheckedContinuation<ReflectionResult, Never>?
+  private var startWaiters: [CheckedContinuation<Void, Never>] = []
+
+  var callCount: Int { requests.count }
+
+  func reflect(_ request: ReflectionRequest) async throws -> ReflectionResult {
+    requests.append(request)
+
+    let waiters = startWaiters
+    startWaiters.removeAll()
+    waiters.forEach { $0.resume() }
+
+    guard requests.count == 1 else {
+      throw ReflectionError.unavailable
+    }
+
+    return await withCheckedContinuation { continuation in
+      firstRequestContinuation = continuation
+    }
+  }
+
+  func waitUntilFirstRequestStarts() async {
+    guard requests.isEmpty else { return }
+
+    await withCheckedContinuation { continuation in
+      startWaiters.append(continuation)
+    }
+  }
+
+  func completeFirstRequest(with result: ReflectionResult) {
+    firstRequestContinuation?.resume(returning: result)
+    firstRequestContinuation = nil
   }
 }
 

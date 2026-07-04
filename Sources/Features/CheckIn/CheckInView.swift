@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct CheckInView: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @Environment(\.modelContext) private var modelContext
 
   @ScaledMetric(relativeTo: .largeTitle) private var headingFontSize = 34.0
@@ -33,7 +34,7 @@ struct CheckInView: View {
 
   private func checkInContent(_ viewModel: CheckInViewModel) -> some View {
     ScrollView {
-      VStack(alignment: .leading, spacing: 24) {
+      VStack(alignment: .leading, spacing: contentSpacing) {
         header
 
         VStack(alignment: .leading, spacing: 8) {
@@ -43,13 +44,13 @@ struct CheckInView: View {
             .foregroundStyle(DailyBetterStyle.tint)
 
           Text("How are you?")
-            .font(.system(size: headingFontSize, weight: .bold, design: .rounded))
+            .font(.system(size: headingSize, weight: .bold, design: .rounded))
             .foregroundStyle(DailyBetterStyle.ink)
         }
 
         MoodSelector(selection: moodBinding(viewModel))
 
-        if let selectedMood = viewModel.selectedMood {
+        if let selectedMood = viewModel.selectedMood, !dynamicTypeSize.isAccessibilitySize {
           Text(selectedMood.title)
             .font(.system(size: 15, weight: .semibold, design: .rounded))
             .foregroundStyle(DailyBetterStyle.tint)
@@ -96,7 +97,7 @@ struct CheckInView: View {
       }
       .padding(.horizontal, 20)
       .padding(.top, 12)
-      .padding(.bottom, 20)
+      .padding(.bottom, contentBottomPadding)
     }
     .scrollDismissesKeyboard(.interactively)
     .sheet(item: presentedEntryBinding(viewModel)) { entry in
@@ -161,11 +162,27 @@ struct CheckInView: View {
         .foregroundStyle(DailyBetterStyle.ink)
         .scrollContentBackground(.hidden)
         .padding(10)
-        .frame(minHeight: 190)
+        .frame(minHeight: noteEditorMinHeight)
         .accessibilityLabel("What's on your mind?")
         .accessibilityIdentifier("checkIn.note")
     }
-    .frame(minHeight: 190)
+    .frame(minHeight: noteEditorMinHeight)
+  }
+
+  private var contentSpacing: CGFloat {
+    dynamicTypeSize.isAccessibilitySize ? 18 : 24
+  }
+
+  private var headingSize: CGFloat {
+    dynamicTypeSize.isAccessibilitySize ? min(headingFontSize, 28) : headingFontSize
+  }
+
+  private var noteEditorMinHeight: CGFloat {
+    dynamicTypeSize.isAccessibilitySize ? 128 : 190
+  }
+
+  private var contentBottomPadding: CGFloat {
+    dynamicTypeSize.isAccessibilitySize ? 12 : 20
   }
 
   private func moodBinding(_ viewModel: CheckInViewModel) -> Binding<CheckInMood?> {

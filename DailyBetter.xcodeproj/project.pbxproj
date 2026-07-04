@@ -22,6 +22,7 @@
 		3F586E5C75CA155E74B9C289 /* ReflectionProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590D0756320218108663A660 /* ReflectionProviding.swift */; };
 		43154313CEDB22F3FEC92034 /* MoodEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6817227CCB36D035362C2DCA /* MoodEntry.swift */; };
 		4B7213F6D96F8C12D9B8B62D /* CheckInMigrationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FEF4EBFBC6FEA938D48877 /* CheckInMigrationServiceTests.swift */; };
+		4E8CB939118D9DDD7A7D9915 /* MoodSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A2F7FAD6BB73C21D3E9924 /* MoodSelector.swift */; };
 		545716580075099533CD399D /* DailyBetterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AF5CDD0CDD770C1730BC076 /* DailyBetterApp.swift */; };
 		54C925197745A8B9A1CDA8A6 /* MoodView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D3A9C24A4173FD3C18983F /* MoodView.swift */; };
 		5579930E15F330E3A89AA0A0 /* LocalReflectionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A7A707C8287C938A517673D /* LocalReflectionProviderTests.swift */; };
@@ -33,9 +34,12 @@
 		9406C6C2D2BDE5D3B7EEECDA /* GradientScreenBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB382DD8028604910FC2D8AB /* GradientScreenBackground.swift */; };
 		9503B53C1E2F2B9D64DF29DF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EB424E985894F56E5984AEB8 /* Assets.xcassets */; };
 		9935339B1D80F69124BB3714 /* CompactTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F03ED3CDEAF1DB637351C68C /* CompactTabBar.swift */; };
+		995860D1952E1E07CDAA8FCE /* CheckInFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56F712E1C565F1B4689518 /* CheckInFlowUITests.swift */; };
 		9980216F1789D096F8DEB4BF /* ReflectionTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0238B90291B261E75A97C2DA /* ReflectionTypes.swift */; };
+		A2FA1A5886C62DF70FC2106B /* CheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F5C686D04BD48E24BD4DB24 /* CheckInView.swift */; };
 		AE6ED28F0C5CB3B8C375F146 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42266BE38FA02290DE2F810E /* TodayView.swift */; };
 		AF71E0420B60C7CF68BA612F /* ProjectSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B51E3BE7EE198A5D67B0EEB /* ProjectSmokeTests.swift */; };
+		B22383D6AA4F5C4E56F4EACD /* ReflectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C46E4A0BE790461950C6191 /* ReflectionView.swift */; };
 		BAC3ACB982530E659D428214 /* CheckInEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D4816ECD29B2D2802AD579 /* CheckInEntry.swift */; };
 		BBEF1E089C9514EFA5B1585F /* CheckInEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60DF51C817D16334A5BADBEE /* CheckInEntryTests.swift */; };
 		C4744D19C3277BA558542A12 /* DailyBetterStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E48083D1966D2E09F07906E /* DailyBetterStyle.swift */; };
@@ -74,15 +78,18 @@
 		0238B90291B261E75A97C2DA /* ReflectionTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionTypes.swift; sourceTree = "<group>"; };
 		0A7A707C8287C938A517673D /* LocalReflectionProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReflectionProviderTests.swift; sourceTree = "<group>"; };
 		0A8A3CE88C14AD8CB17B8DAC /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		0F5C686D04BD48E24BD4DB24 /* CheckInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInView.swift; sourceTree = "<group>"; };
 		1007A6395A98431F5F94F166 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		123A8C36869266189CFAB106 /* NavigationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationUITests.swift; sourceTree = "<group>"; };
 		1F473DD42128F00D4E4183A1 /* CheckInViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInViewModel.swift; sourceTree = "<group>"; };
+		22A2F7FAD6BB73C21D3E9924 /* MoodSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodSelector.swift; sourceTree = "<group>"; };
 		22FEF4EBFBC6FEA938D48877 /* CheckInMigrationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInMigrationServiceTests.swift; sourceTree = "<group>"; };
 		24398261CEF13004BDD7E129 /* LocalReflectionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReflectionProvider.swift; sourceTree = "<group>"; };
 		29B8389D52FF69E45A813300 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		2E304296458959E0E96EB166 /* AddAffirmationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAffirmationView.swift; sourceTree = "<group>"; };
 		3A5F981D53BC8C75AC25F86F /* CheckInViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInViewModelTests.swift; sourceTree = "<group>"; };
 		3B51E3BE7EE198A5D67B0EEB /* ProjectSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectSmokeTests.swift; sourceTree = "<group>"; };
+		3C46E4A0BE790461950C6191 /* ReflectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionView.swift; sourceTree = "<group>"; };
 		42266BE38FA02290DE2F810E /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
 		45647BC46E58A1D023384127 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
 		4C16A16D80C14F97C1D1F6B0 /* SectionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionCard.swift; sourceTree = "<group>"; };
@@ -103,6 +110,7 @@
 		8AF5CDD0CDD770C1730BC076 /* DailyBetterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyBetterApp.swift; sourceTree = "<group>"; };
 		8FF345CDA8B90ADFEAD54C2A /* Affirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Affirmation.swift; sourceTree = "<group>"; };
 		97D3A9C24A4173FD3C18983F /* MoodView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodView.swift; sourceTree = "<group>"; };
+		AF56F712E1C565F1B4689518 /* CheckInFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInFlowUITests.swift; sourceTree = "<group>"; };
 		BC31225566EF3033747F2B8D /* MoodPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodPickerView.swift; sourceTree = "<group>"; };
 		C8B0E23D82ED987D0A73A239 /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
 		C8D4816ECD29B2D2802AD579 /* CheckInEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInEntry.swift; sourceTree = "<group>"; };
@@ -186,7 +194,10 @@
 				C8D4816ECD29B2D2802AD579 /* CheckInEntry.swift */,
 				744D32A4E37DAF42E62662F9 /* CheckInMood.swift */,
 				897D138E90ECCCF8DC2A7133 /* CheckInRepository.swift */,
+				0F5C686D04BD48E24BD4DB24 /* CheckInView.swift */,
 				1F473DD42128F00D4E4183A1 /* CheckInViewModel.swift */,
+				22A2F7FAD6BB73C21D3E9924 /* MoodSelector.swift */,
+				3C46E4A0BE790461950C6191 /* ReflectionView.swift */,
 			);
 			path = CheckIn;
 			sourceTree = "<group>";
@@ -254,6 +265,7 @@
 		B68E55159254D5C81DE82443 /* DailyBetterUITests */ = {
 			isa = PBXGroup;
 			children = (
+				AF56F712E1C565F1B4689518 /* CheckInFlowUITests.swift */,
 				56F93B2CD45FDFB6BB597437 /* LaunchSmokeUITests.swift */,
 				123A8C36869266189CFAB106 /* NavigationUITests.swift */,
 			);
@@ -446,6 +458,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				995860D1952E1E07CDAA8FCE /* CheckInFlowUITests.swift in Sources */,
 				88BF218482275A35039EAF44 /* LaunchSmokeUITests.swift in Sources */,
 				3F0A02957BF54CCD09D37BEC /* NavigationUITests.swift in Sources */,
 			);
@@ -468,6 +481,7 @@
 				0A83F093734305EEFE1FBDA7 /* CheckInMigrationService.swift in Sources */,
 				8DEF120744ABE9BA3C705D75 /* CheckInMood.swift in Sources */,
 				859E153F8D1E59F3604D6D87 /* CheckInRepository.swift in Sources */,
+				A2FA1A5886C62DF70FC2106B /* CheckInView.swift in Sources */,
 				D3448533B7559810067AE3E8 /* CheckInViewModel.swift in Sources */,
 				9935339B1D80F69124BB3714 /* CompactTabBar.swift in Sources */,
 				545716580075099533CD399D /* DailyBetterApp.swift in Sources */,
@@ -478,10 +492,12 @@
 				CACA6105CAB96DD9C003B3AA /* LocalReflectionProvider.swift in Sources */,
 				43154313CEDB22F3FEC92034 /* MoodEntry.swift in Sources */,
 				097A04042F9052497F1FF330 /* MoodPickerView.swift in Sources */,
+				4E8CB939118D9DDD7A7D9915 /* MoodSelector.swift in Sources */,
 				54C925197745A8B9A1CDA8A6 /* MoodView.swift in Sources */,
 				FD1462BD7C65B8891408612C /* NotificationManager.swift in Sources */,
 				3F586E5C75CA155E74B9C289 /* ReflectionProviding.swift in Sources */,
 				9980216F1789D096F8DEB4BF /* ReflectionTypes.swift in Sources */,
+				B22383D6AA4F5C4E56F4EACD /* ReflectionView.swift in Sources */,
 				EFC6E60E1B1B6B47B8E5D009 /* RootTabView.swift in Sources */,
 				05909AE6073ED834C7793A5F /* SectionCard.swift in Sources */,
 				0384B1923312CFB8BBF9306F /* SeedData.swift in Sources */,

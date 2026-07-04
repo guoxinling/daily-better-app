@@ -23,10 +23,21 @@ struct RootTabView: View {
 
   private var destinationPages: some View {
     ZStack {
-      destinationPage(.checkIn, title: "Daily Better", placeholder: "Check In")
+      checkInPage
       destinationPage(.timeline, title: "Timeline", placeholder: "Timeline")
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
+  }
+
+  private var checkInPage: some View {
+    let isSelected = selectedDestination == .checkIn
+
+    return NavigationStack {
+      CheckInView()
+    }
+    .opacity(isSelected ? 1 : 0)
+    .allowsHitTesting(isSelected)
+    .accessibilityHidden(!isSelected)
   }
 
   private func destinationPage(

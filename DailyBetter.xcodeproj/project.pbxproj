@@ -15,8 +15,10 @@
 		0E932B60F9BAE8ED27EAE84F /* CheckInViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A5F981D53BC8C75AC25F86F /* CheckInViewModelTests.swift */; };
 		125AF3730087EAF60417A8D7 /* AddAffirmationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E304296458959E0E96EB166 /* AddAffirmationView.swift */; };
 		12D727B323D95877170913B2 /* Affirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FF345CDA8B90ADFEAD54C2A /* Affirmation.swift */; };
+		177343E6DDF91D51FDFF77CE /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF8F470A7F27B035E5AE350 /* TimelineView.swift */; };
 		19350C9266A2D2F21FFE6288 /* BrandMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD36C899644F58085C40A0E /* BrandMarkView.swift */; };
 		23D5035A02EBB5986907105C /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45647BC46E58A1D023384127 /* AppPreferences.swift */; };
+		28D863AEFDB1CD8D640F1823 /* TimelineCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6AF85A69598F32B4FF702B1 /* TimelineCalendar.swift */; };
 		3630D9F9BBBB492C244A2FDE /* CheckInRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFA7225FF424D0A3E3EE40E3 /* CheckInRepositoryTests.swift */; };
 		3F0A02957BF54CCD09D37BEC /* NavigationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123A8C36869266189CFAB106 /* NavigationUITests.swift */; };
 		3F586E5C75CA155E74B9C289 /* ReflectionProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590D0756320218108663A660 /* ReflectionProviding.swift */; };
@@ -26,7 +28,9 @@
 		545716580075099533CD399D /* DailyBetterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AF5CDD0CDD770C1730BC076 /* DailyBetterApp.swift */; };
 		54C925197745A8B9A1CDA8A6 /* MoodView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D3A9C24A4173FD3C18983F /* MoodView.swift */; };
 		5579930E15F330E3A89AA0A0 /* LocalReflectionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A7A707C8287C938A517673D /* LocalReflectionProviderTests.swift */; };
+		62776B026AE6BA4CE5EECA85 /* TimelineCalendarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 680B0E25188B19B86B34DA58 /* TimelineCalendarTests.swift */; };
 		804C9D1549D45268E9EC5FDA /* TodayAffirmationSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6B0CAA0A4F9BAC13CCE50A8 /* TodayAffirmationSelection.swift */; };
+		825E31134119A7F314C5C7AD /* TimelineEntryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC866538200772CBB578245 /* TimelineEntryRow.swift */; };
 		859E153F8D1E59F3604D6D87 /* CheckInRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897D138E90ECCCF8DC2A7133 /* CheckInRepository.swift */; };
 		86E79F079A7A2E4E759BBC39 /* AppEnums.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC384A8558E6A3D31522CB7 /* AppEnums.swift */; };
 		88BF218482275A35039EAF44 /* LaunchSmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56F93B2CD45FDFB6BB597437 /* LaunchSmokeUITests.swift */; };
@@ -36,12 +40,14 @@
 		9935339B1D80F69124BB3714 /* CompactTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F03ED3CDEAF1DB637351C68C /* CompactTabBar.swift */; };
 		995860D1952E1E07CDAA8FCE /* CheckInFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF56F712E1C565F1B4689518 /* CheckInFlowUITests.swift */; };
 		9980216F1789D096F8DEB4BF /* ReflectionTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0238B90291B261E75A97C2DA /* ReflectionTypes.swift */; };
+		9CFCBC447D2706FF9DA06B8F /* EntryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF0D2F4EE4C6A5904140253 /* EntryDetailView.swift */; };
 		A2FA1A5886C62DF70FC2106B /* CheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F5C686D04BD48E24BD4DB24 /* CheckInView.swift */; };
 		AE6ED28F0C5CB3B8C375F146 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42266BE38FA02290DE2F810E /* TodayView.swift */; };
 		AF71E0420B60C7CF68BA612F /* ProjectSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B51E3BE7EE198A5D67B0EEB /* ProjectSmokeTests.swift */; };
 		B22383D6AA4F5C4E56F4EACD /* ReflectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C46E4A0BE790461950C6191 /* ReflectionView.swift */; };
 		BAC3ACB982530E659D428214 /* CheckInEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D4816ECD29B2D2802AD579 /* CheckInEntry.swift */; };
 		BBEF1E089C9514EFA5B1585F /* CheckInEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60DF51C817D16334A5BADBEE /* CheckInEntryTests.swift */; };
+		BD4E529EBF83C400CD8E068D /* TimelineUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BCC2CE60BBCDCC6A622C9E6 /* TimelineUITests.swift */; };
 		C4744D19C3277BA558542A12 /* DailyBetterStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E48083D1966D2E09F07906E /* DailyBetterStyle.swift */; };
 		C4A037AE1EFBB543E08A42DD /* AffirmationCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FBDE88F2AF21B1DBD1D9282 /* AffirmationCardView.swift */; };
 		C4E7B7031B669D5903D66791 /* DailyBetterBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB69BD8CA32279BC5E77C4B2 /* DailyBetterBackground.swift */; };
@@ -99,6 +105,7 @@
 		590D0756320218108663A660 /* ReflectionProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionProviding.swift; sourceTree = "<group>"; };
 		5EC384A8558E6A3D31522CB7 /* AppEnums.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnums.swift; sourceTree = "<group>"; };
 		60DF51C817D16334A5BADBEE /* CheckInEntryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInEntryTests.swift; sourceTree = "<group>"; };
+		680B0E25188B19B86B34DA58 /* TimelineCalendarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineCalendarTests.swift; sourceTree = "<group>"; };
 		6817227CCB36D035362C2DCA /* MoodEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodEntry.swift; sourceTree = "<group>"; };
 		6E45B9C0672D798AB10596A9 /* CheckInMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInMigrationService.swift; sourceTree = "<group>"; };
 		744D32A4E37DAF42E62662F9 /* CheckInMood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInMood.swift; sourceTree = "<group>"; };
@@ -108,16 +115,21 @@
 		897D138E90ECCCF8DC2A7133 /* CheckInRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInRepository.swift; sourceTree = "<group>"; };
 		89C7C2D7F103FAA528433B23 /* ThemePalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePalette.swift; sourceTree = "<group>"; };
 		8AF5CDD0CDD770C1730BC076 /* DailyBetterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyBetterApp.swift; sourceTree = "<group>"; };
+		8BCC2CE60BBCDCC6A622C9E6 /* TimelineUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineUITests.swift; sourceTree = "<group>"; };
 		8FF345CDA8B90ADFEAD54C2A /* Affirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Affirmation.swift; sourceTree = "<group>"; };
 		97D3A9C24A4173FD3C18983F /* MoodView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodView.swift; sourceTree = "<group>"; };
 		AF56F712E1C565F1B4689518 /* CheckInFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInFlowUITests.swift; sourceTree = "<group>"; };
+		AFF0D2F4EE4C6A5904140253 /* EntryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryDetailView.swift; sourceTree = "<group>"; };
+		BAC866538200772CBB578245 /* TimelineEntryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEntryRow.swift; sourceTree = "<group>"; };
 		BC31225566EF3033747F2B8D /* MoodPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodPickerView.swift; sourceTree = "<group>"; };
+		C6AF85A69598F32B4FF702B1 /* TimelineCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineCalendar.swift; sourceTree = "<group>"; };
 		C8B0E23D82ED987D0A73A239 /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
 		C8D4816ECD29B2D2802AD579 /* CheckInEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInEntry.swift; sourceTree = "<group>"; };
 		CB382DD8028604910FC2D8AB /* GradientScreenBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientScreenBackground.swift; sourceTree = "<group>"; };
 		D92720DD7285F914B9088F17 /* DailyBetter.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DailyBetter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB69BD8CA32279BC5E77C4B2 /* DailyBetterBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyBetterBackground.swift; sourceTree = "<group>"; };
 		DB91E108BC2FD6EC9E0870A6 /* UnavailableRemoteReflectionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableRemoteReflectionProvider.swift; sourceTree = "<group>"; };
+		DCF8F470A7F27B035E5AE350 /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
 		DEA01A09787C67900A18B8B9 /* AppBootstrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBootstrapper.swift; sourceTree = "<group>"; };
 		E4A6F5296AFF80CCD4FDCED9 /* DailyBetterTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DailyBetterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E6B0CAA0A4F9BAC13CCE50A8 /* TodayAffirmationSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayAffirmationSelection.swift; sourceTree = "<group>"; };
@@ -216,6 +228,7 @@
 			children = (
 				7E5C5BE143BAA2A436AAA23D /* CheckIn */,
 				EB449A0FF5D995F9819595D5 /* Reflection */,
+				DB6241F625A6C0A75007042E /* Timeline */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -268,6 +281,7 @@
 				AF56F712E1C565F1B4689518 /* CheckInFlowUITests.swift */,
 				56F93B2CD45FDFB6BB597437 /* LaunchSmokeUITests.swift */,
 				123A8C36869266189CFAB106 /* NavigationUITests.swift */,
+				8BCC2CE60BBCDCC6A622C9E6 /* TimelineUITests.swift */,
 			);
 			name = DailyBetterUITests;
 			path = Tests/DailyBetterUITests;
@@ -307,6 +321,17 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		DB6241F625A6C0A75007042E /* Timeline */ = {
+			isa = PBXGroup;
+			children = (
+				AFF0D2F4EE4C6A5904140253 /* EntryDetailView.swift */,
+				C6AF85A69598F32B4FF702B1 /* TimelineCalendar.swift */,
+				BAC866538200772CBB578245 /* TimelineEntryRow.swift */,
+				DCF8F470A7F27B035E5AE350 /* TimelineView.swift */,
+			);
+			path = Timeline;
+			sourceTree = "<group>";
+		};
 		DD8844C8ABCAFD64F0C96F65 /* DailyBetterTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -316,6 +341,7 @@
 				3A5F981D53BC8C75AC25F86F /* CheckInViewModelTests.swift */,
 				0A7A707C8287C938A517673D /* LocalReflectionProviderTests.swift */,
 				3B51E3BE7EE198A5D67B0EEB /* ProjectSmokeTests.swift */,
+				680B0E25188B19B86B34DA58 /* TimelineCalendarTests.swift */,
 			);
 			name = DailyBetterTests;
 			path = Tests/DailyBetterTests;
@@ -461,6 +487,7 @@
 				995860D1952E1E07CDAA8FCE /* CheckInFlowUITests.swift in Sources */,
 				88BF218482275A35039EAF44 /* LaunchSmokeUITests.swift in Sources */,
 				3F0A02957BF54CCD09D37BEC /* NavigationUITests.swift in Sources */,
+				BD4E529EBF83C400CD8E068D /* TimelineUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -487,6 +514,7 @@
 				545716580075099533CD399D /* DailyBetterApp.swift in Sources */,
 				C4E7B7031B669D5903D66791 /* DailyBetterBackground.swift in Sources */,
 				C4744D19C3277BA558542A12 /* DailyBetterStyle.swift in Sources */,
+				9CFCBC447D2706FF9DA06B8F /* EntryDetailView.swift in Sources */,
 				9406C6C2D2BDE5D3B7EEECDA /* GradientScreenBackground.swift in Sources */,
 				F3ED9F8541F6A9CBD3151287 /* LibraryView.swift in Sources */,
 				CACA6105CAB96DD9C003B3AA /* LocalReflectionProvider.swift in Sources */,
@@ -503,6 +531,9 @@
 				0384B1923312CFB8BBF9306F /* SeedData.swift in Sources */,
 				F79D227DB5EE3E0EEFF8434D /* SettingsView.swift in Sources */,
 				F23C74329696CDCC5458C9FE /* ThemePalette.swift in Sources */,
+				28D863AEFDB1CD8D640F1823 /* TimelineCalendar.swift in Sources */,
+				825E31134119A7F314C5C7AD /* TimelineEntryRow.swift in Sources */,
+				177343E6DDF91D51FDFF77CE /* TimelineView.swift in Sources */,
 				804C9D1549D45268E9EC5FDA /* TodayAffirmationSelection.swift in Sources */,
 				AE6ED28F0C5CB3B8C375F146 /* TodayView.swift in Sources */,
 				CDF07FB637C077E956F9422C /* UnavailableRemoteReflectionProvider.swift in Sources */,
@@ -519,6 +550,7 @@
 				0E932B60F9BAE8ED27EAE84F /* CheckInViewModelTests.swift in Sources */,
 				5579930E15F330E3A89AA0A0 /* LocalReflectionProviderTests.swift in Sources */,
 				AF71E0420B60C7CF68BA612F /* ProjectSmokeTests.swift in Sources */,
+				62776B026AE6BA4CE5EECA85 /* TimelineCalendarTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

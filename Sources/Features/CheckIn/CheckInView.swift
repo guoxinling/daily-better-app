@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import UIKit
 
 struct CheckInView: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -7,6 +8,7 @@ struct CheckInView: View {
 
   @ScaledMetric(relativeTo: .largeTitle) private var headingFontSize = 34.0
   @ScaledMetric(relativeTo: .title3) private var noteFontSize = 21.0
+  @FocusState private var isNoteFocused: Bool
   @State private var viewModel: CheckInViewModel?
 
   var body: some View {
@@ -22,6 +24,16 @@ struct CheckInView: View {
     .navigationTitle("Daily Better")
     .navigationBarTitleDisplayMode(.inline)
     .toolbarBackground(.hidden, for: .navigationBar)
+    .toolbar {
+      ToolbarItemGroup(placement: .keyboard) {
+        Spacer()
+
+        Button("Done") {
+          dismissKeyboard()
+        }
+        .accessibilityIdentifier("checkIn.dismissKeyboard")
+      }
+    }
     .dailyBetterBackground()
     .task {
       guard viewModel == nil else { return }
@@ -62,6 +74,7 @@ struct CheckInView: View {
 
         VStack(spacing: 12) {
           Button {
+            dismissKeyboard()
             Task { await viewModel.reflect() }
           } label: {
             Group {
@@ -86,6 +99,7 @@ struct CheckInView: View {
           .accessibilityIdentifier("checkIn.reflect")
 
           Button("Save without reflection") {
+            dismissKeyboard()
             viewModel.saveWithoutReflection()
           }
           .font(.system(size: 16, weight: .semibold, design: .rounded))
@@ -163,6 +177,7 @@ struct CheckInView: View {
         .scrollContentBackground(.hidden)
         .padding(10)
         .frame(minHeight: noteEditorMinHeight)
+        .focused($isNoteFocused)
         .accessibilityLabel("What's on your mind?")
         .accessibilityIdentifier("checkIn.note")
     }
@@ -215,5 +230,10 @@ struct CheckInView: View {
         }
       }
     )
+  }
+
+  private func dismissKeyboard() {
+    isNoteFocused = false
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
   }
 }

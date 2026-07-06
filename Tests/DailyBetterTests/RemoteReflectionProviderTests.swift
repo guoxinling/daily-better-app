@@ -4,16 +4,17 @@ import XCTest
 
 final class RemoteReflectionProviderTests: XCTestCase {
   func testRemoteProviderBootstrapsTokenBeforeReflecting() async throws {
+    let payload = RemoteReflectionPayload(
+      reflectionText: "A calm reflection.",
+      suggestedActionText: "Drink a glass of water.",
+      source: .ai
+    )
     let transport = ReflectionTransportSpy()
     transport.tokenResponses = [
       .success(.init(deviceToken: "token-1", issuedAt: .now, expiresAt: .distantFuture))
     ]
     transport.reflectResponses = [
-      .success(.init(
-        reflectionText: "A calm reflection.",
-        suggestedActionText: "Drink a glass of water.",
-        source: .ai
-      ))
+      .success(payload)
     ]
 
     let store = InMemoryDeviceTokenStore()
@@ -32,22 +33,27 @@ final class RemoteReflectionProviderTests: XCTestCase {
     ))
 
     XCTAssertEqual(result.source, .ai)
+    XCTAssertEqual(result.reflectionText, payload.reflectionText)
+    XCTAssertEqual(result.suggestedActionText, payload.suggestedActionText)
     XCTAssertEqual(transport.tokenRequests, 1)
     XCTAssertEqual(transport.reflectRequests.count, 1)
+    XCTAssertEqual(transport.reflectRequests.first?.body.locale, "en_US")
+    XCTAssertEqual(transport.reflectRequests.first?.body.noteText, "A lot is happening.")
     XCTAssertEqual(try store.read()?.deviceToken, "token-1")
   }
 
   func testExpiredTokenRefreshesBeforeRequest() async throws {
+    let payload = RemoteReflectionPayload(
+      reflectionText: "A grounded reflection.",
+      suggestedActionText: "Take one slow breath.",
+      source: .ai
+    )
     let transport = ReflectionTransportSpy()
     transport.tokenResponses = [
       .success(.init(deviceToken: "fresh-token", issuedAt: .now, expiresAt: .distantFuture))
     ]
     transport.reflectResponses = [
-      .success(.init(
-        reflectionText: "A grounded reflection.",
-        suggestedActionText: "Take one slow breath.",
-        source: .ai
-      ))
+      .success(payload)
     ]
 
     let store = InMemoryDeviceTokenStore(record: .init(
@@ -62,13 +68,15 @@ final class RemoteReflectionProviderTests: XCTestCase {
       appVersion: "1.0"
     )
 
-    _ = try await provider.reflect(.init(
+    let result = try await provider.reflect(.init(
       mood: .drained,
       noteText: "I need a reset.",
       localeIdentifier: "en_US",
       requestID: UUID()
     ))
 
+    XCTAssertEqual(result.reflectionText, payload.reflectionText)
+    XCTAssertEqual(result.suggestedActionText, payload.suggestedActionText)
     XCTAssertEqual(transport.tokenRequests, 1)
     XCTAssertEqual(transport.reflectRequests.count, 1)
     XCTAssertEqual(transport.reflectRequests.first?.authorizationHeader, "Bearer fresh-token")
@@ -76,14 +84,15 @@ final class RemoteReflectionProviderTests: XCTestCase {
   }
 
   func testUnauthorizedReflectRetriesOnceWithFreshToken() async throws {
+    let payload = RemoteReflectionPayload(
+      reflectionText: "You are already restarting well.",
+      suggestedActionText: "Choose one kind next step.",
+      source: .ai
+    )
     let transport = ReflectionTransportSpy()
     transport.reflectResponses = [
       .failure(.unauthorized),
-      .success(.init(
-        reflectionText: "You are already restarting well.",
-        suggestedActionText: "Choose one kind next step.",
-        source: .ai
-      ))
+      .success(payload)
     ]
     transport.tokenResponses = [
       .success(.init(deviceToken: "fresh-token", issuedAt: .now, expiresAt: .distantFuture))
@@ -109,6 +118,8 @@ final class RemoteReflectionProviderTests: XCTestCase {
     ))
 
     XCTAssertEqual(result.source, .ai)
+    XCTAssertEqual(result.reflectionText, payload.reflectionText)
+    XCTAssertEqual(result.suggestedActionText, payload.suggestedActionText)
     XCTAssertEqual(transport.tokenRequests, 1)
     XCTAssertEqual(transport.reflectRequests.count, 2)
     XCTAssertEqual(transport.reflectRequests.first?.authorizationHeader, "Bearer stale-token")
@@ -175,6 +186,25 @@ private final class ReflectionTransportSpy: ReflectionAPITransport, @unchecked S
   struct ReflectRequest: Equatable {
     let url: URL
     let authorizationHeader: String?
+    let body: RequestBody
+  }
+
+  struct RequestBody: Decodable, Equatable {
+    let mood: String
+    let noteText: String
+    let locale: String
+    let requestID: String
+    let appVersion: String
+    let deviceToken: String
+
+    enum CodingKeys: String, CodingKey {
+      case mood
+      case noteText
+      case locale
+      case requestID = "requestId"
+      case appVersion
+      case deviceToken
+    }
   }
 
   var tokenResponses: [Result<DeviceTokenRecord, ReflectionAPIClientError>] = []
@@ -207,10 +237,13 @@ private final class ReflectionTransportSpy: ReflectionAPITransport, @unchecked S
       )
 
     case "/api/reflect":
+      let body = try XCTUnwrap(request.httpBody)
+      let decodedBody = try JSONDecoder().decode(RequestBody.self, from: body)
       let response = try lock.withLock {
         reflectRequests.append(.init(
           url: request.url!,
-          authorizationHeader: request.value(forHTTPHeaderField: "Authorization")
+          authorizationHeader: request.value(forHTTPHeaderField: "Authorization"),
+          body: decodedBody
         ))
         guard !reflectResponses.isEmpty else {
           throw ReflectionAPIClientError.invalidResponse

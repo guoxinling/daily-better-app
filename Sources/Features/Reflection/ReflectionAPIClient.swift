@@ -84,7 +84,7 @@ actor ReflectionAPIClient {
     let body = RemoteReflectionRequestBody(
       mood: request.mood.rawValue,
       noteText: request.noteText,
-      localeIdentifier: request.localeIdentifier,
+      locale: request.localeIdentifier,
       requestID: request.requestID.uuidString,
       appVersion: appVersion,
       deviceToken: token
@@ -140,7 +140,7 @@ actor ReflectionAPIClient {
 private struct RemoteReflectionRequestBody: Encodable {
   let mood: String
   let noteText: String
-  let localeIdentifier: String
+  let locale: String
   let requestID: String
   let appVersion: String
   let deviceToken: String
@@ -148,7 +148,7 @@ private struct RemoteReflectionRequestBody: Encodable {
   enum CodingKeys: String, CodingKey {
     case mood
     case noteText
-    case localeIdentifier
+    case locale
     case requestID = "requestId"
     case appVersion
     case deviceToken

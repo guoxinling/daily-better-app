@@ -8,49 +8,73 @@ struct ReflectionView: View {
   @ScaledMetric(relativeTo: .headline) private var actionFontSize = 18.0
 
   let entry: CheckInEntry
+  var showsMoodSummary = true
+  var showsOriginalNote = true
+  var showsDoneButton = true
+  var showsNavigationChrome = true
+  var usesScrollView = true
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 24) {
+    content
+      .modifier(ReflectionNavigationChrome(isEnabled: showsNavigationChrome))
+  }
+
+  @ViewBuilder
+  private var content: some View {
+    if usesScrollView {
+      ScrollView {
+        reflectionContent
+          .padding(20)
+      }
+    } else {
+      reflectionContent
+    }
+  }
+
+  private var reflectionContent: some View {
+    VStack(alignment: .leading, spacing: 24) {
+      if showsMoodSummary {
         moodSummary
+      }
 
-        if let note = normalized(entry.noteText) {
-          Text("\u{201c}\(note)\u{201d}")
-            .font(.system(size: noteFontSize, design: .serif))
-            .foregroundStyle(DailyBetterStyle.muted)
-            .accessibilityLabel("Your note: \(note)")
-        }
+      if showsOriginalNote, let note = normalized(entry.noteText) {
+        Text("\u{201c}\(note)\u{201d}")
+          .font(.system(size: noteFontSize, design: .serif))
+          .foregroundStyle(DailyBetterStyle.muted)
+          .accessibilityLabel("Your note: \(note)")
+      }
 
-        if let reflection = normalized(entry.reflectionText) {
-          Text(reflection)
-            .font(.system(size: reflectionFontSize, weight: .regular, design: .serif))
+      if let reflection = normalized(entry.reflectionText) {
+        Text(reflection)
+          .font(.system(size: reflectionFontSize, weight: .regular, design: .serif))
+          .foregroundStyle(DailyBetterStyle.ink)
+          .fixedSize(horizontal: false, vertical: true)
+          .accessibilityIdentifier("reflection.title")
+      }
+
+      if let action = normalized(entry.suggestedActionText) {
+        VStack(alignment: .leading, spacing: 10) {
+          Text("ONE SMALL STEP")
+            .font(.system(size: 12, weight: .bold, design: .rounded))
+            .tracking(1.2)
+            .foregroundStyle(DailyBetterStyle.tint)
+
+          Text(action)
+            .font(.system(size: actionFontSize, weight: .medium, design: .rounded))
             .foregroundStyle(DailyBetterStyle.ink)
             .fixedSize(horizontal: false, vertical: true)
-            .accessibilityIdentifier("reflection.title")
+            .accessibilityIdentifier("reflection.action")
         }
-
-        if let action = normalized(entry.suggestedActionText) {
-          VStack(alignment: .leading, spacing: 10) {
-            Text("ONE SMALL STEP")
-              .font(.system(size: 12, weight: .bold, design: .rounded))
-              .tracking(1.2)
-              .foregroundStyle(DailyBetterStyle.tint)
-
-            Text(action)
-              .font(.system(size: actionFontSize, weight: .medium, design: .rounded))
-              .foregroundStyle(DailyBetterStyle.ink)
-              .fixedSize(horizontal: false, vertical: true)
-              .accessibilityIdentifier("reflection.action")
-          }
-          .padding(18)
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .background {
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-              .fill(DailyBetterStyle.glass)
-              .stroke(DailyBetterStyle.hairline, lineWidth: 1)
-          }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background {
+          RoundedRectangle(cornerRadius: 22, style: .continuous)
+            .fill(DailyBetterStyle.glass)
+            .stroke(DailyBetterStyle.hairline, lineWidth: 1)
         }
+      }
 
+      if showsDoneButton {
         Button("Done") {
           dismiss()
         }
@@ -60,14 +84,8 @@ struct ReflectionView: View {
         .background(DailyBetterStyle.darkAction, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .accessibilityIdentifier("reflection.done")
       }
-      .padding(20)
     }
     .scrollDismissesKeyboard(.interactively)
-    .navigationTitle("Reflection")
-    .navigationBarTitleDisplayMode(.inline)
-    .toolbarBackground(DailyBetterStyle.top.opacity(0.94), for: .navigationBar)
-    .toolbarBackground(.visible, for: .navigationBar)
-    .dailyBetterBackground()
   }
 
   private var moodSummary: some View {
@@ -92,5 +110,22 @@ struct ReflectionView: View {
     guard let text else { return nil }
     let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
     return trimmed.isEmpty ? nil : trimmed
+  }
+}
+
+private struct ReflectionNavigationChrome: ViewModifier {
+  let isEnabled: Bool
+
+  func body(content: Content) -> some View {
+    if isEnabled {
+      content
+        .navigationTitle("Reflection")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(DailyBetterStyle.top.opacity(0.94), for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .dailyBetterBackground()
+    } else {
+      content
+    }
   }
 }

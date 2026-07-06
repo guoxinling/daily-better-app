@@ -23,20 +23,24 @@ struct TimelineEntryRow: View {
         Text(entry.noteText ?? "Only a feeling was recorded.")
           .font(.system(.body, design: .serif))
           .foregroundStyle(DailyBetterStyle.ink)
+          .lineLimit(3)
+          .truncationMode(.tail)
+          .accessibilityIdentifier("timeline.entry.note.preview")
 
-        if let action = normalized(entry.suggestedActionText) {
-          Text(action)
+        if hasSavedReflection {
+          Label("Reflection saved", systemImage: "sparkles")
             .font(.caption)
             .foregroundStyle(DailyBetterStyle.muted)
-            .padding(.leading, 10)
-            .overlay(alignment: .leading) {
-              Rectangle()
-                .fill(DailyBetterStyle.tint.opacity(0.3))
-                .frame(width: 2)
-            }
+            .accessibilityIdentifier("timeline.entry.reflection.badge")
         }
       }
     }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .accessibilityIdentifier("timeline.entry.row")
+  }
+
+  private var hasSavedReflection: Bool {
+    normalized(entry.reflectionText) != nil
   }
 
   private func normalized(_ text: String?) -> String? {

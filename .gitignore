@@ -24,3 +24,6 @@ AppStore/TestRun/
 
 # Local isolated implementation worktrees
 .worktrees/
+
+# Backend workspace dependencies
+Backend/reflect-proxy/node_modules/

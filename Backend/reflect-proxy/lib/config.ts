@@ -2,7 +2,9 @@ import { z } from "zod";
 
 const envSchema = z.object({
   DEVICE_TOKEN_SECRET: z.string().min(32),
-  DEVICE_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30)
+  DEVICE_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
+  DEEPSEEK_API_KEY: z.string().min(1).optional(),
+  DEEPSEEK_MODEL: z.string().min(1).default("deepseek-v4-flash")
 });
 
 export type BackendConfig = z.infer<typeof envSchema>;

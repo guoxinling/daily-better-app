@@ -33,6 +33,12 @@ struct ReflectionResult: Equatable, Sendable {
   let source: ReflectionSource
 }
 
+struct RemoteReflectionPayload: Codable, Equatable, Sendable {
+  let reflectionText: String
+  let suggestedActionText: String
+  let source: ReflectionSource
+}
+
 enum ReflectionError: Error, Equatable, Sendable {
   case unavailable
   case invalidResponse

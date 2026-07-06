@@ -10,6 +10,11 @@ struct CheckInView: View {
   @ScaledMetric(relativeTo: .title3) private var noteFontSize = 21.0
   @FocusState private var isNoteFocused: Bool
   @State private var viewModel: CheckInViewModel?
+  private let remoteProvider: any ReflectionProviding
+
+  init(remoteProvider: any ReflectionProviding = ReflectionProviderFactory.makeRemoteProvider()) {
+    self.remoteProvider = remoteProvider
+  }
 
   var body: some View {
     Group {
@@ -39,7 +44,7 @@ struct CheckInView: View {
       guard viewModel == nil else { return }
       viewModel = CheckInViewModel(
         repository: SwiftDataCheckInRepository(context: modelContext),
-        remoteProvider: UnavailableRemoteReflectionProvider()
+        remoteProvider: remoteProvider
       )
     }
   }

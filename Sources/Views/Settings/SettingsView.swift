@@ -10,15 +10,13 @@ struct SettingsView: View {
   @State private var feedbackUnavailable = false
   @State private var feedbackCopied = false
   @State private var notificationsDenied = false
+  @State private var confirmsDeleteAll = false
 
   private let feedbackEmail = "guoxinling_xisu@163.com"
+  private let privacyURL = URL(string: "https://guoxinling.github.io/privacy/")!
 
   private var preferencesModel: AppPreferences? {
     preferences.first
-  }
-
-  private var palette: ThemePalette {
-    ThemePalette.palette(for: preferencesModel?.themeKey ?? ThemeKey.green.rawValue)
   }
 
   private var feedbackURL: URL? {
@@ -32,139 +30,76 @@ struct SettingsView: View {
   }
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 20) {
-        HStack(alignment: .center, spacing: 16) {
-          BrandMarkView(palette: palette, size: 68)
+    List {
+      if let preferencesModel {
+        Section("Daily reminder") {
+          Toggle("Enable reminder", isOn: reminderEnabledBinding(preferencesModel))
 
-          VStack(alignment: .leading, spacing: 6) {
-            Text("Settings")
-              .font(.system(size: 34, weight: .bold, design: .rounded))
-            Text("Shape the tone of your daily check-in.")
-              .font(.system(size: 16, weight: .medium, design: .rounded))
-              .foregroundStyle(palette.secondaryText)
-          }
-
-          Spacer(minLength: 0)
+          DatePicker(
+            "Reminder time",
+            selection: reminderDateBinding(preferencesModel),
+            displayedComponents: .hourAndMinute
+          )
+          .disabled(!preferencesModel.reminderEnabled)
         }
 
-        if let preferencesModel {
-          SectionCard(title: "Daily reminder", subtitle: "A quiet nudge to open the app.", palette: palette) {
-            Toggle("Enable reminder", isOn: reminderEnabledBinding(preferencesModel))
-              .tint(palette.tint)
-
-            DatePicker(
-              "Reminder time",
-              selection: reminderDateBinding(preferencesModel),
-              displayedComponents: .hourAndMinute
+        Section("AI & privacy") {
+          NavigationLink("How reflections work") {
+            SettingsDetailView(
+              title: "How reflections work",
+              message: "Mood-only reflections are generated on this device. If you add written text and tap Reflect, the current mood, current note, locale, and request identifier are sent to Daily Better's AI reflection service to generate a one-time response."
             )
           }
 
-          SectionCard(title: "Theme", subtitle: "Pick the atmosphere that feels best right now.", palette: palette) {
-            HStack(spacing: 10) {
-              ForEach(ThemeKey.allCases) { theme in
-                Button {
-                  preferencesModel.themeKey = theme.rawValue
-                  try? modelContext.save()
-                } label: {
-                  VStack(spacing: 8) {
-                    Circle()
-                      .fill(ThemePalette.palette(for: theme.rawValue).tint)
-                      .frame(width: 28, height: 28)
-
-                    Text(theme.title)
-                      .font(.system(size: 12, weight: .semibold, design: .rounded))
-                      .multilineTextAlignment(.center)
-                  }
-                  .frame(maxWidth: .infinity)
-                  .padding(.vertical, 12)
-                  .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                      .fill(preferencesModel.theme == theme ? palette.accent.opacity(0.45) : Color.white.opacity(0.4))
-                  )
-                }
-                .buttonStyle(.plain)
-              }
-            }
-          }
-
-          SectionCard(title: "Text size", subtitle: "Keep your daily card easy on the eyes.", palette: palette) {
-            Picker("Text size", selection: textScaleBinding(preferencesModel)) {
-              ForEach(TextScaleKey.allCases) { option in
-                Text(option.title).tag(option.rawValue)
-              }
-            }
-            .pickerStyle(.segmented)
-          }
-
-          SectionCard(title: "Feedback", subtitle: "Questions, ideas, or something not working?", palette: palette) {
-            if let feedbackURL {
-              Button {
-                openURL(feedbackURL) { accepted in
-                  if !accepted {
-                    feedbackUnavailable = true
-                  }
-                }
-              } label: {
-                HStack(spacing: 12) {
-                  Image(systemName: "envelope.fill")
-                    .font(.system(size: 18, weight: .semibold))
-
-                  VStack(alignment: .leading, spacing: 4) {
-                    Text("Send Feedback")
-                      .font(.system(size: 17, weight: .semibold, design: .rounded))
-                    Text(feedbackEmail)
-                      .font(.system(size: 14, weight: .medium, design: .rounded))
-                      .foregroundStyle(palette.secondaryText)
-                  }
-
-                  Spacer(minLength: 0)
-
-                  Image(systemName: "arrow.up.right")
-                    .font(.system(size: 14, weight: .bold))
-                }
-                .foregroundStyle(palette.tint)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .background(
-                  RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(palette.accent.opacity(0.55))
-                )
-              }
-              .buttonStyle(.plain)
-            }
-
-            Text("Tapping this opens your default mail app with the address filled in.")
-              .font(.system(size: 14, weight: .medium, design: .rounded))
-              .foregroundStyle(palette.secondaryText)
-          }
-
-          SectionCard(title: "About Daily Better", subtitle: "A tiny growth companion.", palette: palette) {
-            HStack(alignment: .top, spacing: 14) {
-              BrandMarkView(palette: palette, size: 54)
-
-              VStack(alignment: .leading, spacing: 8) {
-                Text("Read one affirmation, log one emoji, and keep the words that meet you where you are.")
-                Text("Everything in this version stays on-device and works without an account.")
-                Text("Version 1.0.0")
-                  .font(.system(size: 13, weight: .semibold, design: .rounded))
-                  .foregroundStyle(palette.secondaryText)
-              }
-            }
-            .font(.system(size: 15, weight: .medium, design: .rounded))
-            .foregroundStyle(palette.secondaryText)
+          NavigationLink("Storage & privacy") {
+            SettingsDetailView(
+              title: "Storage & privacy",
+              message: "Your Timeline is stored on this device. Daily Better does not require an account for the current check-in flow."
+            )
           }
         }
+
+        Section("Your data") {
+          NavigationLink("Export timeline") {
+            ExportTimelineView()
+          }
+
+          Button("Delete all entries", role: .destructive) {
+            confirmsDeleteAll = true
+          }
+        }
+
+        Section("Support") {
+          NavigationLink("Safety resources") {
+            SafetyResourcesView()
+          }
+
+          if let feedbackURL {
+            Button("Email support") {
+              openURL(feedbackURL) { accepted in
+                if !accepted {
+                  feedbackUnavailable = true
+                }
+              }
+            }
+          }
+
+          Link("Privacy policy", destination: privacyURL)
+
+          Text(feedbackEmail)
+            .foregroundStyle(.secondary)
+        }
       }
-      .padding(20)
-      .padding(.bottom, 20)
     }
+    .navigationTitle("Settings")
     .navigationBarTitleDisplayMode(.inline)
-    .dailyBetterBackground(palette)
+    .scrollContentBackground(.hidden)
+    .dailyBetterBackground()
+    .rootTabBarHidden()
     .alert("Notifications are off", isPresented: $notificationsDenied) {
       Button("OK", role: .cancel) {}
     } message: {
-      Text("Enable notifications in Settings if you want Daily Better to remind you each evening.")
+      Text("Enable notifications in Settings if you want Daily Better to send your daily reminder.")
     }
     .alert("Can't open Mail right now", isPresented: $feedbackUnavailable) {
       Button("Copy Email") {
@@ -180,6 +115,14 @@ struct SettingsView: View {
     } message: {
       Text(feedbackEmail)
     }
+    .alert("Delete every Timeline entry?", isPresented: $confirmsDeleteAll) {
+      Button("Delete all entries", role: .destructive) {
+        try? SwiftDataCheckInRepository(context: modelContext).deleteAll()
+      }
+      Button("Cancel", role: .cancel) {}
+    } message: {
+      Text("This cannot be undone. Legacy affirmations are not deleted.")
+    }
   }
 
   private func reminderEnabledBinding(_ preferencesModel: AppPreferences) -> Binding<Bool> {
@@ -188,13 +131,16 @@ struct SettingsView: View {
       set: { newValue in
         preferencesModel.reminderEnabled = newValue
         try? modelContext.save()
+
         Task {
           if newValue {
             let granted = await NotificationManager.requestAuthorization()
             if granted {
-              try? await NotificationManager.scheduleReminder(
-                hour: preferencesModel.reminderHour,
-                minute: preferencesModel.reminderMinute
+              try? await NotificationManager.schedule(
+                ReminderConfiguration(
+                  hour: preferencesModel.reminderHour,
+                  minute: preferencesModel.reminderMinute
+                )
               )
             } else {
               preferencesModel.reminderEnabled = false
@@ -202,7 +148,7 @@ struct SettingsView: View {
               notificationsDenied = true
             }
           } else {
-            NotificationManager.removeReminder()
+            NotificationManager.remove()
           }
         }
       }
@@ -224,23 +170,100 @@ struct SettingsView: View {
         try? modelContext.save()
 
         guard preferencesModel.reminderEnabled else { return }
+
         Task {
-          try? await NotificationManager.scheduleReminder(
-            hour: preferencesModel.reminderHour,
-            minute: preferencesModel.reminderMinute
+          try? await NotificationManager.schedule(
+            ReminderConfiguration(
+              hour: preferencesModel.reminderHour,
+              minute: preferencesModel.reminderMinute
+            )
           )
         }
       }
     )
   }
+}
 
-  private func textScaleBinding(_ preferencesModel: AppPreferences) -> Binding<String> {
-    Binding(
-      get: { preferencesModel.textScaleKey },
-      set: {
-        preferencesModel.textScaleKey = $0
-        try? modelContext.save()
+private struct SettingsDetailView: View {
+  let title: String
+  let message: String
+
+  var bodyView: some View {
+    VStack(alignment: .leading, spacing: 16) {
+      Text(message)
+        .font(.body)
+        .foregroundStyle(.secondary)
+
+      Spacer()
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .padding(24)
+    .dailyBetterBackground()
+  }
+
+  var body: some View {
+    bodyView
+      .navigationTitle(title)
+      .navigationBarTitleDisplayMode(.inline)
+  }
+}
+
+private struct ExportTimelineView: View {
+  @Query(sort: \CheckInEntry.createdAt) private var entries: [CheckInEntry]
+  @Query private var affirmations: [Affirmation]
+  @State private var exportURL: URL?
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 20) {
+      Text("Your export includes Timeline entries and legacy custom words stored on this device.")
+        .font(.body)
+        .foregroundStyle(.secondary)
+
+      if let exportURL {
+        ShareLink(item: exportURL) {
+          Label("Share export", systemImage: "square.and.arrow.up")
+        }
+        .buttonStyle(.borderedProminent)
+      } else {
+        Button("Prepare export") {
+          prepareExport()
+        }
+        .buttonStyle(.borderedProminent)
       }
-    )
+
+      Spacer()
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .padding(24)
+    .dailyBetterBackground()
+    .navigationTitle("Export timeline")
+    .navigationBarTitleDisplayMode(.inline)
+  }
+
+  private func prepareExport() {
+    let text = TimelineExportService.render(entries: entries, legacyAffirmations: affirmations)
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("Daily-Better-Timeline.txt")
+    try? text.write(to: url, atomically: true, encoding: .utf8)
+    exportURL = url
+  }
+}
+
+private struct SafetyResourcesView: View {
+  var body: some View {
+    VStack(alignment: .leading, spacing: 16) {
+      Text("Daily Better cannot provide crisis care.")
+        .font(.headline)
+
+      Text("If you may be in immediate danger, contact local emergency services or a trusted person who can stay with you.")
+        .font(.body)
+        .foregroundStyle(.secondary)
+
+      Spacer()
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .padding(24)
+    .dailyBetterBackground()
+    .navigationTitle("Safety resources")
+    .navigationBarTitleDisplayMode(.inline)
   }
 }

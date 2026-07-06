@@ -43,9 +43,33 @@ final class CheckInFlowUITests: XCTestCase {
     XCTAssertFalse(app.staticTexts["reflection.title"].exists)
   }
 
-  private func makeApp(contentSizeCategory: String? = nil) -> XCUIApplication {
+  func testWrittenCheckInReflectsAndOpensSavedReflection() {
+    let app = makeApp(additionalArguments: ["-stub-remote-reflection-success"])
+    app.launch()
+
+    let anxiousMood = app.buttons["mood.anxious"]
+    XCTAssertTrue(anxiousMood.waitForExistence(timeout: 5))
+    anxiousMood.tap()
+
+    let noteField = app.textViews["checkIn.note"]
+    XCTAssertTrue(noteField.waitForExistence(timeout: 2))
+    noteField.tap()
+    noteField.typeText("I can't settle down tonight.")
+
+    app.buttons["checkIn.reflect"].tap()
+
+    XCTAssertTrue(app.staticTexts["reflection.title"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["reflection.action"].exists)
+    XCTAssertTrue(app.staticTexts["You sound wound up, not broken. Your mind is still carrying the day forward."].exists)
+    XCTAssertTrue(app.staticTexts["Set the phone down and take ten slow breaths before deciding what to do next."].exists)
+  }
+
+  private func makeApp(
+    contentSizeCategory: String? = nil,
+    additionalArguments: [String] = []
+  ) -> XCUIApplication {
     let app = XCUIApplication()
-    app.launchArguments = ["-ui-testing", "-reset-store"]
+    app.launchArguments = ["-ui-testing", "-reset-store"] + additionalArguments
 
     if let contentSizeCategory {
       app.launchEnvironment["UIPreferredContentSizeCategoryName"] = contentSizeCategory

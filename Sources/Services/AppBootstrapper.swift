@@ -8,6 +8,7 @@ enum AppBootstrapper {
     let isUITesting = arguments.contains("-ui-testing")
     let shouldResetStore = isUITesting && arguments.contains("-reset-store")
     let shouldSeedCheckIns = isUITesting && arguments.contains("-seed-check-ins")
+    let shouldSeedLongReflectionEntry = isUITesting && arguments.contains("-seed-long-reflection-entry")
 
     if shouldResetStore {
       deleteAll(CheckInEntry.self, in: context)
@@ -27,7 +28,9 @@ enum AppBootstrapper {
       prepareScreenshotData(in: context)
     }
 
-    if shouldSeedCheckIns {
+    if shouldSeedLongReflectionEntry {
+      seedLongReflectionEntry(in: context)
+    } else if shouldSeedCheckIns {
       seedCheckInIfNeeded(in: context)
     }
 
@@ -57,6 +60,26 @@ enum AppBootstrapper {
         reflectionSource: .none
       )
     )
+  }
+
+  @MainActor
+  private static func seedLongReflectionEntry(in context: ModelContext) {
+    deleteAll(CheckInEntry.self, in: context)
+
+    let today = Calendar.current.startOfDay(for: .now)
+    let entry = CheckInEntry(
+      createdAt: today.addingTimeInterval(10 * 60 * 60),
+      mood: .anxious,
+      noteText: """
+      I am carrying too many threads at once, replaying every unfinished conversation, and trying to stay composed while my mind keeps spinning through the same worries without landing anywhere useful.
+      """,
+      reflectionText: "Your mind is looking ahead for what might go wrong. You only need to meet the next moment.",
+      suggestedActionText: "Name one thing you can control in the next five minutes.",
+      reflectionSource: .local,
+      reflectionStatus: .completed
+    )
+
+    context.insert(entry)
   }
 
   @MainActor
@@ -95,8 +118,8 @@ enum AppBootstrapper {
     }
 
     if let preference = preferences.first {
-      preference.themeKey = ThemeKey.green.rawValue
-      preference.textScaleKey = TextScaleKey.medium.rawValue
+      preference.themeKey = "green"
+      preference.textScaleKey = "medium"
       preference.reminderEnabled = false
       preference.reminderHour = 20
       preference.reminderMinute = 30

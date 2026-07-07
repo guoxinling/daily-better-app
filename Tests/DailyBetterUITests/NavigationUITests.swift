@@ -1,6 +1,21 @@
 import XCTest
 
 final class NavigationUITests: XCTestCase {
+  func testScreenshotTimelineLaunchStartsOnTimeline() {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing", "-reset-store", "-seed-check-ins"]
+    app.launchEnvironment["DAILYBETTER_SCREEN"] = "timeline"
+    app.launch()
+
+    let timelineTab = app.buttons["tab.timeline"]
+    let checkInTab = app.buttons["tab.checkIn"]
+
+    XCTAssertTrue(timelineTab.waitForExistence(timeout: 5))
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 2))
+    XCTAssertTrue(timelineTab.isSelected)
+    XCTAssertFalse(checkInTab.isSelected)
+  }
+
   func testRootHasOnlyCheckInAndTimelineDestinations() {
     let app = launchApp()
     let checkInTab = app.buttons["tab.checkIn"]

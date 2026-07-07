@@ -1,21 +1,50 @@
 import SwiftData
 import SwiftUI
 
+private struct RootTabBarHiddenPreferenceKey: PreferenceKey {
+  static var defaultValue = false
+
+  static func reduce(value: inout Bool, nextValue: () -> Bool) {
+    value = value || nextValue()
+  }
+}
+
+extension View {
+  func rootTabBarHidden(_ hidden: Bool = true) -> some View {
+    preference(key: RootTabBarHiddenPreferenceKey.self, value: hidden)
+  }
+
+  func onRootTabBarHiddenChange(_ action: @escaping (Bool) -> Void) -> some View {
+    onPreferenceChange(RootTabBarHiddenPreferenceKey.self, perform: action)
+  }
+}
+
 struct RootTabView: View {
-  @State private var selectedDestination: AppDestination = .checkIn
+  @State private var selectedDestination: AppDestination =
+    ProcessInfo.processInfo.environment["DAILYBETTER_SCREEN"] == "timeline" ? .timeline : .checkIn
+  @State private var notificationRouteStore = NotificationRouteStore.shared
   @State private var timelineRefreshID = 0
+  @State private var isRootTabBarHidden = false
 
   var body: some View {
     destinationPages
       .safeAreaInset(edge: .bottom, spacing: 0) {
-        CompactTabBar(selection: $selectedDestination)
-          .padding(.bottom, 8)
+        if !isRootTabBarHidden {
+          CompactTabBar(selection: $selectedDestination)
+            .padding(.bottom, 8)
+        }
       }
       .dailyBetterBackground()
       .onChange(of: selectedDestination) { _, newValue in
         if newValue == .timeline {
           timelineRefreshID += 1
         }
+      }
+      .onAppear {
+        consumePendingDestination()
+      }
+      .onChange(of: notificationRouteStore.pendingDestination) { _, _ in
+        consumePendingDestination()
       }
   }
 
@@ -24,7 +53,8 @@ struct RootTabView: View {
       checkInPage
       timelinePage
     }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .onRootTabBarHiddenChange { isRootTabBarHidden = $0 }
+    .frame(maxWidth: CGFloat.infinity, maxHeight: CGFloat.infinity)
   }
 
   private var checkInPage: some View {
@@ -48,5 +78,14 @@ struct RootTabView: View {
     .opacity(isSelected ? 1 : 0)
     .allowsHitTesting(isSelected)
     .accessibilityHidden(!isSelected)
+  }
+
+  private func consumePendingDestination() {
+    guard let destination = notificationRouteStore.pendingDestination else {
+      return
+    }
+
+    selectedDestination = destination
+    notificationRouteStore.pendingDestination = nil
   }
 }

@@ -1,32 +1,36 @@
 import Foundation
 import UserNotifications
 
+struct ReminderConfiguration: Equatable {
+  let hour: Int
+  let minute: Int
+  let title = "Daily Better"
+  let body = "Take a moment to check in."
+
+  var dateComponents: DateComponents {
+    DateComponents(hour: hour, minute: minute)
+  }
+}
+
 enum NotificationManager {
-  static let reminderIdentifier = "dailybetter.reminder"
+  static let reminderIdentifier = "dailybetter.check-in-reminder"
 
   static func requestAuthorization() async -> Bool {
-    let center = UNUserNotificationCenter.current()
-    return (try? await center.requestAuthorization(options: [.alert, .badge, .sound])) ?? false
+    (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])) ?? false
   }
 
-  static func removeReminder() {
-    let center = UNUserNotificationCenter.current()
-    center.removePendingNotificationRequests(withIdentifiers: [reminderIdentifier])
-  }
-
-  static func scheduleReminder(hour: Int, minute: Int) async throws {
-    removeReminder()
+  static func schedule(_ configuration: ReminderConfiguration) async throws {
+    remove()
 
     let content = UNMutableNotificationContent()
-    content.title = "Daily Better"
-    content.body = "Pause for a moment. Your affirmation and mood check-in are waiting."
+    content.title = configuration.title
+    content.body = configuration.body
     content.sound = .default
 
-    var components = DateComponents()
-    components.hour = hour
-    components.minute = minute
-
-    let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+    let trigger = UNCalendarNotificationTrigger(
+      dateMatching: configuration.dateComponents,
+      repeats: true
+    )
     let request = UNNotificationRequest(
       identifier: reminderIdentifier,
       content: content,
@@ -34,5 +38,13 @@ enum NotificationManager {
     )
 
     try await UNUserNotificationCenter.current().add(request)
+  }
+
+  static func remove() {
+    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [reminderIdentifier])
+  }
+
+  static func destination(for identifier: String) -> AppDestination? {
+    identifier == reminderIdentifier ? .checkIn : nil
   }
 }

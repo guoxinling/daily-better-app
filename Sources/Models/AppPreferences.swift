@@ -18,8 +18,8 @@ final class AppPreferences {
     reminderEnabled: Bool = false,
     reminderHour: Int = 20,
     reminderMinute: Int = 30,
-    themeKey: String = ThemeKey.green.rawValue,
-    textScaleKey: String = TextScaleKey.medium.rawValue,
+    themeKey: String = "green",
+    textScaleKey: String = "medium",
     migrationVersion: Int = 0,
     aiConsentVersion: Int = 0,
     aiConsentAcceptedAt: Date? = nil
@@ -33,13 +33,5 @@ final class AppPreferences {
     self.migrationVersion = migrationVersion
     self.aiConsentVersion = aiConsentVersion
     self.aiConsentAcceptedAt = aiConsentAcceptedAt
-  }
-
-  var theme: ThemeKey {
-    ThemeKey(rawValue: themeKey) ?? .green
-  }
-
-  var textScale: TextScaleKey {
-    TextScaleKey(rawValue: textScaleKey) ?? .medium
   }
 }

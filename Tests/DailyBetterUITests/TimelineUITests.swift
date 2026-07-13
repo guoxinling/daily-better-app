@@ -49,6 +49,23 @@ final class TimelineUITests: XCTestCase {
     XCTAssertEqual(originalNote.label, longReflectionNote)
   }
 
+  func testEntryDetailShowsBackActionAndCanReturnToTimeline() {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing", "-reset-store", "-seed-long-reflection-entry"]
+    app.launch()
+
+    app.buttons["tab.timeline"].tap()
+    app.descendants(matching: .any)["timeline.entry.row"].firstMatch.tap()
+
+    let backButton = app.buttons["timeline.detail.back"]
+    XCTAssertTrue(backButton.waitForExistence(timeout: 2))
+
+    backButton.tap()
+
+    XCTAssertTrue(app.staticTexts["Timeline"].waitForExistence(timeout: 2))
+    XCTAssertFalse(app.buttons["timeline.detail.back"].exists)
+  }
+
   func testSaveWithoutReflectionAddsTimelineEntry() {
     let app = XCUIApplication()
     app.launchArguments = ["-ui-testing", "-reset-store"]

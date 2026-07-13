@@ -29,16 +29,6 @@ struct CheckInView: View {
     .navigationTitle("Daily Better")
     .navigationBarTitleDisplayMode(.inline)
     .toolbarBackground(.hidden, for: .navigationBar)
-    .toolbar {
-      ToolbarItemGroup(placement: .keyboard) {
-        Spacer()
-
-        Button("Done") {
-          dismissKeyboard()
-        }
-        .accessibilityIdentifier("checkIn.dismissKeyboard")
-      }
-    }
     .dailyBetterBackground()
     .task {
       guard viewModel == nil else { return }

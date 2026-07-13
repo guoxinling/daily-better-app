@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct EntryDetailView: View {
+  @Environment(\.dismiss) private var dismiss
   @Environment(\.modelContext) private var modelContext
   @Bindable var entry: CheckInEntry
 
@@ -44,6 +45,17 @@ struct EntryDetailView: View {
     }
     .navigationTitle("Reflection")
     .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .topBarLeading) {
+        Button {
+          dismiss()
+        } label: {
+          Label("Timeline", systemImage: "chevron.left")
+            .labelStyle(.titleAndIcon)
+        }
+        .accessibilityIdentifier("timeline.detail.back")
+      }
+    }
     .toolbarBackground(DailyBetterStyle.top.opacity(0.94), for: .navigationBar)
     .toolbarBackground(.visible, for: .navigationBar)
     .dailyBetterBackground()

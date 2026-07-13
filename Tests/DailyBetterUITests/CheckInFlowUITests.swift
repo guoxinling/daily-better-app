@@ -64,6 +64,17 @@ final class CheckInFlowUITests: XCTestCase {
     XCTAssertTrue(app.staticTexts["Set the phone down and take ten slow breaths before deciding what to do next."].exists)
   }
 
+  func testTextEntryDoesNotShowCustomDoneButton() {
+    let app = makeApp()
+    app.launch()
+
+    let noteField = app.textViews["checkIn.note"]
+    XCTAssertTrue(noteField.waitForExistence(timeout: 2))
+    noteField.tap()
+
+    XCTAssertFalse(app.buttons["checkIn.dismissKeyboard"].exists)
+  }
+
   private func makeApp(
     contentSizeCategory: String? = nil,
     additionalArguments: [String] = []

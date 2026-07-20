@@ -152,7 +152,7 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertNil(viewModel.failure)
   }
 
-  func testRepositorySaveFailurePreservesDraftAndDoesNotPresentEntry() async {
+  func testRepositorySaveFailureAfterReflectionPreservesDraftForLocalRetry() async {
     let repository = InMemoryCheckInRepository(saveError: RepositoryTestError.saveFailed)
     let remoteProvider = ReflectionProviderSpy(result: .success(.stub(source: .ai)))
     let viewModel = CheckInViewModel(repository: repository, remoteProvider: remoteProvider)
@@ -165,7 +165,44 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertEqual(viewModel.selectedMood, .overwhelmed)
     XCTAssertEqual(viewModel.noteText, "  Too much at once.  ")
     XCTAssertNil(viewModel.presentedEntry)
-    XCTAssertEqual(viewModel.failure, .unavailable)
+    XCTAssertNil(viewModel.failure)
+    XCTAssertTrue(viewModel.saveFailure)
+  }
+
+  func testRetryAfterReflectionSaveFailureDoesNotCallRemoteProviderAgain() async {
+    let repository = InMemoryCheckInRepository(saveError: RepositoryTestError.saveFailed)
+    let remoteProvider = ReflectionProviderSpy(result: .success(.stub(source: .ai)))
+    let viewModel = CheckInViewModel(repository: repository, remoteProvider: remoteProvider)
+    viewModel.selectedMood = .low
+    viewModel.noteText = "Keep the generated reflection"
+
+    await viewModel.reflect()
+    repository.saveError = nil
+    viewModel.retryFailedSave()
+
+    let remoteCallCount = await remoteProvider.callCount
+    XCTAssertEqual(remoteCallCount, 1)
+    XCTAssertEqual(repository.entries.count, 1)
+    XCTAssertFalse(viewModel.saveFailure)
+    XCTAssertNil(viewModel.failure)
+  }
+
+  func testSaveWithoutReflectionFailureDoesNotBecomeReflectionFailure() {
+    let repository = InMemoryCheckInRepository(saveError: RepositoryTestError.saveFailed)
+    let viewModel = CheckInViewModel(
+      repository: repository,
+      remoteProvider: ReflectionProviderSpy(result: .success(.stub(source: .ai)))
+    )
+    viewModel.selectedMood = .anxious
+    viewModel.noteText = "Keep this private draft"
+
+    viewModel.saveWithoutReflection()
+
+    XCTAssertTrue(repository.entries.isEmpty)
+    XCTAssertEqual(viewModel.selectedMood, .anxious)
+    XCTAssertEqual(viewModel.noteText, "Keep this private draft")
+    XCTAssertNil(viewModel.failure)
+    XCTAssertTrue(viewModel.saveFailure)
   }
 
   func testFailedReflectionClearsPreviouslyPresentedEntryAndPreservesNewDraft() async {
@@ -338,7 +375,7 @@ final class CheckInViewModelTests: XCTestCase {
 @MainActor
 private final class InMemoryCheckInRepository: CheckInRepository {
   private(set) var entries: [CheckInEntry] = []
-  private let saveError: Error?
+  var saveError: Error?
 
   init(saveError: Error? = nil) {
     self.saveError = saveError
@@ -379,6 +416,10 @@ private final class InMemoryCheckInRepository: CheckInRepository {
 
   func delete(_ entry: CheckInEntry) throws {
     entries.removeAll { $0.id == entry.id }
+  }
+
+  func setHelpfulness(_ helpfulness: Helpfulness, for entry: CheckInEntry) throws {
+    entry.helpfulness = helpfulness
   }
 
   func deleteAll() throws {

@@ -1,12 +1,11 @@
-import SwiftData
 import SwiftUI
 
 struct EntryDetailView: View {
-  @Environment(\.modelContext) private var modelContext
   @Bindable var entry: CheckInEntry
   let onBack: () -> Void
   let onEdit: () -> Void
   let onDelete: () -> Void
+  let onSetHelpfulness: (Helpfulness) -> Void
 
   @State private var confirmsDeletion = false
 
@@ -81,11 +80,11 @@ struct EntryDetailView: View {
       if hasSavedReflectionContent {
         HStack(spacing: 12) {
           Button("A little") {
-            setHelpfulness(.better)
+            onSetHelpfulness(.better)
           }
 
           Button("Not yet") {
-            setHelpfulness(.unchanged)
+            onSetHelpfulness(.unchanged)
           }
         }
         .buttonStyle(.bordered)
@@ -99,11 +98,6 @@ struct EntryDetailView: View {
     } message: {
       Text("This journal entry and its reflection will be permanently removed.")
     }
-  }
-
-  private func setHelpfulness(_ value: Helpfulness) {
-    entry.helpfulness = value
-    try? modelContext.save()
   }
 
   private func normalized(_ text: String?) -> String? {

@@ -53,7 +53,8 @@ struct RootTabView: View {
             entry: entry,
             onBack: dismissPresentation,
             onEdit: { showEditorAfterDetail(entry) },
-            onDelete: { delete(entry) }
+            onDelete: { delete(entry) },
+            onSetHelpfulness: { setHelpfulness($0, for: entry) }
           )
         }
       }
@@ -97,6 +98,11 @@ struct RootTabView: View {
     } catch {
       return
     }
+  }
+
+  private func setHelpfulness(_ helpfulness: Helpfulness, for entry: CheckInEntry) {
+    try? SwiftDataCheckInRepository(context: modelContext)
+      .setHelpfulness(helpfulness, for: entry)
   }
 
   @MainActor

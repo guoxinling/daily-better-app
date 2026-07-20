@@ -10,6 +10,7 @@ protocol CheckInRepository: AnyObject {
     noteText: String?,
     reflection: ReflectionResult?
   ) throws
+  func setHelpfulness(_ helpfulness: Helpfulness, for entry: CheckInEntry) throws
   func delete(_ entry: CheckInEntry) throws
   func deleteAll() throws
 }
@@ -63,6 +64,22 @@ final class SwiftDataCheckInRepository: CheckInRepository {
       context.rollback()
       throw error
     }
+  }
+
+  func setHelpfulness(_ helpfulness: Helpfulness, for entry: CheckInEntry) throws {
+    let storedEntry = try resolve(entry)
+    let previousHelpfulnessKey = storedEntry.helpfulnessKey
+    storedEntry.helpfulness = helpfulness
+
+    do {
+      try context.save()
+    } catch {
+      storedEntry.helpfulnessKey = previousHelpfulnessKey
+      context.rollback()
+      throw error
+    }
+
+    entry.helpfulnessKey = storedEntry.helpfulnessKey
   }
 
   func deleteAll() throws {

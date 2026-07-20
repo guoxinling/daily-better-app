@@ -9,6 +9,7 @@ final class CheckInViewModel {
   var presentedEntry: CheckInEntry?
   var committedEntry: CheckInEntry?
   var failure: ReflectionError?
+  var saveFailure = false
   var isReflecting = false
   let mode: EntryComposerMode
 
@@ -21,6 +22,7 @@ final class CheckInViewModel {
   private let remoteProvider: any ReflectionProviding
   private let onEntryCommitted: ((CheckInEntry) -> Void)?
   private var initialDraft: CheckInDraft
+  private var pendingSave: PendingSave?
 
   init(
     repository: CheckInRepository,
@@ -44,22 +46,28 @@ final class CheckInViewModel {
     guard let selectedMood, !isReflecting else { return }
 
     failure = nil
+    saveFailure = false
+    pendingSave = nil
     presentedEntry = nil
     committedEntry = nil
 
     let draft = currentDraft
     let normalizedNote = draft.noteText
 
-    do {
-      let entry = try persist(
+    persistAndCommit(
+      PendingSave(
         mood: selectedMood,
         noteText: normalizedNote.isEmpty ? nil : normalizedNote,
-        reflection: nil
+        reflection: nil,
+        draft: draft
       )
-      commit(entry, ifDraftIsUnchangedSince: draft)
-    } catch {
-      failure = .unavailable
-    }
+    )
+  }
+
+  func retryFailedSave() {
+    guard let pendingSave, !isReflecting else { return }
+    saveFailure = false
+    persistAndCommit(pendingSave)
   }
 
   func reflect() async {
@@ -67,6 +75,8 @@ final class CheckInViewModel {
     let draft = currentDraft
 
     failure = nil
+    saveFailure = false
+    pendingSave = nil
     presentedEntry = nil
     committedEntry = nil
     isReflecting = true
@@ -84,12 +94,14 @@ final class CheckInViewModel {
       let provider = normalizedNote.isEmpty ? localProvider : remoteProvider
       let result = try await provider.reflect(request)
       try Task.checkCancellation()
-      let entry = try persist(
-        mood: selectedMood,
-        noteText: normalizedNote.isEmpty ? nil : normalizedNote,
-        reflection: result
+      persistAndCommit(
+        PendingSave(
+          mood: selectedMood,
+          noteText: normalizedNote.isEmpty ? nil : normalizedNote,
+          reflection: result,
+          draft: draft
+        )
       )
-      commit(entry, ifDraftIsUnchangedSince: draft)
     } catch is CancellationError {
       return
     } catch let error as ReflectionError {
@@ -136,6 +148,22 @@ final class CheckInViewModel {
     }
   }
 
+  private func persistAndCommit(_ pendingSave: PendingSave) {
+    do {
+      let entry = try persist(
+        mood: pendingSave.mood,
+        noteText: pendingSave.noteText,
+        reflection: pendingSave.reflection
+      )
+      self.pendingSave = nil
+      saveFailure = false
+      commit(entry, ifDraftIsUnchangedSince: pendingSave.draft)
+    } catch {
+      self.pendingSave = pendingSave
+      saveFailure = true
+    }
+  }
+
   private func commit(_ entry: CheckInEntry, ifDraftIsUnchangedSince draft: CheckInDraft) {
     committedEntry = entry
     presentedEntry = entry
@@ -170,5 +198,12 @@ final class CheckInViewModel {
         createdAt: entry.createdAt
       ).normalized
     }
+  }
+
+  private struct PendingSave {
+    let mood: CheckInMood
+    let noteText: String?
+    let reflection: ReflectionResult?
+    let draft: CheckInDraft
   }
 }

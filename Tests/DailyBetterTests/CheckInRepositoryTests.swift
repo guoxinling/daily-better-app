@@ -41,6 +41,31 @@ final class CheckInRepositoryTests: XCTestCase {
     XCTAssertEqual(try storedEntryState(id: entryIDs.second, in: storeURL, schema: schema)?.mood, .bright)
   }
 
+  func testSetHelpfulnessPersistsAcrossContextsAndUpdatesCallerEntry() throws {
+    let (storeURL, schema) = try makeStore()
+    defer { try? eraseStore(at: storeURL, schema: schema) }
+    let entryID = try seedReflectedEntryAndPreferences(in: storeURL, schema: schema)
+
+    try autoreleasepool {
+      let callerContext = try makeContext(in: storeURL, schema: schema)
+      let entry = try XCTUnwrap(
+        callerContext.fetch(
+          FetchDescriptor<CheckInEntry>(predicate: #Predicate { $0.id == entryID })
+        ).first
+      )
+
+      try SwiftDataCheckInRepository(context: callerContext)
+        .setHelpfulness(.unchanged, for: entry)
+
+      XCTAssertEqual(entry.helpfulness, .unchanged)
+    }
+
+    XCTAssertEqual(
+      try storedEntryState(id: entryID, in: storeURL, schema: schema)?.helpfulness,
+      .unchanged
+    )
+  }
+
   func testSaveFailureDoesNotRollbackCallerChangesOrLeakFailedInsert() throws {
     let (storeURL, schema) = try makeStore()
     defer { try? eraseStore(at: storeURL, schema: schema) }

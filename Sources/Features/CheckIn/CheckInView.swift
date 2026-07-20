@@ -103,6 +103,16 @@ struct CheckInView: View {
     } message: {
       Text("Your entry is still here.")
     }
+    .alert("Couldn't save right now", isPresented: saveFailureBinding(viewModel)) {
+      Button("Try saving again") {
+        viewModel.retryFailedSave()
+      }
+      Button("Cancel", role: .cancel) {
+        viewModel.saveFailure = false
+      }
+    } message: {
+      Text("Your entry is still here and has not been sent anywhere.")
+    }
   }
 
   private var navigationTitle: String {
@@ -249,6 +259,17 @@ struct CheckInView: View {
       set: { isPresented in
         if !isPresented {
           viewModel.failure = nil
+        }
+      }
+    )
+  }
+
+  private func saveFailureBinding(_ viewModel: CheckInViewModel) -> Binding<Bool> {
+    Binding(
+      get: { viewModel.saveFailure },
+      set: { isPresented in
+        if !isPresented {
+          viewModel.saveFailure = false
         }
       }
     )

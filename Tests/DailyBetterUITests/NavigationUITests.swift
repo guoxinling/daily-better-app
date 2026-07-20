@@ -14,7 +14,7 @@ final class NavigationUITests: XCTestCase {
     let app = launchApp()
     app.buttons["timeline.checkIn"].tap()
 
-    XCTAssertTrue(app.navigationBars["New Entry"].waitForExistence(timeout: 2))
+    XCTAssertTrue(app.textViews["checkIn.note"].waitForExistence(timeout: 2))
     app.buttons["checkIn.close"].tap()
     XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 2))
   }

@@ -14,6 +14,10 @@ The format is based on Keep a Changelog, and this project uses semantic versioni
 - Added AI-powered written reflections for text check-ins through the reflection proxy backend.
 
 ### Changed
+- Made Timeline the home screen with timeline-first navigation.
+- Replaced legacy mood labels with balanced moods.
+- Made Check In a full-screen composer.
+- Added editable journal entry detail.
 - Migrated legacy mood records into Timeline-compatible check-ins without deleting the old store records.
 - Reduced the product surface to the two-screen Check In and Timeline experience.
 - Kept mood-only reflections on-device.

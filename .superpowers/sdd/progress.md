@@ -1,0 +1,7 @@
+Task 1: complete (commits 8a78ecc, 674e422, cc9ce6f, 435b4c0; review clean; iOS focused tests 15/15; proxy tests 6/6)
+Task 2: complete (commit 865c26d; review clean; focused tests 19/19)
+Task 3: complete (commit 95fbef3; review clean; focused tests 6/6; detail edit transition deferred by plan to Task 6)
+Task 4: complete (commit 4bf71ba; review clean; Timeline UI tests 7/7; attachment badge deferred until a data contract exists)
+Task 5: complete (commit efb36d3; review clean; focused CheckInFlow UI tests passed)
+Task 6: complete (commit c1aa8f3; review approved; focused UI tests 17/17; minor coverage note: UI does not directly assert ID/timestamp, covered by Task 2 unit tests)
+Task 7: complete (unit tests 46/46 including disk-backed version-1 migration; critical UI tests 22/22; generic iOS device build succeeded; stale composer navigation assertion corrected)

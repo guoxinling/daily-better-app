@@ -2,9 +2,9 @@
 
 Daily Better is a private emotional journal for short everyday check-ins.
 
-- Choose one mood and optionally write what is happening.
+- Timeline is home for reviewing private entries through the week.
+- Use the full-screen Check In action to choose one mood and optionally write what is happening.
 - Save multiple private entries each day.
-- Review entries through a week-based Timeline.
 - Use one optional local reminder at a time you choose.
 - No account or cloud Timeline sync.
 

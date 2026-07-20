@@ -170,6 +170,76 @@ final class CheckInMigrationServiceTests: XCTestCase {
     XCTAssertEqual(storedEntries.count, 6)
   }
 
+  func testDiskBackedVersionOneStoreMigratesOnceAndPreservesEntryContent() throws {
+    let schema = Schema([
+      Affirmation.self,
+      MoodEntry.self,
+      CheckInEntry.self,
+      AppPreferences.self,
+    ])
+    let storeDirectory = FileManager.default.temporaryDirectory
+      .appending(path: UUID().uuidString, directoryHint: .isDirectory)
+    let storeURL = storeDirectory.appending(path: "VersionOne.store")
+    try FileManager.default.createDirectory(at: storeDirectory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: storeDirectory) }
+
+    let createdAt = Date(timeIntervalSince1970: 1_735_689_600)
+    let expected: [(UUID, String, CheckInMood)] = [
+      (UUID(), "good", .bright),
+      (UUID(), "frustrated", .overwhelmed),
+      (UUID(), "drained", .low),
+    ]
+
+    try autoreleasepool {
+      let context = try makeDiskContext(storeURL: storeURL, schema: schema)
+      for (id, storedMood, _) in expected {
+        let entry = CheckInEntry(
+          id: id,
+          createdAt: createdAt,
+          mood: .okay,
+          noteText: "An existing note.",
+          reflectionText: "An existing reflection.",
+          suggestedActionText: "An existing action.",
+          reflectionSource: .ai,
+          reflectionStatus: .completed
+        )
+        entry.moodKey = storedMood
+        context.insert(entry)
+      }
+      context.insert(AppPreferences(migrationVersion: 1))
+      try context.save()
+    }
+
+    try autoreleasepool {
+      let context = try makeDiskContext(storeURL: storeURL, schema: schema)
+      try CheckInMigrationService.runIfNeeded(in: context)
+    }
+
+    try autoreleasepool {
+      let context = try makeDiskContext(storeURL: storeURL, schema: schema)
+      try CheckInMigrationService.runIfNeeded(in: context)
+
+      let storedEntries = try context.fetch(FetchDescriptor<CheckInEntry>())
+      let storedPreferences = try XCTUnwrap(
+        context.fetch(FetchDescriptor<AppPreferences>()).first
+      )
+
+      XCTAssertEqual(storedEntries.count, expected.count)
+      XCTAssertEqual(storedPreferences.migrationVersion, 2)
+
+      for (id, _, migratedMood) in expected {
+        let entry = try XCTUnwrap(storedEntries.first(where: { $0.id == id }))
+        XCTAssertEqual(entry.mood, migratedMood)
+        XCTAssertEqual(entry.createdAt, createdAt)
+        XCTAssertEqual(entry.noteText, "An existing note.")
+        XCTAssertEqual(entry.reflectionText, "An existing reflection.")
+        XCTAssertEqual(entry.suggestedActionText, "An existing action.")
+        XCTAssertEqual(entry.reflectionSource, .ai)
+        XCTAssertEqual(entry.reflectionStatus, .completed)
+      }
+    }
+  }
+
   private func makeInMemoryContainer() throws -> ModelContainer {
     let schema = Schema([
       Affirmation.self,
@@ -179,5 +249,11 @@ final class CheckInMigrationServiceTests: XCTestCase {
     ])
     let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
     return try ModelContainer(for: schema, configurations: [configuration])
+  }
+
+  private func makeDiskContext(storeURL: URL, schema: Schema) throws -> ModelContext {
+    let configuration = ModelConfiguration(schema: schema, url: storeURL)
+    let container = try ModelContainer(for: schema, configurations: [configuration])
+    return ModelContext(container)
   }
 }

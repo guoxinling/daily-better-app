@@ -22,10 +22,11 @@ final class CheckInFlowUITests: XCTestCase {
     XCTAssertLessThanOrEqual(reflectButton.frame.maxY, checkInTab.frame.minY)
     reflectButton.tap()
 
-    XCTAssertTrue(app.staticTexts["reflection.title"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons["timeline.detail.back"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.staticTexts["reflection.title"].exists)
   }
 
-  func testMoodOnlyCheckInShowsLocalReflection() {
+  func testMoodOnlyCheckInRoutesIntoTimelineDetail() {
     let app = makeApp()
     app.launch()
 
@@ -35,12 +36,9 @@ final class CheckInFlowUITests: XCTestCase {
 
     app.buttons["checkIn.reflect"].tap()
 
-    XCTAssertTrue(app.staticTexts["reflection.title"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons["timeline.detail.back"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.navigationBars["Reflection"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.staticTexts["reflection.action"].exists)
-
-    app.buttons["reflection.done"].tap()
-    XCTAssertTrue(app.staticTexts["How are you?"].waitForExistence(timeout: 3))
-    XCTAssertFalse(app.staticTexts["reflection.title"].exists)
   }
 
   func testWrittenCheckInReflectsAndOpensSavedReflection() {
@@ -58,10 +56,32 @@ final class CheckInFlowUITests: XCTestCase {
 
     app.buttons["checkIn.reflect"].tap()
 
-    XCTAssertTrue(app.staticTexts["reflection.title"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons["timeline.detail.back"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.navigationBars["Reflection"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.staticTexts["reflection.action"].exists)
     XCTAssertTrue(app.staticTexts["You sound wound up, not broken. Your mind is still carrying the day forward."].exists)
     XCTAssertTrue(app.staticTexts["Set the phone down and take ten slow breaths before deciding what to do next."].exists)
+  }
+
+  func testSaveWithoutReflectionRoutesIntoTimelineDetail() {
+    let app = makeApp()
+    app.launch()
+
+    let goodMood = app.buttons["mood.good"]
+    XCTAssertTrue(goodMood.waitForExistence(timeout: 5))
+    goodMood.tap()
+
+    let noteField = app.textViews["checkIn.note"]
+    XCTAssertTrue(noteField.waitForExistence(timeout: 2))
+    noteField.tap()
+    noteField.typeText("Today felt quieter than usual.")
+
+    app.buttons["checkIn.saveOnly"].tap()
+
+    XCTAssertTrue(app.buttons["timeline.detail.back"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.navigationBars["Reflection"].waitForExistence(timeout: 2))
+    XCTAssertTrue(app.staticTexts["Your note"].exists)
+    XCTAssertTrue(app.staticTexts["Today felt quieter than usual."].exists)
   }
 
   func testTextEntryDoesNotShowCustomDoneButton() {

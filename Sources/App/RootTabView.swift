@@ -1,4 +1,3 @@
-import SwiftData
 import SwiftUI
 
 private struct RootTabBarHiddenPreferenceKey: PreferenceKey {
@@ -24,6 +23,7 @@ struct RootTabView: View {
     ProcessInfo.processInfo.environment["DAILYBETTER_SCREEN"] == "timeline" ? .timeline : .checkIn
   @State private var notificationRouteStore = NotificationRouteStore.shared
   @State private var timelineRefreshID = 0
+  @State private var pendingTimelineEntryID: UUID?
   @State private var isRootTabBarHidden = false
 
   var body: some View {
@@ -61,7 +61,15 @@ struct RootTabView: View {
     let isSelected = selectedDestination == .checkIn
 
     return NavigationStack {
-      CheckInView()
+      CheckInView { entry in
+        let wasAlreadyTimeline = selectedDestination == .timeline
+        pendingTimelineEntryID = entry.id
+        selectedDestination = .timeline
+
+        if wasAlreadyTimeline {
+          timelineRefreshID += 1
+        }
+      }
     }
     .opacity(isSelected ? 1 : 0)
     .allowsHitTesting(isSelected)
@@ -72,7 +80,13 @@ struct RootTabView: View {
     let isSelected = selectedDestination == .timeline
 
     return NavigationStack {
-      TimelineView(refreshToken: timelineRefreshID)
+      TimelineView(
+        refreshToken: timelineRefreshID,
+        pendingEntryID: pendingTimelineEntryID,
+        onPendingEntryConsumed: {
+          pendingTimelineEntryID = nil
+        }
+      )
     }
     .id(timelineRefreshID)
     .opacity(isSelected ? 1 : 0)

@@ -5,6 +5,8 @@ struct TimelineView: View {
   @Environment(\.modelContext) private var modelContext
 
   let refreshToken: Int
+  let pendingEntryID: UUID?
+  let onPendingEntryConsumed: () -> Void
 
   @State private var entries: [CheckInEntry] = []
   @State private var selectedDate = Calendar.current.startOfDay(for: .now)
@@ -47,9 +49,14 @@ struct TimelineView: View {
     .dailyBetterBackground()
     .task {
       reloadEntries()
+      consumePendingEntryRoute()
     }
     .onChange(of: refreshToken) { _, _ in
       reloadEntries()
+      consumePendingEntryRoute()
+    }
+    .onChange(of: pendingEntryID) { _, _ in
+      consumePendingEntryRoute()
     }
     .sheet(item: $selectedEntry) { entry in
       NavigationStack {
@@ -174,5 +181,16 @@ struct TimelineView: View {
       sortBy: [SortDescriptor(\CheckInEntry.createdAt, order: .reverse)]
     )
     entries = (try? modelContext.fetch(descriptor)) ?? []
+  }
+
+  private func consumePendingEntryRoute() {
+    guard let pendingEntryID,
+          let matchingEntry = entries.first(where: { $0.id == pendingEntryID }) else {
+      return
+    }
+
+    selectedDate = Calendar.current.startOfDay(for: matchingEntry.createdAt)
+    selectedEntry = matchingEntry
+    onPendingEntryConsumed()
   }
 }

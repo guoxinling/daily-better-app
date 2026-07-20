@@ -13,15 +13,18 @@ final class CheckInViewModel {
   private let repository: CheckInRepository
   private let localProvider: any ReflectionProviding
   private let remoteProvider: any ReflectionProviding
+  private let onEntryCommitted: ((CheckInEntry) -> Void)?
 
   init(
     repository: CheckInRepository,
     localProvider: any ReflectionProviding = LocalReflectionProvider(),
-    remoteProvider: any ReflectionProviding
+    remoteProvider: any ReflectionProviding,
+    onEntryCommitted: ((CheckInEntry) -> Void)? = nil
   ) {
     self.repository = repository
     self.localProvider = localProvider
     self.remoteProvider = remoteProvider
+    self.onEntryCommitted = onEntryCommitted
   }
 
   func saveWithoutReflection() {
@@ -42,6 +45,10 @@ final class CheckInViewModel {
     do {
       try repository.save(entry)
       resetDraft()
+      Task { @MainActor in
+        self.presentedEntry = entry
+        self.onEntryCommitted?(entry)
+      }
     } catch {
       failure = .unavailable
     }
@@ -78,6 +85,7 @@ final class CheckInViewModel {
       )
       try repository.save(entry)
       presentedEntry = entry
+      onEntryCommitted?(entry)
       if currentDraft == draft {
         resetDraft()
       }

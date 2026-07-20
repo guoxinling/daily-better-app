@@ -11,9 +11,14 @@ struct CheckInView: View {
   @FocusState private var isNoteFocused: Bool
   @State private var viewModel: CheckInViewModel?
   private let remoteProvider: any ReflectionProviding
+  private let onEntryCommitted: (CheckInEntry) -> Void
 
-  init(remoteProvider: any ReflectionProviding = ReflectionProviderFactory.makeRemoteProvider()) {
+  init(
+    remoteProvider: any ReflectionProviding = ReflectionProviderFactory.makeRemoteProvider(),
+    onEntryCommitted: @escaping (CheckInEntry) -> Void = { _ in }
+  ) {
     self.remoteProvider = remoteProvider
+    self.onEntryCommitted = onEntryCommitted
   }
 
   var body: some View {
@@ -34,7 +39,11 @@ struct CheckInView: View {
       guard viewModel == nil else { return }
       viewModel = CheckInViewModel(
         repository: SwiftDataCheckInRepository(context: modelContext),
-        remoteProvider: remoteProvider
+        remoteProvider: remoteProvider,
+        onEntryCommitted: { entry in
+          dismissKeyboard()
+          onEntryCommitted(entry)
+        }
       )
     }
   }
@@ -66,52 +75,30 @@ struct CheckInView: View {
         }
 
         noteEditor(viewModel)
-
-        VStack(spacing: 12) {
-          Button {
-            dismissKeyboard()
-            Task { await viewModel.reflect() }
-          } label: {
-            Group {
-              if viewModel.isReflecting {
-                HStack(spacing: 10) {
-                  ProgressView()
-                    .tint(.white)
-                  Text("Reflecting\u{2026}")
-                }
-              } else {
-                Text("Reflect")
-              }
-            }
-            .font(.system(size: 17, weight: .bold, design: .rounded))
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity, minHeight: 54)
-            .background(DailyBetterStyle.darkAction, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-          }
-          .buttonStyle(.plain)
-          .disabled(viewModel.selectedMood == nil || viewModel.isReflecting)
-          .opacity(viewModel.selectedMood == nil ? 0.5 : 1)
-          .accessibilityIdentifier("checkIn.reflect")
-
-          Button("Save without reflection") {
-            dismissKeyboard()
-            viewModel.saveWithoutReflection()
-          }
-          .font(.system(size: 16, weight: .semibold, design: .rounded))
-          .foregroundStyle(DailyBetterStyle.tint)
-          .frame(maxWidth: .infinity, minHeight: 48)
-          .disabled(viewModel.selectedMood == nil || viewModel.isReflecting)
-          .accessibilityIdentifier("checkIn.saveOnly")
-        }
       }
       .padding(.horizontal, 20)
       .padding(.top, 12)
       .padding(.bottom, contentBottomPadding)
     }
     .scrollDismissesKeyboard(.interactively)
-    .sheet(item: presentedEntryBinding(viewModel)) { entry in
-      NavigationStack {
-        ReflectionView(entry: entry)
+    .safeAreaInset(edge: .bottom, spacing: 0) {
+      actionBar(viewModel)
+    }
+    .toolbar {
+      if isNoteFocused {
+        ToolbarItemGroup(placement: .keyboard) {
+          Button("Save") {
+            queueSaveOnly()
+          }
+          .accessibilityIdentifier("checkIn.saveOnly")
+
+          Spacer()
+
+          Button("Reflect") {
+            queueReflection()
+          }
+          .accessibilityIdentifier("checkIn.reflect")
+        }
       }
     }
     .alert("Couldn't reflect right now", isPresented: failureBinding(viewModel)) {
@@ -192,7 +179,68 @@ struct CheckInView: View {
   }
 
   private var contentBottomPadding: CGFloat {
-    dynamicTypeSize.isAccessibilitySize ? 12 : 20
+    dynamicTypeSize.isAccessibilitySize ? 136 : 132
+  }
+
+  private func actionBar(_ viewModel: CheckInViewModel) -> some View {
+    let canSubmit = viewModel.selectedMood != nil && !viewModel.isReflecting
+
+    return VStack(spacing: 12) {
+      if !isNoteFocused {
+        Button {
+          queueReflection()
+        } label: {
+          Group {
+            if viewModel.isReflecting {
+              HStack(spacing: 10) {
+                ProgressView()
+                  .tint(.white)
+                Text("Reflecting\u{2026}")
+              }
+            } else {
+              Text("Reflect")
+            }
+          }
+          .font(.system(size: 17, weight: .bold, design: .rounded))
+          .foregroundStyle(.white)
+          .frame(maxWidth: .infinity, minHeight: 54)
+          .background(DailyBetterStyle.darkAction, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(!canSubmit)
+        .opacity(canSubmit ? 1 : 0.5)
+        .accessibilityIdentifier("checkIn.reflect")
+
+        Button {
+          queueSaveOnly()
+        } label: {
+          Text("Save without reflection")
+            .font(.system(size: 16, weight: .semibold, design: .rounded))
+            .foregroundStyle(DailyBetterStyle.tint)
+            .frame(maxWidth: .infinity, minHeight: 48)
+        }
+        .buttonStyle(.plain)
+        .disabled(!canSubmit)
+        .opacity(canSubmit ? 1 : 0.5)
+        .accessibilityIdentifier("checkIn.saveOnly")
+      } else {
+        Color.clear
+          .frame(height: 0)
+      }
+    }
+    .padding(.horizontal, 20)
+    .padding(.top, 12)
+    .padding(.bottom, 12)
+    .background(
+      LinearGradient(
+        colors: [
+          DailyBetterStyle.bottom.opacity(0),
+          DailyBetterStyle.bottom.opacity(0.94)
+        ],
+        startPoint: .top,
+        endPoint: .bottom
+      )
+    )
   }
 
   private func moodBinding(_ viewModel: CheckInViewModel) -> Binding<CheckInMood?> {
@@ -209,13 +257,6 @@ struct CheckInView: View {
     )
   }
 
-  private func presentedEntryBinding(_ viewModel: CheckInViewModel) -> Binding<CheckInEntry?> {
-    Binding(
-      get: { viewModel.presentedEntry },
-      set: { viewModel.presentedEntry = $0 }
-    )
-  }
-
   private func failureBinding(_ viewModel: CheckInViewModel) -> Binding<Bool> {
     Binding(
       get: { viewModel.failure != nil },
@@ -227,8 +268,48 @@ struct CheckInView: View {
     )
   }
 
+  private func queueReflection() {
+    guard viewModel != nil else { return }
+
+    if isNoteFocused {
+      dismissKeyboard()
+      Task { @MainActor in
+        await Task.yield()
+        await submitReflection()
+      }
+      return
+    }
+
+    Task { @MainActor in
+      await submitReflection()
+    }
+  }
+
+  private func queueSaveOnly() {
+    guard let viewModel else { return }
+
+    if isNoteFocused {
+      dismissKeyboard()
+      Task { @MainActor in
+        await Task.yield()
+        viewModel.saveWithoutReflection()
+      }
+      return
+    }
+
+    viewModel.saveWithoutReflection()
+  }
+
+  private func submitReflection() async {
+    guard let viewModel else { return }
+    await viewModel.reflect()
+  }
+
   private func dismissKeyboard() {
-    isNoteFocused = false
+    if isNoteFocused {
+      isNoteFocused = false
+    }
+
     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
   }
 }

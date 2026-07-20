@@ -1,3 +1,4 @@
+import Foundation
 import Observation
 
 @MainActor
@@ -6,6 +7,7 @@ final class NotificationRouteStore {
   static let shared = NotificationRouteStore()
 
   var pendingDestination: AppDestination?
+  var pendingEntryID: UUID?
 
   private init() {}
 }

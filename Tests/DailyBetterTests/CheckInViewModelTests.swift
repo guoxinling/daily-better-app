@@ -25,6 +25,7 @@ final class CheckInViewModelTests: XCTestCase {
     viewModel.presentedEntry = CheckInEntry(mood: .low)
 
     viewModel.saveWithoutReflection()
+    await Task.yield()
 
     let localCallCount = await localProvider.callCount
     let remoteCallCount = await remoteProvider.callCount
@@ -35,7 +36,7 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertNil(viewModel.selectedMood)
     XCTAssertEqual(viewModel.noteText, "")
     XCTAssertNil(viewModel.failure)
-    XCTAssertNil(viewModel.presentedEntry)
+    XCTAssertTrue(viewModel.presentedEntry === repository.entries.first)
     XCTAssertEqual(localCallCount, 0)
     XCTAssertEqual(remoteCallCount, 0)
   }
@@ -87,7 +88,10 @@ final class CheckInViewModelTests: XCTestCase {
     let repository = InMemoryCheckInRepository()
     let result = ReflectionResult.stub(source: .ai)
     let remoteProvider = ReflectionProviderSpy(result: .success(result))
-    let viewModel = CheckInViewModel(repository: repository, remoteProvider: remoteProvider)
+    let viewModel = CheckInViewModel(
+      repository: repository,
+      remoteProvider: remoteProvider
+    )
     viewModel.selectedMood = .low
     viewModel.noteText = " \n A difficult afternoon. \t"
 

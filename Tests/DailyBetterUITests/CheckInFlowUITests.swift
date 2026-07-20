@@ -1,25 +1,14 @@
 import XCTest
 
 final class CheckInFlowUITests: XCTestCase {
-  func testAccessibilityXXXLCompactTabsDoNotInterceptReflect() {
-    let app = makeApp(contentSizeCategory: "UICTContentSizeCategoryAccessibilityXXXL")
-    app.launch()
-
-    let checkInTab = app.buttons["tab.checkIn"]
-    let timelineTab = app.buttons["tab.timeline"]
-    XCTAssertTrue(checkInTab.waitForExistence(timeout: 5))
-    XCTAssertTrue(timelineTab.exists)
-    XCTAssertEqual(checkInTab.label, "Check In")
-    XCTAssertEqual(timelineTab.label, "Timeline")
-    XCTAssertTrue(checkInTab.isSelected)
-    XCTAssertFalse(timelineTab.isSelected)
+  func testAccessibilityXXXLComposerReflectActionRemainsHittable() {
+    let app = launchComposer(contentSizeCategory: "UICTContentSizeCategoryAccessibilityXXXL")
 
     let overwhelmedMood = app.buttons["mood.overwhelmed"]
     overwhelmedMood.tap()
 
     let reflectButton = app.buttons["checkIn.reflect"]
     XCTAssertTrue(reflectButton.isHittable)
-    XCTAssertLessThanOrEqual(reflectButton.frame.maxY, checkInTab.frame.minY)
     reflectButton.tap()
 
     XCTAssertTrue(app.buttons["timeline.detail.back"].waitForExistence(timeout: 5))
@@ -27,8 +16,7 @@ final class CheckInFlowUITests: XCTestCase {
   }
 
   func testMoodOnlyCheckInRoutesIntoTimelineDetail() {
-    let app = makeApp()
-    app.launch()
+    let app = launchComposer()
 
     let overwhelmedMood = app.buttons["mood.overwhelmed"]
     XCTAssertTrue(overwhelmedMood.waitForExistence(timeout: 5))
@@ -42,8 +30,7 @@ final class CheckInFlowUITests: XCTestCase {
   }
 
   func testWrittenCheckInReflectsAndOpensSavedReflection() {
-    let app = makeApp(additionalArguments: ["-stub-remote-reflection-success"])
-    app.launch()
+    let app = launchComposer(additionalArguments: ["-stub-remote-reflection-success"])
 
     let anxiousMood = app.buttons["mood.anxious"]
     XCTAssertTrue(anxiousMood.waitForExistence(timeout: 5))
@@ -64,8 +51,7 @@ final class CheckInFlowUITests: XCTestCase {
   }
 
   func testSaveWithoutReflectionRoutesIntoTimelineDetail() {
-    let app = makeApp()
-    app.launch()
+    let app = launchComposer()
 
     let brightMood = app.buttons["mood.bright"]
     XCTAssertTrue(brightMood.waitForExistence(timeout: 5))
@@ -76,7 +62,7 @@ final class CheckInFlowUITests: XCTestCase {
     noteField.tap()
     noteField.typeText("Today felt quieter than usual.")
 
-    app.buttons["checkIn.saveOnly"].tap()
+    app.buttons["checkIn.save"].tap()
 
     XCTAssertTrue(app.buttons["timeline.detail.back"].waitForExistence(timeout: 5))
     XCTAssertTrue(app.navigationBars["Reflection"].waitForExistence(timeout: 2))
@@ -85,14 +71,50 @@ final class CheckInFlowUITests: XCTestCase {
   }
 
   func testTextEntryDoesNotShowCustomDoneButton() {
-    let app = makeApp()
-    app.launch()
+    let app = launchComposer()
 
     let noteField = app.textViews["checkIn.note"]
     XCTAssertTrue(noteField.waitForExistence(timeout: 2))
     noteField.tap()
 
     XCTAssertFalse(app.buttons["checkIn.dismissKeyboard"].exists)
+  }
+
+  func testLongTextKeepsFixedActionsVisibleAboveKeyboard() {
+    let app = launchComposer()
+    app.buttons["mood.calm"].tap()
+    app.textViews["checkIn.note"].tap()
+    app.textViews["checkIn.note"].typeText(String(repeating: "A long thought. ", count: 80))
+
+    XCTAssertTrue(app.buttons["checkIn.save"].isHittable)
+    XCTAssertTrue(app.buttons["checkIn.reflect"].isHittable)
+    XCTAssertGreaterThan(app.buttons["checkIn.save"].frame.minY, app.keyboards.firstMatch.frame.minY - 120)
+    XCTAssertFalse(app.buttons["checkIn.dismissKeyboard"].exists)
+  }
+
+  func testClosingChangedDraftRequiresDiscardConfirmation() {
+    let app = launchComposer()
+    app.buttons["mood.bright"].tap()
+    app.buttons["checkIn.close"].tap()
+
+    XCTAssertTrue(app.buttons["Discard entry"].waitForExistence(timeout: 2))
+  }
+
+  private func launchComposer(
+    contentSizeCategory: String? = nil,
+    additionalArguments: [String] = []
+  ) -> XCUIApplication {
+    let app = makeApp(
+      contentSizeCategory: contentSizeCategory,
+      additionalArguments: additionalArguments
+    )
+    app.launch()
+
+    let composeButton = app.buttons["timeline.checkIn"]
+    XCTAssertTrue(composeButton.waitForExistence(timeout: 5))
+    composeButton.tap()
+    XCTAssertTrue(app.textViews["checkIn.note"].waitForExistence(timeout: 5))
+    return app
   }
 
   private func makeApp(

@@ -25,12 +25,15 @@ struct RootTabView: View {
   @Environment(\.modelContext) private var modelContext
   @State private var notificationRouteStore = NotificationRouteStore.shared
   @State private var presentation: RootPresentation?
-  @State private var timelineRefreshID = 0
+  @State private var timelineRefreshRequest = TimelineRefreshRequest(
+    sequence: 0,
+    targetDate: .now
+  )
 
   var body: some View {
     NavigationStack {
       TimelineView(
-        refreshToken: timelineRefreshID,
+        refreshRequest: timelineRefreshRequest,
         onCheckIn: presentNewEntry,
         onSelectEntry: { entry in
           presentation = .detail(entry)
@@ -44,7 +47,9 @@ struct RootTabView: View {
           CheckInView(
             mode: mode,
             onCancel: dismissPresentation,
-            onEntryCommitted: showDetailAfterComposer
+            onEntryCommitted: { entry in
+              showDetailAfterComposer(entry, mode: mode)
+            }
           )
         }
       case .detail(let entry):
@@ -91,10 +96,11 @@ struct RootTabView: View {
   }
 
   private func delete(_ entry: CheckInEntry) {
+    let entryDate = entry.createdAt
     do {
       try SwiftDataCheckInRepository(context: modelContext).delete(entry)
       presentation = nil
-      timelineRefreshID += 1
+      refreshTimeline(selecting: entryDate)
     } catch {
       return
     }
@@ -106,12 +112,24 @@ struct RootTabView: View {
   }
 
   @MainActor
-  private func showDetailAfterComposer(_ entry: CheckInEntry) {
-    timelineRefreshID += 1
+  private func showDetailAfterComposer(_ entry: CheckInEntry, mode: EntryComposerMode) {
+    switch mode {
+    case .create:
+      refreshTimeline(selecting: .now)
+    case .edit:
+      refreshTimeline(selecting: entry.createdAt)
+    }
     presentation = nil
     Task { @MainActor in
       await Task.yield()
       presentation = .detail(entry)
     }
+  }
+
+  private func refreshTimeline(selecting targetDate: Date) {
+    timelineRefreshRequest = TimelineRefreshRequest(
+      sequence: timelineRefreshRequest.sequence + 1,
+      targetDate: targetDate
+    )
   }
 }

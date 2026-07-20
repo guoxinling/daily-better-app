@@ -1,10 +1,15 @@
 import SwiftData
 import SwiftUI
 
+struct TimelineRefreshRequest: Equatable {
+  let sequence: Int
+  let targetDate: Date
+}
+
 struct TimelineView: View {
   @Environment(\.modelContext) private var modelContext
 
-  let refreshToken: Int
+  let refreshRequest: TimelineRefreshRequest
   let onCheckIn: () -> Void
   let onSelectEntry: (CheckInEntry) -> Void
 
@@ -28,6 +33,7 @@ struct TimelineView: View {
         Text(selectedDate.formatted(.dateTime.weekday(.wide).month(.wide).day()))
           .font(.system(size: 22, weight: .bold, design: .rounded))
           .foregroundStyle(DailyBetterStyle.ink)
+          .accessibilityIdentifier("timeline.selectedDate")
 
         LazyVStack(alignment: .leading, spacing: 28) {
           ForEach(selectedEntries) { entry in
@@ -47,10 +53,11 @@ struct TimelineView: View {
     .toolbarBackground(.hidden, for: .navigationBar)
     .dailyBetterBackground()
     .task {
+      prepareHistoricalUITestEntryIfNeeded()
       reloadEntries()
     }
-    .onChange(of: refreshToken) { _, _ in
-      selectedDate = Calendar.current.startOfDay(for: .now)
+    .onChange(of: refreshRequest) { _, request in
+      selectedDate = Calendar.current.startOfDay(for: request.targetDate)
       reloadEntries()
     }
     .safeAreaInset(edge: .bottom) {
@@ -192,5 +199,23 @@ struct TimelineView: View {
       sortBy: [SortDescriptor(\CheckInEntry.createdAt, order: .reverse)]
     )
     entries = (try? modelContext.fetch(descriptor)) ?? []
+  }
+
+  private func prepareHistoricalUITestEntryIfNeeded() {
+#if DEBUG
+    guard ProcessInfo.processInfo.arguments.contains("-date-seeded-entry-last-week") else {
+      return
+    }
+
+    let descriptor = FetchDescriptor<CheckInEntry>()
+    guard let entry = try? modelContext.fetch(descriptor).first,
+          let historicalDate = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: entry.createdAt)
+    else {
+      return
+    }
+
+    entry.createdAt = historicalDate
+    try? modelContext.save()
+#endif
   }
 }

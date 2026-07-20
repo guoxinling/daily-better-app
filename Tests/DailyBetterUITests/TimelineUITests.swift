@@ -135,6 +135,49 @@ final class TimelineUITests: XCTestCase {
     XCTAssertTrue(app.staticTexts["Back on today's page."].waitForExistence(timeout: 3))
   }
 
+  func testEditingHistoricalEntryKeepsItsDaySelectedAfterSaving() {
+    let app = launchHistoricalEntryApp()
+    navigateToHistoricalEntry(in: app)
+
+    app.descendants(matching: .any)["timeline.entry.row"].firstMatch.tap()
+    app.buttons["entry.menu"].tap()
+    app.buttons["Edit entry"].tap()
+
+    let note = app.textViews["checkIn.note"]
+    XCTAssertTrue(note.waitForExistence(timeout: 3))
+    note.tap()
+    note.typeText(" Historical edit")
+    app.buttons["checkIn.save"].tap()
+
+    XCTAssertTrue(app.buttons["entry.back"].waitForExistence(timeout: 3))
+    app.buttons["entry.back"].tap()
+
+    let selectedDate = app.staticTexts["timeline.selectedDate"]
+    XCTAssertTrue(selectedDate.waitForExistence(timeout: 3))
+    XCTAssertEqual(selectedDate.label, historicalDateTitle)
+    let editedNote = app.staticTexts.matching(
+      NSPredicate(format: "label CONTAINS %@", "Historical edit")
+    ).firstMatch
+    XCTAssertTrue(editedNote.exists)
+  }
+
+  func testDeletingHistoricalEntryKeepsItsDaySelected() {
+    let app = launchHistoricalEntryApp()
+    navigateToHistoricalEntry(in: app)
+
+    app.descendants(matching: .any)["timeline.entry.row"].firstMatch.tap()
+    app.buttons["entry.menu"].tap()
+    app.buttons["Delete entry"].tap()
+    XCTAssertTrue(app.buttons["Delete entry"].waitForExistence(timeout: 2))
+    app.buttons["Delete entry"].tap()
+
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 3))
+    let selectedDate = app.staticTexts["timeline.selectedDate"]
+    XCTAssertTrue(selectedDate.waitForExistence(timeout: 3))
+    XCTAssertEqual(selectedDate.label, historicalDateTitle)
+    XCTAssertFalse(app.descendants(matching: .any)["timeline.entry.row"].exists)
+  }
+
   private func launchSeededApp() -> XCUIApplication {
     let app = XCUIApplication()
     app.launchArguments = ["-ui-testing", "-reset-store", "-seed-check-ins"]
@@ -147,5 +190,34 @@ final class TimelineUITests: XCTestCase {
     app.launchArguments = ["-ui-testing", "-reset-store", "-seed-long-reflection-entry"]
     app.launch()
     return app
+  }
+
+  private func launchHistoricalEntryApp() -> XCUIApplication {
+    let app = XCUIApplication()
+    app.launchArguments = [
+      "-ui-testing",
+      "-reset-store",
+      "-seed-long-reflection-entry",
+      "-date-seeded-entry-last-week"
+    ]
+    app.launch()
+    return app
+  }
+
+  private func navigateToHistoricalEntry(in app: XCUIApplication) {
+    let previousWeek = app.buttons["timeline.previousWeek"]
+    XCTAssertTrue(previousWeek.waitForExistence(timeout: 3))
+    previousWeek.tap()
+    XCTAssertTrue(app.descendants(matching: .any)["timeline.entry.row"].firstMatch.waitForExistence(timeout: 3))
+  }
+
+  private var historicalDateTitle: String {
+    let historicalDate = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: .now) ?? .now
+    let style = Date.FormatStyle.dateTime
+      .weekday(.wide)
+      .month(.wide)
+      .day()
+      .locale(Locale(identifier: "en_US"))
+    return historicalDate.formatted(style)
   }
 }

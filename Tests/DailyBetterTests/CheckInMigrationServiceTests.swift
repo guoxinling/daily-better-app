@@ -26,7 +26,7 @@ final class CheckInMigrationServiceTests: XCTestCase {
     let legacyMoodEntries = try context.fetch(FetchDescriptor<MoodEntry>())
 
     XCTAssertEqual(checkIns.count, 1)
-    XCTAssertEqual(checkIns.first?.mood, .overwhelmed)
+    XCTAssertEqual(checkIns.first?.mood, .anxious)
     XCTAssertEqual(checkIns.first?.legacyMoodEntryID, legacy.id)
     XCTAssertEqual(storedPreferences.migrationVersion, 2)
     XCTAssertEqual(legacyMoodEntries.count, 1)

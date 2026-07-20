@@ -5,6 +5,7 @@ import {
   ProviderUnavailableError,
   requestReflectionFromDeepSeek
 } from "../lib/deepseek.js";
+import { getConfig } from "../lib/config.js";
 import { recordMetric } from "../lib/metrics.js";
 import {
   enforceRateLimit,
@@ -110,7 +111,7 @@ export function buildReflectHandler(dependencies: ReflectDependencies = {}) {
         deviceTokenHash: tokenHash,
         appVersion: requestBody.appVersion,
         latencyMs: Math.max(0, now().getTime() - requestTime.getTime()),
-        providerModel: "deepseek-v4-flash",
+        providerModel: getConfig().DEEPSEEK_MODEL,
         success: false,
         errorCode
       });

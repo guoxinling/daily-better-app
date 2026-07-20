@@ -1,4 +1,4 @@
-import { createSecretKey } from "node:crypto";
+import { createSecretKey, randomUUID } from "node:crypto";
 
 import { jwtVerify, SignJWT } from "jose";
 
@@ -30,6 +30,7 @@ export async function issueDeviceToken(now = new Date()): Promise<IssuedDeviceTo
 
   const deviceToken = await new SignJWT({ scope: DEVICE_TOKEN_SCOPE satisfies DeviceTokenPayload["scope"] })
     .setProtectedHeader({ alg: "HS256" })
+    .setJti(randomUUID())
     .setIssuedAt(now)
     .setExpirationTime(expiresAtDate)
     .sign(secretKey());

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, test } from "vitest";
 
 import { buildReflectHandler } from "../api/reflect.js";
+import { resetConfigForTests } from "../lib/config.js";
 import { listMetricsForTests, resetMetricsForTests } from "../lib/metrics.js";
 import { resetRateLimitsForTests } from "../lib/rate-limit.js";
 import { reflectRequestSchema } from "../lib/schema.js";
@@ -33,6 +34,8 @@ function makeResponseRecorder() {
 beforeEach(() => {
   process.env.DEVICE_TOKEN_SECRET = TEST_SECRET;
   process.env.DEEPSEEK_API_KEY = "test-deepseek-api-key";
+  delete process.env.DEEPSEEK_MODEL;
+  resetConfigForTests();
   resetMetricsForTests();
   resetRateLimitsForTests();
 });
@@ -40,6 +43,8 @@ beforeEach(() => {
 afterEach(() => {
   delete process.env.DEVICE_TOKEN_SECRET;
   delete process.env.DEEPSEEK_API_KEY;
+  delete process.env.DEEPSEEK_MODEL;
+  resetConfigForTests();
   resetMetricsForTests();
   resetRateLimitsForTests();
 });
@@ -256,4 +261,35 @@ test("reflect rejects malformed model payload with 502", async () => {
   expect(state.body).toEqual({ error: "provider_unavailable" });
   expect(listMetricsForTests()).toHaveLength(1);
   expect(listMetricsForTests()[0]?.success).toBe(false);
+});
+
+test("reflect failure metric uses the configured DeepSeek model", async () => {
+  process.env.DEEPSEEK_MODEL = "deepseek-custom-model";
+  resetConfigForTests();
+  const validToken = (await issueDeviceToken(new Date("2026-07-06T00:00:00Z"))).deviceToken;
+  const { response } = makeResponseRecorder();
+  const handler = buildReflectHandler({
+    now: () => new Date("2026-07-06T00:00:00Z"),
+    requestReflection: async () => {
+      throw new Error("provider failed");
+    }
+  });
+
+  await handler(
+    {
+      method: "POST",
+      headers: { "x-forwarded-for": "203.0.113.31" },
+      body: {
+        deviceToken: validToken,
+        requestId: "11111111-1111-4111-8111-111111111105",
+        mood: "low",
+        noteText: "Today has felt heavy.",
+        locale: "en_US",
+        appVersion: "1.2.0"
+      }
+    },
+    response
+  );
+
+  expect(listMetricsForTests()[0]?.providerModel).toBe("deepseek-custom-model");
 });

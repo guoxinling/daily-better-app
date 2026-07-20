@@ -49,6 +49,20 @@ test("issueDeviceToken returns opaque token with expiry", async () => {
   expect(token.expiresAt).toBe("2026-08-05T00:00:00.000Z");
 });
 
+test("issueDeviceToken creates unique tokens issued at the same time", async () => {
+  const now = new Date("2026-07-06T00:00:00Z");
+
+  const first = await issueDeviceToken(now);
+  const second = await issueDeviceToken(now);
+  const firstPayload = await verifyDeviceToken(first.deviceToken);
+  const secondPayload = await verifyDeviceToken(second.deviceToken);
+
+  expect(first.deviceToken).not.toBe(second.deviceToken);
+  expect(firstPayload.jti).toBeDefined();
+  expect(secondPayload.jti).toBeDefined();
+  expect(firstPayload.jti).not.toBe(secondPayload.jti);
+});
+
 test("issueDeviceToken fails fast when DEVICE_TOKEN_SECRET is missing", async () => {
   delete process.env.DEVICE_TOKEN_SECRET;
   resetConfigForTests();

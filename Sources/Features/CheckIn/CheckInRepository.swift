@@ -56,9 +56,13 @@ final class SwiftDataCheckInRepository: CheckInRepository {
 
   func delete(_ entry: CheckInEntry) throws {
     let storedEntry = try resolve(entry)
+    let legacyEntry = try resolveLegacyMoodEntry(id: storedEntry.legacyMoodEntryID)
 
     do {
       context.delete(storedEntry)
+      if let legacyEntry {
+        context.delete(legacyEntry)
+      }
       try context.save()
     } catch {
       context.rollback()
@@ -85,6 +89,7 @@ final class SwiftDataCheckInRepository: CheckInRepository {
   func deleteAll() throws {
     do {
       try context.delete(model: CheckInEntry.self)
+      try context.delete(model: MoodEntry.self)
       try context.save()
     } catch {
       context.rollback()
@@ -101,6 +106,14 @@ final class SwiftDataCheckInRepository: CheckInRepository {
       throw CheckInRepositoryError.entryNotFound
     }
     return storedEntry
+  }
+
+  private func resolveLegacyMoodEntry(id: UUID?) throws -> MoodEntry? {
+    guard let id else { return nil }
+    let descriptor = FetchDescriptor<MoodEntry>(
+      predicate: #Predicate { $0.id == id }
+    )
+    return try context.fetch(descriptor).first
   }
 
   private func apply(

@@ -7,10 +7,12 @@ final class CheckInMigrationServiceTests: XCTestCase {
   func testRunIfNeededMigratesLegacyMoodEntriesWithoutDeletingThem() throws {
     let container = try makeInMemoryContainer()
     let context = ModelContext(container)
+    let recordedAt = Date(timeIntervalSince1970: 1_735_735_923)
     let legacy = MoodEntry(
       id: UUID(),
       date: Date(timeIntervalSince1970: 1_735_689_600),
-      mood: .stressed
+      mood: .stressed,
+      createdAt: recordedAt
     )
     let preferences = AppPreferences(migrationVersion: 0)
 
@@ -28,6 +30,7 @@ final class CheckInMigrationServiceTests: XCTestCase {
     XCTAssertEqual(checkIns.count, 1)
     XCTAssertEqual(checkIns.first?.mood, .anxious)
     XCTAssertEqual(checkIns.first?.legacyMoodEntryID, legacy.id)
+    XCTAssertEqual(checkIns.first?.createdAt, recordedAt)
     XCTAssertEqual(storedPreferences.migrationVersion, 2)
     XCTAssertEqual(legacyMoodEntries.count, 1)
     XCTAssertEqual(legacyMoodEntries.first?.id, legacy.id)
@@ -141,6 +144,46 @@ final class CheckInMigrationServiceTests: XCTestCase {
     XCTAssertEqual(storedPreferences.count, 1)
     XCTAssertEqual(storedPreferences.first?.migrationVersion, 2)
     XCTAssertEqual(storedCheckIns.count, 1)
+  }
+
+  func testBootstrapPropagatesPersistentStoreSaveFailure() throws {
+    let schema = Schema([
+      Affirmation.self,
+      MoodEntry.self,
+      CheckInEntry.self,
+      AppPreferences.self,
+    ])
+    let storeDirectory = FileManager.default.temporaryDirectory
+      .appending(path: UUID().uuidString, directoryHint: .isDirectory)
+    let storeURL = storeDirectory.appending(path: "ReadOnlyBootstrap.store")
+    try FileManager.default.createDirectory(at: storeDirectory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: storeDirectory) }
+
+    try autoreleasepool {
+      let writableConfiguration = ModelConfiguration(schema: schema, url: storeURL)
+      let writableContainer = try ModelContainer(
+        for: schema,
+        configurations: [writableConfiguration]
+      )
+      let writableContext = ModelContext(writableContainer)
+      writableContext.insert(AppPreferences())
+      try writableContext.save()
+    }
+
+    try autoreleasepool {
+      let readOnlyConfiguration = ModelConfiguration(
+        schema: schema,
+        url: storeURL,
+        allowsSave: false
+      )
+      let readOnlyContainer = try ModelContainer(
+        for: schema,
+        configurations: [readOnlyConfiguration]
+      )
+      let readOnlyContext = ModelContext(readOnlyContainer)
+
+      XCTAssertThrowsError(try AppBootstrapper.bootstrapIfNeeded(in: readOnlyContext))
+    }
   }
 
   func testRunIfNeededRewritesAllVersionOneMoodKeysOnlyOnce() throws {

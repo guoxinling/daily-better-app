@@ -28,7 +28,7 @@ enum CheckInMigrationService {
     for legacy in legacyEntries where !migratedLegacyIDs.contains(legacy.id) {
       context.insert(
         CheckInEntry(
-          createdAt: legacy.date,
+          createdAt: legacy.createdAt,
           mood: mapLegacyMood(legacy.moodKind),
           reflectionSource: .none,
           legacyMoodEntryID: legacy.id

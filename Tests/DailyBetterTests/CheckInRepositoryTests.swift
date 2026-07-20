@@ -41,6 +41,41 @@ final class CheckInRepositoryTests: XCTestCase {
     XCTAssertEqual(try storedEntryState(id: entryIDs.second, in: storeURL, schema: schema)?.mood, .bright)
   }
 
+  func testDeleteRemovesLinkedLegacyMoodEntry() throws {
+    let (storeURL, schema) = try makeStore()
+    defer { try? eraseStore(at: storeURL, schema: schema) }
+    let entryID = try seedLinkedLegacyEntry(in: storeURL, schema: schema)
+
+    try autoreleasepool {
+      let callerContext = try makeContext(in: storeURL, schema: schema)
+      let entry = try XCTUnwrap(
+        callerContext.fetch(
+          FetchDescriptor<CheckInEntry>(predicate: #Predicate { $0.id == entryID })
+        ).first
+      )
+      try SwiftDataCheckInRepository(context: callerContext).delete(entry)
+    }
+
+    let counts = try storedEntryCounts(in: storeURL, schema: schema)
+    XCTAssertEqual(counts.checkIns, 0)
+    XCTAssertEqual(counts.legacyMoods, 0)
+  }
+
+  func testDeleteAllRemovesLegacyMoodHistory() throws {
+    let (storeURL, schema) = try makeStore()
+    defer { try? eraseStore(at: storeURL, schema: schema) }
+    _ = try seedLinkedLegacyEntry(in: storeURL, schema: schema)
+
+    try autoreleasepool {
+      let callerContext = try makeContext(in: storeURL, schema: schema)
+      try SwiftDataCheckInRepository(context: callerContext).deleteAll()
+    }
+
+    let counts = try storedEntryCounts(in: storeURL, schema: schema)
+    XCTAssertEqual(counts.checkIns, 0)
+    XCTAssertEqual(counts.legacyMoods, 0)
+  }
+
   func testSetHelpfulnessPersistsAcrossContextsAndUpdatesCallerEntry() throws {
     let (storeURL, schema) = try makeStore()
     defer { try? eraseStore(at: storeURL, schema: schema) }
@@ -168,6 +203,21 @@ final class CheckInRepositoryTests: XCTestCase {
     }
   }
 
+  private func seedLinkedLegacyEntry(in storeURL: URL, schema: Schema) throws -> UUID {
+    try autoreleasepool {
+      let context = try makeContext(in: storeURL, schema: schema)
+      let legacy = MoodEntry(date: .now, mood: .steady)
+      let entry = CheckInEntry(
+        mood: .calm,
+        legacyMoodEntryID: legacy.id
+      )
+      context.insert(legacy)
+      context.insert(entry)
+      try context.save()
+      return entry.id
+    }
+  }
+
   private func failedSaveState(
     in storeURL: URL,
     schema: Schema
@@ -277,6 +327,19 @@ final class CheckInRepositoryTests: XCTestCase {
     try autoreleasepool {
       let context = try makeContext(in: storeURL, schema: schema)
       return try XCTUnwrap(context.fetch(FetchDescriptor<AppPreferences>()).first).migrationVersion
+    }
+  }
+
+  private func storedEntryCounts(
+    in storeURL: URL,
+    schema: Schema
+  ) throws -> (checkIns: Int, legacyMoods: Int) {
+    try autoreleasepool {
+      let context = try makeContext(in: storeURL, schema: schema)
+      return (
+        try context.fetchCount(FetchDescriptor<CheckInEntry>()),
+        try context.fetchCount(FetchDescriptor<MoodEntry>())
+      )
     }
   }
 

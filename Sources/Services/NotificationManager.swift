@@ -14,6 +14,11 @@ struct ReminderConfiguration: Equatable {
 
 enum NotificationManager {
   static let reminderIdentifier = "dailybetter.check-in-reminder"
+  private static let legacyReminderIdentifier = "dailybetter.reminder"
+  private static let managedReminderIdentifiers = [
+    reminderIdentifier,
+    legacyReminderIdentifier,
+  ]
 
   static func requestAuthorization() async -> Bool {
     (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])) ?? false
@@ -41,10 +46,12 @@ enum NotificationManager {
   }
 
   static func remove() {
-    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [reminderIdentifier])
+    UNUserNotificationCenter.current().removePendingNotificationRequests(
+      withIdentifiers: managedReminderIdentifiers
+    )
   }
 
   static func destination(for identifier: String) -> AppDestination? {
-    identifier == reminderIdentifier ? .newEntry : nil
+    managedReminderIdentifiers.contains(identifier) ? .newEntry : nil
   }
 }

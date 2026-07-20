@@ -13,6 +13,7 @@ final class ReminderConfigurationTests: XCTestCase {
 
   func testReminderTapRoutesToNewEntry() {
     XCTAssertEqual(NotificationManager.destination(for: NotificationManager.reminderIdentifier), .newEntry)
+    XCTAssertEqual(NotificationManager.destination(for: "dailybetter.reminder"), .newEntry)
     XCTAssertNil(NotificationManager.destination(for: "unrelated.notification"))
   }
 }

@@ -5,17 +5,25 @@ import SwiftUI
 struct DailyBetterApp: App {
   @UIApplicationDelegateAdaptor(AppNotificationCoordinator.self) private var notificationCoordinator
   private let sharedModelContainer: ModelContainer
+  private let bootstrapErrorMessage: String?
 
   init() {
     do {
-      sharedModelContainer = try ModelContainer(
+      let container = try ModelContainer(
         for: Affirmation.self,
         MoodEntry.self,
         CheckInEntry.self,
         AppPreferences.self
       )
-      let bootstrapContext = ModelContext(sharedModelContainer)
-      AppBootstrapper.bootstrapIfNeeded(in: bootstrapContext)
+      sharedModelContainer = container
+
+      do {
+        let bootstrapContext = ModelContext(container)
+        try AppBootstrapper.bootstrapIfNeeded(in: bootstrapContext)
+        bootstrapErrorMessage = nil
+      } catch {
+        bootstrapErrorMessage = error.localizedDescription
+      }
     } catch {
       fatalError("Failed to create model container: \(error)")
     }
@@ -23,9 +31,52 @@ struct DailyBetterApp: App {
 
   var body: some Scene {
     WindowGroup {
-      RootTabView()
+      BootstrapGate(initialErrorMessage: bootstrapErrorMessage)
     }
     .modelContainer(sharedModelContainer)
+  }
+}
+
+private struct BootstrapGate: View {
+  @Environment(\.modelContext) private var modelContext
+  @State private var errorMessage: String?
+
+  init(initialErrorMessage: String?) {
+    _errorMessage = State(initialValue: initialErrorMessage)
+  }
+
+  var body: some View {
+    if errorMessage == nil {
+      RootTabView()
+    } else {
+      VStack(spacing: 16) {
+        Image(systemName: "exclamationmark.arrow.trianglehead.2.clockwise.rotate.90")
+          .font(.system(size: 34, weight: .semibold))
+          .foregroundStyle(DailyBetterStyle.tint)
+
+        Text("Couldn't open your journal")
+          .font(.system(size: 24, weight: .bold, design: .rounded))
+
+        Text("Your existing entries have not been changed. Try opening them again.")
+          .multilineTextAlignment(.center)
+          .foregroundStyle(DailyBetterStyle.muted)
+
+        Button("Try again", action: retryBootstrap)
+          .buttonStyle(.borderedProminent)
+      }
+      .padding(32)
+      .dailyBetterBackground()
+      .accessibilityIdentifier("bootstrap.failure")
+    }
+  }
+
+  private func retryBootstrap() {
+    do {
+      try AppBootstrapper.bootstrapIfNeeded(in: modelContext)
+      errorMessage = nil
+    } catch {
+      errorMessage = error.localizedDescription
+    }
   }
 }
 

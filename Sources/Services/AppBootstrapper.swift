@@ -3,7 +3,7 @@ import SwiftData
 
 enum AppBootstrapper {
   @MainActor
-  static func bootstrapIfNeeded(in context: ModelContext) {
+  static func bootstrapIfNeeded(in context: ModelContext) throws {
     let arguments = Set(ProcessInfo.processInfo.arguments)
     let isUITesting = arguments.contains("-ui-testing")
     let shouldResetStore = isUITesting && arguments.contains("-reset-store")
@@ -11,43 +11,46 @@ enum AppBootstrapper {
     let shouldSeedLongReflectionEntry = isUITesting && arguments.contains("-seed-long-reflection-entry")
 
     if shouldResetStore {
-      deleteAll(CheckInEntry.self, in: context)
-      deleteAll(MoodEntry.self, in: context)
-      deleteAll(AppPreferences.self, in: context)
-      try? context.save()
+      try deleteAll(CheckInEntry.self, in: context)
+      try deleteAll(MoodEntry.self, in: context)
+      try deleteAll(AppPreferences.self, in: context)
+      try context.save()
     }
 
-    if (try? context.fetch(FetchDescriptor<AppPreferences>()).isEmpty) != false {
+    if try context.fetch(FetchDescriptor<AppPreferences>()).isEmpty {
       context.insert(AppPreferences())
     }
 
-    try? context.save()
-    try? CheckInMigrationService.runIfNeeded(in: context)
+    try context.save()
+    try CheckInMigrationService.runIfNeeded(in: context)
 
     if AppLaunchOptions.screenshotMode {
-      prepareScreenshotData(in: context)
+      try prepareScreenshotData(in: context)
     }
 
     if shouldSeedLongReflectionEntry {
-      seedLongReflectionEntry(in: context)
+      try seedLongReflectionEntry(in: context)
     } else if shouldSeedCheckIns {
-      seedCheckInIfNeeded(in: context)
+      try seedCheckInIfNeeded(in: context)
     }
 
-    try? context.save()
+    try context.save()
   }
 
   @MainActor
-  private static func deleteAll<T: PersistentModel>(_ modelType: T.Type, in context: ModelContext) {
-    let models = (try? context.fetch(FetchDescriptor<T>())) ?? []
+  private static func deleteAll<T: PersistentModel>(
+    _ modelType: T.Type,
+    in context: ModelContext
+  ) throws {
+    let models = try context.fetch(FetchDescriptor<T>())
     for model in models {
       context.delete(model)
     }
   }
 
   @MainActor
-  private static func seedCheckInIfNeeded(in context: ModelContext) {
-    guard (try? context.fetch(FetchDescriptor<CheckInEntry>()).isEmpty) != false else {
+  private static func seedCheckInIfNeeded(in context: ModelContext) throws {
+    guard try context.fetch(FetchDescriptor<CheckInEntry>()).isEmpty else {
       return
     }
 
@@ -63,8 +66,8 @@ enum AppBootstrapper {
   }
 
   @MainActor
-  private static func seedLongReflectionEntry(in context: ModelContext) {
-    deleteAll(CheckInEntry.self, in: context)
+  private static func seedLongReflectionEntry(in context: ModelContext) throws {
+    try deleteAll(CheckInEntry.self, in: context)
 
     let today = Calendar.current.startOfDay(for: .now)
     let entry = CheckInEntry(
@@ -83,14 +86,14 @@ enum AppBootstrapper {
   }
 
   @MainActor
-  private static func prepareScreenshotData(in context: ModelContext) {
+  private static func prepareScreenshotData(in context: ModelContext) throws {
     let affirmationDescriptor = FetchDescriptor<Affirmation>(sortBy: [SortDescriptor(\.createdAt)])
     let moodDescriptor = FetchDescriptor<MoodEntry>(sortBy: [SortDescriptor(\.date)])
     let preferencesDescriptor = FetchDescriptor<AppPreferences>()
 
-    let affirmations = (try? context.fetch(affirmationDescriptor)) ?? []
-    let moodEntries = (try? context.fetch(moodDescriptor)) ?? []
-    let preferences = (try? context.fetch(preferencesDescriptor)) ?? []
+    let affirmations = try context.fetch(affirmationDescriptor)
+    let moodEntries = try context.fetch(moodDescriptor)
+    let preferences = try context.fetch(preferencesDescriptor)
 
     for (index, affirmation) in affirmations.enumerated() {
       affirmation.isFavorite = index < 5

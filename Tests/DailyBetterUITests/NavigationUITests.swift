@@ -1,44 +1,22 @@
 import XCTest
 
 final class NavigationUITests: XCTestCase {
-  func testScreenshotTimelineLaunchStartsOnTimeline() {
-    let app = XCUIApplication()
-    app.launchArguments = ["-ui-testing", "-reset-store", "-seed-check-ins"]
-    app.launchEnvironment["DAILYBETTER_SCREEN"] = "timeline"
-    app.launch()
+  func testLaunchStartsOnTimelineWithoutTabs() {
+    let app = launchApp()
 
-    let timelineTab = app.buttons["tab.timeline"]
-    let checkInTab = app.buttons["tab.checkIn"]
-
-    XCTAssertTrue(timelineTab.waitForExistence(timeout: 5))
-    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 2))
-    XCTAssertTrue(timelineTab.isSelected)
-    XCTAssertFalse(checkInTab.isSelected)
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons["timeline.checkIn"].exists)
+    XCTAssertFalse(app.buttons["tab.checkIn"].exists)
+    XCTAssertFalse(app.buttons["tab.timeline"].exists)
   }
 
-  func testRootHasOnlyCheckInAndTimelineDestinations() {
+  func testCheckInPresentsFullScreenComposerAndCloseReturnsToTimeline() {
     let app = launchApp()
-    let checkInTab = app.buttons["tab.checkIn"]
-    let timelineTab = app.buttons["tab.timeline"]
+    app.buttons["timeline.checkIn"].tap()
 
-    XCTAssertTrue(checkInTab.waitForExistence(timeout: 5))
-    XCTAssertTrue(timelineTab.exists)
-    XCTAssertFalse(app.tabBars.buttons["Library"].exists)
-    XCTAssertFalse(app.tabBars.buttons["Settings"].exists)
-    XCTAssertTrue(checkInTab.isSelected)
-    XCTAssertFalse(timelineTab.isSelected)
-
-    timelineTab.tap()
+    XCTAssertTrue(app.navigationBars["New Entry"].waitForExistence(timeout: 2))
+    app.buttons["checkIn.close"].tap()
     XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.staticTexts["Timeline"].exists)
-    XCTAssertTrue(timelineTab.isSelected)
-    XCTAssertFalse(checkInTab.isSelected)
-
-    checkInTab.tap()
-    XCTAssertTrue(app.navigationBars["Daily Better"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.staticTexts["Check In"].exists)
-    XCTAssertTrue(checkInTab.isSelected)
-    XCTAssertFalse(timelineTab.isSelected)
   }
 
   private func launchApp() -> XCUIApplication {

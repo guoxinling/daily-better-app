@@ -19,16 +19,25 @@ final class SettingsUITests: XCTestCase {
     XCTAssertFalse(app.staticTexts["Text size"].exists)
   }
 
-  func testSettingsHidesRootTabBar() {
+  func testSettingsNavigationNeverShowsLegacyTabs() {
     let app = XCUIApplication()
     app.launchArguments = ["-ui-testing", "-reset-store"]
     app.launch()
 
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 5))
+    XCTAssertFalse(app.buttons["tab.checkIn"].exists)
+    XCTAssertFalse(app.buttons["tab.timeline"].exists)
+
     let settingsButton = app.buttons["settings.open"].firstMatch
-    XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
+    XCTAssertTrue(settingsButton.exists)
     settingsButton.tap()
 
     XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 2))
+    XCTAssertFalse(app.buttons["tab.checkIn"].exists)
+    XCTAssertFalse(app.buttons["tab.timeline"].exists)
+
+    app.navigationBars["Settings"].buttons["Timeline"].tap()
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 2))
     XCTAssertFalse(app.buttons["tab.checkIn"].exists)
     XCTAssertFalse(app.buttons["tab.timeline"].exists)
   }

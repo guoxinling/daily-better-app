@@ -10,14 +10,20 @@ struct CheckInView: View {
   @ScaledMetric(relativeTo: .title3) private var noteFontSize = 21.0
   @FocusState private var isNoteFocused: Bool
   @State private var viewModel: CheckInViewModel?
+  private let mode: EntryComposerMode
   private let remoteProvider: any ReflectionProviding
+  private let onCancel: () -> Void
   private let onEntryCommitted: (CheckInEntry) -> Void
 
   init(
+    mode: EntryComposerMode = .create(createdAt: .now),
     remoteProvider: any ReflectionProviding = ReflectionProviderFactory.makeRemoteProvider(),
+    onCancel: @escaping () -> Void = {},
     onEntryCommitted: @escaping (CheckInEntry) -> Void = { _ in }
   ) {
+    self.mode = mode
     self.remoteProvider = remoteProvider
+    self.onCancel = onCancel
     self.onEntryCommitted = onEntryCommitted
   }
 
@@ -31,7 +37,7 @@ struct CheckInView: View {
           .frame(maxWidth: .infinity, maxHeight: .infinity)
       }
     }
-    .navigationTitle("Daily Better")
+    .navigationTitle(navigationTitle)
     .navigationBarTitleDisplayMode(.inline)
     .toolbarBackground(.hidden, for: .navigationBar)
     .dailyBetterBackground()
@@ -39,12 +45,22 @@ struct CheckInView: View {
       guard viewModel == nil else { return }
       viewModel = CheckInViewModel(
         repository: SwiftDataCheckInRepository(context: modelContext),
+        mode: mode,
         remoteProvider: remoteProvider,
         onEntryCommitted: { entry in
           dismissKeyboard()
           onEntryCommitted(entry)
         }
       )
+    }
+  }
+
+  private var navigationTitle: String {
+    switch mode {
+    case .create:
+      "New Entry"
+    case .edit:
+      "Edit Entry"
     }
   }
 
@@ -85,6 +101,14 @@ struct CheckInView: View {
       actionBar(viewModel)
     }
     .toolbar {
+      ToolbarItem(placement: .topBarLeading) {
+        Button(action: onCancel) {
+          Image(systemName: "xmark")
+        }
+        .accessibilityLabel("Close")
+        .accessibilityIdentifier("checkIn.close")
+      }
+
       if isNoteFocused {
         ToolbarItemGroup(placement: .keyboard) {
           Button("Save") {

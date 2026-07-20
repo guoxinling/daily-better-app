@@ -11,8 +11,8 @@ final class ReminderConfigurationTests: XCTestCase {
     XCTAssertEqual(configuration.dateComponents.minute, 30)
   }
 
-  func testReminderTapRoutesToCheckIn() {
-    XCTAssertEqual(NotificationManager.destination(for: NotificationManager.reminderIdentifier), .checkIn)
+  func testReminderTapRoutesToNewEntry() {
+    XCTAssertEqual(NotificationManager.destination(for: NotificationManager.reminderIdentifier), .newEntry)
     XCTAssertNil(NotificationManager.destination(for: "unrelated.notification"))
   }
 }

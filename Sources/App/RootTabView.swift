@@ -1,105 +1,95 @@
 import SwiftUI
 
-private struct RootTabBarHiddenPreferenceKey: PreferenceKey {
-  static var defaultValue = false
-
-  static func reduce(value: inout Bool, nextValue: () -> Bool) {
-    value = value || nextValue()
+extension View {
+  func rootTabBarHidden(_ hidden: Bool = true) -> some View {
+    self
   }
 }
 
-extension View {
-  func rootTabBarHidden(_ hidden: Bool = true) -> some View {
-    preference(key: RootTabBarHiddenPreferenceKey.self, value: hidden)
-  }
+private enum RootPresentation: Identifiable {
+  case newEntry(EntryComposerMode)
+  case detail(CheckInEntry)
 
-  func onRootTabBarHiddenChange(_ action: @escaping (Bool) -> Void) -> some View {
-    onPreferenceChange(RootTabBarHiddenPreferenceKey.self, perform: action)
+  var id: String {
+    switch self {
+    case .newEntry:
+      "new-entry"
+    case .detail(let entry):
+      "detail-\(entry.id.uuidString)"
+    }
   }
 }
 
 struct RootTabView: View {
-  @State private var selectedDestination: AppDestination =
-    ProcessInfo.processInfo.environment["DAILYBETTER_SCREEN"] == "timeline" ? .timeline : .checkIn
   @State private var notificationRouteStore = NotificationRouteStore.shared
+  @State private var presentation: RootPresentation?
   @State private var timelineRefreshID = 0
-  @State private var pendingTimelineEntryID: UUID?
-  @State private var isRootTabBarHidden = false
 
   var body: some View {
-    destinationPages
-      .safeAreaInset(edge: .bottom, spacing: 0) {
-        if !isRootTabBarHidden {
-          CompactTabBar(selection: $selectedDestination)
-            .padding(.bottom, 8)
-        }
-      }
-      .dailyBetterBackground()
-      .onChange(of: selectedDestination) { _, newValue in
-        if newValue == .timeline {
-          timelineRefreshID += 1
-        }
-      }
-      .onAppear {
-        consumePendingDestination()
-      }
-      .onChange(of: notificationRouteStore.pendingDestination) { _, _ in
-        consumePendingDestination()
-      }
-  }
-
-  private var destinationPages: some View {
-    ZStack {
-      checkInPage
-      timelinePage
-    }
-    .onRootTabBarHiddenChange { isRootTabBarHidden = $0 }
-    .frame(maxWidth: CGFloat.infinity, maxHeight: CGFloat.infinity)
-  }
-
-  private var checkInPage: some View {
-    let isSelected = selectedDestination == .checkIn
-
-    return NavigationStack {
-      CheckInView { entry in
-        let wasAlreadyTimeline = selectedDestination == .timeline
-        pendingTimelineEntryID = entry.id
-        selectedDestination = .timeline
-
-        if wasAlreadyTimeline {
-          timelineRefreshID += 1
-        }
-      }
-    }
-    .opacity(isSelected ? 1 : 0)
-    .allowsHitTesting(isSelected)
-    .accessibilityHidden(!isSelected)
-  }
-
-  private var timelinePage: some View {
-    let isSelected = selectedDestination == .timeline
-
-    return NavigationStack {
+    NavigationStack {
       TimelineView(
         refreshToken: timelineRefreshID,
-        pendingEntryID: pendingTimelineEntryID,
-        onPendingEntryConsumed: {
-          pendingTimelineEntryID = nil
-        }
+        pendingEntryID: nil,
+        onPendingEntryConsumed: {}
       )
+      .toolbar {
+        ToolbarItem(placement: .topBarTrailing) {
+          Button {
+            presentNewEntry()
+          } label: {
+            Image(systemName: "plus")
+          }
+          .accessibilityLabel("New entry")
+          .accessibilityIdentifier("timeline.checkIn")
+        }
+      }
     }
-    .id(timelineRefreshID)
-    .opacity(isSelected ? 1 : 0)
-    .allowsHitTesting(isSelected)
-    .accessibilityHidden(!isSelected)
+    .fullScreenCover(item: $presentation) { presentation in
+      switch presentation {
+      case .newEntry(let mode):
+        NavigationStack {
+          CheckInView(
+            mode: mode,
+            onCancel: dismissPresentation,
+            onEntryCommitted: showDetailAfterComposer
+          )
+        }
+      case .detail(let entry):
+        NavigationStack {
+          EntryDetailView(entry: entry)
+        }
+      }
+    }
+    .onAppear(perform: consumePendingDestination)
+    .onChange(of: notificationRouteStore.pendingDestination) { _, _ in
+      consumePendingDestination()
+    }
   }
 
   private func consumePendingDestination() {
-    guard let destination = notificationRouteStore.pendingDestination else {
+    guard notificationRouteStore.pendingDestination == .newEntry else {
       return
     }
 
-    selectedDestination = destination
+    presentNewEntry()
     notificationRouteStore.pendingDestination = nil
+  }
+
+  private func presentNewEntry() {
+    presentation = .newEntry(.create(createdAt: .now))
+  }
+
+  private func dismissPresentation() {
+    presentation = nil
+  }
+
+  @MainActor
+  private func showDetailAfterComposer(_ entry: CheckInEntry) {
+    timelineRefreshID += 1
+    presentation = nil
+    Task { @MainActor in
+      await Task.yield()
+      presentation = .detail(entry)
+    }
   }
 }

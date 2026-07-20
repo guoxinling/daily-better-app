@@ -45,6 +45,6 @@ enum NotificationManager {
   }
 
   static func destination(for identifier: String) -> AppDestination? {
-    identifier == reminderIdentifier ? .checkIn : nil
+    identifier == reminderIdentifier ? .newEntry : nil
   }
 }

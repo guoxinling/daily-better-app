@@ -115,10 +115,19 @@ final class TimelineUITests: XCTestCase {
     XCTAssertFalse(app.staticTexts["Everything piled up today."].exists)
 
     app.buttons["timeline.checkIn"].tap()
-    app.buttons["mood.calm"].tap()
-    app.textViews["checkIn.note"].tap()
-    app.textViews["checkIn.note"].typeText("Back on today's page.")
-    app.buttons["checkIn.save"].tap()
+    let calmMood = app.buttons["mood.calm"]
+    XCTAssertTrue(calmMood.waitForExistence(timeout: 5))
+    calmMood.tap()
+    XCTAssertTrue(calmMood.isSelected)
+
+    let note = app.textViews["checkIn.note"]
+    XCTAssertTrue(note.waitForExistence(timeout: 5))
+    note.tap()
+    note.typeText("Back on today's page.")
+
+    let saveButton = app.buttons["checkIn.save"]
+    XCTAssertTrue(saveButton.isEnabled)
+    saveButton.tap()
     let backButton = app.buttons["entry.back"]
     XCTAssertTrue(backButton.waitForExistence(timeout: 3))
     backButton.tap()

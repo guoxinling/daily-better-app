@@ -28,7 +28,7 @@ final class CheckInMigrationServiceTests: XCTestCase {
     XCTAssertEqual(checkIns.count, 1)
     XCTAssertEqual(checkIns.first?.mood, .overwhelmed)
     XCTAssertEqual(checkIns.first?.legacyMoodEntryID, legacy.id)
-    XCTAssertEqual(storedPreferences.migrationVersion, 1)
+    XCTAssertEqual(storedPreferences.migrationVersion, 2)
     XCTAssertEqual(legacyMoodEntries.count, 1)
     XCTAssertEqual(legacyMoodEntries.first?.id, legacy.id)
   }
@@ -37,12 +37,12 @@ final class CheckInMigrationServiceTests: XCTestCase {
     let container = try makeInMemoryContainer()
     let context = ModelContext(container)
     let cases: [(MoodKind, CheckInMood)] = [
-      (.radiant, .good),
-      (.steady, .good),
-      (.neutral, .good),
+      (.radiant, .bright),
+      (.steady, .calm),
+      (.neutral, .okay),
       (.low, .low),
-      (.stressed, .overwhelmed),
-      (.tired, .drained),
+      (.stressed, .anxious),
+      (.tired, .low),
     ]
 
     for (offset, testCase) in cases.enumerated() {
@@ -77,7 +77,7 @@ final class CheckInMigrationServiceTests: XCTestCase {
     let container = try makeInMemoryContainer()
     let context = ModelContext(container)
     let entry = CheckInEntry(
-      mood: .good,
+      mood: .okay,
       reflectionSource: .ai,
       reflectionStatus: .completed,
       helpfulness: .better
@@ -94,7 +94,7 @@ final class CheckInMigrationServiceTests: XCTestCase {
     let refetchContext = ModelContext(container)
     let stored = try XCTUnwrap(refetchContext.fetch(FetchDescriptor<CheckInEntry>()).first)
 
-    XCTAssertEqual(stored.mood, .good)
+    XCTAssertEqual(stored.mood, .okay)
     XCTAssertEqual(stored.reflectionSource, .none)
     XCTAssertEqual(stored.reflectionStatus, .none)
     XCTAssertEqual(stored.helpfulness, .unanswered)
@@ -139,8 +139,35 @@ final class CheckInMigrationServiceTests: XCTestCase {
     let storedCheckIns = try refetchContext.fetch(FetchDescriptor<CheckInEntry>())
 
     XCTAssertEqual(storedPreferences.count, 1)
-    XCTAssertEqual(storedPreferences.first?.migrationVersion, 1)
+    XCTAssertEqual(storedPreferences.first?.migrationVersion, 2)
     XCTAssertEqual(storedCheckIns.count, 1)
+  }
+
+  func testRunIfNeededRewritesAllVersionOneMoodKeysOnlyOnce() throws {
+    let container = try makeInMemoryContainer()
+    let context = ModelContext(container)
+    let moodKeys = ["good", "anxious", "overwhelmed", "low", "frustrated", "drained"]
+    let preferences = AppPreferences(migrationVersion: 1)
+
+    for moodKey in moodKeys {
+      let entry = CheckInEntry(mood: .anxious)
+      entry.moodKey = moodKey
+      context.insert(entry)
+    }
+    context.insert(preferences)
+    try context.save()
+
+    try CheckInMigrationService.runIfNeeded(in: context)
+    try CheckInMigrationService.runIfNeeded(in: context)
+
+    let storedEntries = try context.fetch(FetchDescriptor<CheckInEntry>())
+    let storedPreferences = try XCTUnwrap(context.fetch(FetchDescriptor<AppPreferences>()).first)
+
+    XCTAssertEqual(storedEntries.map(\.moodKey).sorted(), [
+      "anxious", "bright", "low", "low", "overwhelmed", "overwhelmed"
+    ])
+    XCTAssertEqual(storedPreferences.migrationVersion, 2)
+    XCTAssertEqual(storedEntries.count, 6)
   }
 
   private func makeInMemoryContainer() throws -> ModelContainer {

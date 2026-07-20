@@ -42,7 +42,7 @@ final class CheckInEntry {
   }
 
   var mood: CheckInMood {
-    CheckInMood(rawValue: moodKey) ?? .good
+    CheckInMood(storedKey: moodKey)
   }
 
   var reflectionSource: ReflectionSource {

@@ -2,7 +2,16 @@ import Foundation
 import SwiftData
 
 enum CheckInMigrationService {
-  static let currentVersion = 1
+  static let currentVersion = 2
+
+  private static let version2MoodMap = [
+    "good": "bright",
+    "anxious": "anxious",
+    "overwhelmed": "overwhelmed",
+    "low": "low",
+    "frustrated": "overwhelmed",
+    "drained": "low",
+  ]
 
   @MainActor
   static func runIfNeeded(in context: ModelContext) throws {
@@ -27,6 +36,12 @@ enum CheckInMigrationService {
       )
     }
 
+    for entry in existingCheckIns {
+      if let migrated = version2MoodMap[entry.moodKey] {
+        entry.moodKey = migrated
+      }
+    }
+
     preferences.migrationVersion = currentVersion
     try context.save()
   }
@@ -47,14 +62,18 @@ enum CheckInMigrationService {
 
   private static func mapLegacyMood(_ mood: MoodKind) -> CheckInMood {
     switch mood {
-    case .radiant, .steady, .neutral:
-      .good
+    case .radiant:
+      .bright
+    case .steady:
+      .calm
+    case .neutral:
+      .okay
     case .low:
       .low
     case .stressed:
-      .overwhelmed
+      .anxious
     case .tired:
-      .drained
+      .low
     }
   }
 }

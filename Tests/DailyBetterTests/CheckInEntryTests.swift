@@ -2,36 +2,32 @@ import XCTest
 @testable import DailyBetter
 
 final class CheckInEntryTests: XCTestCase {
-  func testAllMoodsHaveStableLabelsAndEmoji() {
-    let moods = CheckInMood.allCases
-
-    XCTAssertEqual(moods.map(\.rawValue), [
-      "anxious", "overwhelmed", "low", "frustrated", "drained", "good"
+  func testAllMoodsHaveApprovedStableLabelsAndEmoji() {
+    XCTAssertEqual(CheckInMood.allCases.map(\.rawValue), [
+      "bright", "calm", "okay", "anxious", "low", "overwhelmed"
     ])
-    XCTAssertEqual(moods.map(\.title), [
-      "Anxious", "Overwhelmed", "Low", "Frustrated", "Drained", "Good"
+    XCTAssertEqual(CheckInMood.allCases.map(\.title), [
+      "Bright", "Calm", "Okay", "Anxious", "Low", "Overwhelmed"
     ])
-    XCTAssertEqual(moods.map(\.emoji), [
-      "😰", "😣", "😔", "😤", "😴", "😊"
-    ])
+    XCTAssertEqual(CheckInMood.allCases.map(\.emoji), ["😊", "🙂", "😐", "😰", "😔", "😣"])
   }
 
   func testEntryExposesPersistedEnumValues() {
     let entry = CheckInEntry(
-      mood: .frustrated,
+      mood: .anxious,
       noteText: "The meeting kept going in circles.",
       reflectionSource: .ai,
       reflectionStatus: .completed,
       helpfulness: .better
     )
-    XCTAssertEqual(entry.mood, .frustrated)
+    XCTAssertEqual(entry.mood, .anxious)
     XCTAssertEqual(entry.reflectionSource, .ai)
     XCTAssertEqual(entry.reflectionStatus, .completed)
     XCTAssertEqual(entry.helpfulness, .better)
   }
 
   func testInitializerAppliesApprovedPersistenceDefaults() {
-    let entry = CheckInEntry(mood: .good)
+    let entry = CheckInEntry(mood: .okay)
 
     XCTAssertEqual(entry.reflectionSourceKey, "none")
     XCTAssertEqual(entry.reflectionStatusKey, "none")
@@ -43,19 +39,24 @@ final class CheckInEntryTests: XCTestCase {
     XCTAssertNil(entry.suggestedActionText)
   }
 
-  func testComputedEnumsFallBackWithoutRewritingInvalidStoredRawValues() {
+  func testUnknownStoredMoodPresentsAsOkayWithoutRewritingRawValue() {
     let entry = CheckInEntry(mood: .anxious)
-    entry.moodKey = "unknown-mood"
+    entry.moodKey = "future-mood"
+
+    XCTAssertEqual(entry.mood, .okay)
+    XCTAssertEqual(entry.moodKey, "future-mood")
+  }
+
+  func testComputedNonMoodEnumsFallBackWithoutRewritingInvalidStoredRawValues() {
+    let entry = CheckInEntry(mood: .anxious)
     entry.reflectionSourceKey = "remote"
     entry.reflectionStatusKey = "stuck"
     entry.helpfulnessKey = "maybe"
 
-    XCTAssertEqual(entry.mood, .good)
     XCTAssertEqual(entry.reflectionSource, .none)
     XCTAssertEqual(entry.reflectionStatus, .none)
     XCTAssertEqual(entry.helpfulness, .unanswered)
 
-    XCTAssertEqual(entry.moodKey, "unknown-mood")
     XCTAssertEqual(entry.reflectionSourceKey, "remote")
     XCTAssertEqual(entry.reflectionStatusKey, "stuck")
     XCTAssertEqual(entry.helpfulnessKey, "maybe")

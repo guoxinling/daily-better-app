@@ -3,6 +3,45 @@ import XCTest
 
 @MainActor
 final class CheckInViewModelTests: XCTestCase {
+  func testCreateModeUsesComposerTimestamp() {
+    let timestamp = Date(timeIntervalSince1970: 1_800_000_000)
+    let repository = InMemoryCheckInRepository()
+    let viewModel = makeViewModel(
+      mode: .create(createdAt: timestamp),
+      repository: repository
+    )
+    viewModel.selectedMood = .calm
+
+    viewModel.saveWithoutReflection()
+
+    XCTAssertEqual(repository.entries.first?.createdAt, timestamp)
+  }
+
+  func testEditModePreservesIdentityAndTimestampAndClearsStaleReflection() {
+    let entry = reflectedEntry(mood: .anxious, note: "Before")
+    let repository = InMemoryCheckInRepository()
+    let viewModel = makeViewModel(mode: .edit(entry), repository: repository)
+    viewModel.selectedMood = .calm
+    viewModel.noteText = "After"
+
+    viewModel.saveWithoutReflection()
+
+    XCTAssertTrue(viewModel.committedEntry === entry)
+    XCTAssertEqual(entry.noteText, "After")
+    XCTAssertNil(entry.reflectionText)
+    XCTAssertNil(entry.suggestedActionText)
+    XCTAssertEqual(entry.reflectionStatus, .none)
+  }
+
+  func testEditCancelDetectionIgnoresUnchangedDraft() {
+    let entry = CheckInEntry(mood: .okay, noteText: "Steady")
+    let viewModel = makeViewModel(mode: .edit(entry), repository: InMemoryCheckInRepository())
+
+    XCTAssertFalse(viewModel.hasUnsavedChanges)
+    viewModel.noteText += " now"
+    XCTAssertTrue(viewModel.hasUnsavedChanges)
+  }
+
   func testDraftTrimsWhitespaceAndNewlines() {
     let draft = CheckInDraft(mood: .bright, noteText: "  A steady moment. \n")
 
@@ -271,6 +310,29 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertEqual(localCallCount, 0)
     XCTAssertEqual(remoteCallCount, 0)
   }
+
+  private func makeViewModel(
+    mode: EntryComposerMode,
+    repository: InMemoryCheckInRepository
+  ) -> CheckInViewModel {
+    CheckInViewModel(
+      repository: repository,
+      mode: mode,
+      remoteProvider: ReflectionProviderSpy(result: .success(.stub(source: .ai)))
+    )
+  }
+
+  private func reflectedEntry(mood: CheckInMood, note: String) -> CheckInEntry {
+    CheckInEntry(
+      mood: mood,
+      noteText: note,
+      reflectionText: "A previous reflection.",
+      suggestedActionText: "A previous action.",
+      reflectionSource: .ai,
+      reflectionStatus: .completed,
+      helpfulness: .better
+    )
+  }
 }
 
 @MainActor
@@ -287,6 +349,36 @@ private final class InMemoryCheckInRepository: CheckInRepository {
       throw saveError
     }
     entries.append(entry)
+  }
+
+  func update(
+    _ entry: CheckInEntry,
+    mood: CheckInMood,
+    noteText: String?,
+    reflection: ReflectionResult?
+  ) throws {
+    if let saveError {
+      throw saveError
+    }
+
+    entry.moodKey = mood.rawValue
+    entry.noteText = noteText
+    if let reflection {
+      entry.reflectionText = reflection.reflectionText
+      entry.suggestedActionText = reflection.suggestedActionText
+      entry.reflectionSourceKey = reflection.source.rawValue
+      entry.reflectionStatusKey = ReflectionStatus.completed.rawValue
+    } else {
+      entry.reflectionText = nil
+      entry.suggestedActionText = nil
+      entry.reflectionSourceKey = ReflectionSource.none.rawValue
+      entry.reflectionStatusKey = ReflectionStatus.none.rawValue
+      entry.helpfulnessKey = Helpfulness.unanswered.rawValue
+    }
+  }
+
+  func delete(_ entry: CheckInEntry) throws {
+    entries.removeAll { $0.id == entry.id }
   }
 
   func deleteAll() throws {

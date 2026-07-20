@@ -5,6 +5,42 @@ import XCTest
 
 @MainActor
 final class CheckInRepositoryTests: XCTestCase {
+  func testUpdateFailureLeavesStoredEntryAndCallerChangesUnchanged() throws {
+    let (storeURL, schema) = try makeStore()
+    defer { try? eraseStore(at: storeURL, schema: schema) }
+    let entryID = try seedReflectedEntryAndPreferences(in: storeURL, schema: schema)
+
+    let state = try autoreleasepool {
+      try failedUpdateState(entryID: entryID, in: storeURL, schema: schema)
+    }
+
+    XCTAssertTrue(state.didThrow)
+    XCTAssertTrue(state.callerHasChanges)
+    XCTAssertEqual(state.pendingMigrationVersion, 7)
+    XCTAssertEqual(state.callerEntry, .reflected)
+    XCTAssertEqual(try storedEntryState(id: entryID, in: storeURL, schema: schema), .reflected)
+  }
+
+  func testDeleteRemovesExactlyOneEntry() throws {
+    let (storeURL, schema) = try makeStore()
+    defer { try? eraseStore(at: storeURL, schema: schema) }
+    let entryIDs = try seedTwoEntries(in: storeURL, schema: schema)
+    let entryID = entryIDs.first
+
+    try autoreleasepool {
+      let callerContext = try makeContext(in: storeURL, schema: schema)
+      let entry = try XCTUnwrap(
+        callerContext.fetch(
+          FetchDescriptor<CheckInEntry>(predicate: #Predicate { $0.id == entryID })
+        ).first
+      )
+      try SwiftDataCheckInRepository(context: callerContext).delete(entry)
+    }
+
+    XCTAssertNil(try storedEntryState(id: entryID, in: storeURL, schema: schema))
+    XCTAssertEqual(try storedEntryState(id: entryIDs.second, in: storeURL, schema: schema)?.mood, .bright)
+  }
+
   func testSaveFailureDoesNotRollbackCallerChangesOrLeakFailedInsert() throws {
     let (storeURL, schema) = try makeStore()
     defer { try? eraseStore(at: storeURL, schema: schema) }
@@ -76,6 +112,37 @@ final class CheckInRepositoryTests: XCTestCase {
     }
   }
 
+  private func seedReflectedEntryAndPreferences(in storeURL: URL, schema: Schema) throws -> UUID {
+    try autoreleasepool {
+      let context = try makeContext(in: storeURL, schema: schema)
+      let entry = CheckInEntry(
+        mood: .anxious,
+        noteText: "Before",
+        reflectionText: "A prior reflection.",
+        suggestedActionText: "A prior action.",
+        reflectionSource: .ai,
+        reflectionStatus: .completed,
+        helpfulness: .better
+      )
+      context.insert(entry)
+      context.insert(AppPreferences())
+      try context.save()
+      return entry.id
+    }
+  }
+
+  private func seedTwoEntries(in storeURL: URL, schema: Schema) throws -> (first: UUID, second: UUID) {
+    try autoreleasepool {
+      let context = try makeContext(in: storeURL, schema: schema)
+      let first = CheckInEntry(mood: .low)
+      let second = CheckInEntry(mood: .bright)
+      context.insert(first)
+      context.insert(second)
+      try context.save()
+      return (first.id, second.id)
+    }
+  }
+
   private func failedSaveState(
     in storeURL: URL,
     schema: Schema
@@ -124,6 +191,48 @@ final class CheckInRepositoryTests: XCTestCase {
     return (didThrow, callerContext.hasChanges, preferences.migrationVersion)
   }
 
+  private func failedUpdateState(
+    entryID: UUID,
+    in storeURL: URL,
+    schema: Schema
+  ) throws -> (
+    didThrow: Bool,
+    callerHasChanges: Bool,
+    pendingMigrationVersion: Int,
+    callerEntry: CheckInEntryState
+  ) {
+    let callerContext = try makeContext(in: storeURL, schema: schema, allowsSave: false)
+    let preferences = try XCTUnwrap(
+      callerContext.fetch(FetchDescriptor<AppPreferences>()).first
+    )
+    let entry = try XCTUnwrap(
+      callerContext.fetch(
+        FetchDescriptor<CheckInEntry>(predicate: #Predicate { $0.id == entryID })
+      ).first
+    )
+    preferences.migrationVersion = 7
+    let repository = SwiftDataCheckInRepository(context: callerContext)
+    var didThrow = false
+
+    do {
+      try repository.update(
+        entry,
+        mood: .calm,
+        noteText: "After",
+        reflection: nil
+      )
+    } catch {
+      didThrow = true
+    }
+
+    return (
+      didThrow,
+      callerContext.hasChanges,
+      preferences.migrationVersion,
+      CheckInEntryState(entry)
+    )
+  }
+
   private func saveCheckIn(mood: CheckInMood, in storeURL: URL, schema: Schema) throws {
     try autoreleasepool {
       let callerContext = try makeContext(in: storeURL, schema: schema)
@@ -143,6 +252,20 @@ final class CheckInRepositoryTests: XCTestCase {
     try autoreleasepool {
       let context = try makeContext(in: storeURL, schema: schema)
       return try XCTUnwrap(context.fetch(FetchDescriptor<AppPreferences>()).first).migrationVersion
+    }
+  }
+
+  private func storedEntryState(
+    id: UUID,
+    in storeURL: URL,
+    schema: Schema
+  ) throws -> CheckInEntryState? {
+    try autoreleasepool {
+      let context = try makeContext(in: storeURL, schema: schema)
+      let entry = try context.fetch(
+        FetchDescriptor<CheckInEntry>(predicate: #Predicate { $0.id == id })
+      ).first
+      return entry.map(CheckInEntryState.init)
     }
   }
 
@@ -170,5 +293,53 @@ final class CheckInRepositoryTests: XCTestCase {
         container.deleteAllData()
       }
     }
+  }
+}
+
+private struct CheckInEntryState: Equatable {
+  let mood: CheckInMood
+  let noteText: String?
+  let reflectionText: String?
+  let suggestedActionText: String?
+  let reflectionSource: ReflectionSource
+  let reflectionStatus: ReflectionStatus
+  let helpfulness: Helpfulness
+
+  init(_ entry: CheckInEntry) {
+    mood = entry.mood
+    noteText = entry.noteText
+    reflectionText = entry.reflectionText
+    suggestedActionText = entry.suggestedActionText
+    reflectionSource = entry.reflectionSource
+    reflectionStatus = entry.reflectionStatus
+    helpfulness = entry.helpfulness
+  }
+
+  static let reflected = CheckInEntryState(
+    mood: .anxious,
+    noteText: "Before",
+    reflectionText: "A prior reflection.",
+    suggestedActionText: "A prior action.",
+    reflectionSource: .ai,
+    reflectionStatus: .completed,
+    helpfulness: .better
+  )
+
+  private init(
+    mood: CheckInMood,
+    noteText: String?,
+    reflectionText: String?,
+    suggestedActionText: String?,
+    reflectionSource: ReflectionSource,
+    reflectionStatus: ReflectionStatus,
+    helpfulness: Helpfulness
+  ) {
+    self.mood = mood
+    self.noteText = noteText
+    self.reflectionText = reflectionText
+    self.suggestedActionText = suggestedActionText
+    self.reflectionSource = reflectionSource
+    self.reflectionStatus = reflectionStatus
+    self.helpfulness = helpfulness
   }
 }

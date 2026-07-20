@@ -16,6 +16,7 @@ targets:
     platform: iOS
     deploymentTarget: "17.0"
     sources:
+      # Feature source roots include mode-specific check-in composer files.
       - Sources
       - path: Resources/Assets.xcassets
         buildPhase: resources

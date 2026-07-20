@@ -7,17 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02E95AAB0366CC1445527AFB /* DeviceTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4375599F646FA1DD5273056 /* DeviceTokenStore.swift */; };
 		0384B1923312CFB8BBF9306F /* SeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8B0E23D82ED987D0A73A239 /* SeedData.swift */; };
 		04A792A0B0DE547F20D02614 /* AppDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81082098702C15B6641CC3A7 /* AppDestination.swift */; };
 		0A83F093734305EEFE1FBDA7 /* CheckInMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E45B9C0672D798AB10596A9 /* CheckInMigrationService.swift */; };
+		0ADE7630340F30DF18EA8CDD /* DeviceTokenRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90D3509573789AD1E96BCA37 /* DeviceTokenRecord.swift */; };
 		0E932B60F9BAE8ED27EAE84F /* CheckInViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A5F981D53BC8C75AC25F86F /* CheckInViewModelTests.swift */; };
-		0F11A9B9B4B1497E85A95A11 /* DeviceTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F11A9B8B4B1497E85A95A11 /* DeviceTokenStore.swift */; };
 		12D727B323D95877170913B2 /* Affirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FF345CDA8B90ADFEAD54C2A /* Affirmation.swift */; };
 		177343E6DDF91D51FDFF77CE /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF8F470A7F27B035E5AE350 /* TimelineView.swift */; };
 		23D5035A02EBB5986907105C /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45647BC46E58A1D023384127 /* AppPreferences.swift */; };
 		28D863AEFDB1CD8D640F1823 /* TimelineCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6AF85A69598F32B4FF702B1 /* TimelineCalendar.swift */; };
 		30DC7F21584173A7887FB7A6 /* TimelineExportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62127CD01B7D82A284D96BFE /* TimelineExportServiceTests.swift */; };
-		315BFA949F824ED8AA315B63 /* ReflectionAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 315BFA939F824ED8AA315B63 /* ReflectionAPIClient.swift */; };
 		3630D9F9BBBB492C244A2FDE /* CheckInRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFA7225FF424D0A3E3EE40E3 /* CheckInRepositoryTests.swift */; };
 		3F0A02957BF54CCD09D37BEC /* NavigationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123A8C36869266189CFAB106 /* NavigationUITests.swift */; };
 		3F586E5C75CA155E74B9C289 /* ReflectionProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590D0756320218108663A660 /* ReflectionProviding.swift */; };
@@ -28,8 +28,9 @@
 		5579930E15F330E3A89AA0A0 /* LocalReflectionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A7A707C8287C938A517673D /* LocalReflectionProviderTests.swift */; };
 		5CF9A3F54183DFD35024400F /* AppPreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC71AE907568AF5CA64AEA0F /* AppPreferencesTests.swift */; };
 		62776B026AE6BA4CE5EECA85 /* TimelineCalendarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 680B0E25188B19B86B34DA58 /* TimelineCalendarTests.swift */; };
-		6D5D2069057142C59E9DB93F /* RemoteReflectionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5D2068057142C59E9DB93F /* RemoteReflectionProviderTests.swift */; };
 		7227488C79582A99327FAD4B /* SettingsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F78807A30775DC7642C08C80 /* SettingsUITests.swift */; };
+		74727E92C88D5235DC9E9836 /* DeepSeekRemoteReflectionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B628019D9B77279E67AEF10C /* DeepSeekRemoteReflectionProvider.swift */; };
+		7EBEAE3478118F0559861A6A /* EntryComposerMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2DB50B631E3EE4332CA513D /* EntryComposerMode.swift */; };
 		825E31134119A7F314C5C7AD /* TimelineEntryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC866538200772CBB578245 /* TimelineEntryRow.swift */; };
 		83956893F78D62D609F570E3 /* AppNotificationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409A07B03C880898E0AE22FC /* AppNotificationCoordinator.swift */; };
 		859E153F8D1E59F3604D6D87 /* CheckInRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897D138E90ECCCF8DC2A7133 /* CheckInRepository.swift */; };
@@ -46,6 +47,7 @@
 		A2FA1A5886C62DF70FC2106B /* CheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F5C686D04BD48E24BD4DB24 /* CheckInView.swift */; };
 		AF71E0420B60C7CF68BA612F /* ProjectSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B51E3BE7EE198A5D67B0EEB /* ProjectSmokeTests.swift */; };
 		B22383D6AA4F5C4E56F4EACD /* ReflectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C46E4A0BE790461950C6191 /* ReflectionView.swift */; };
+		B631639E511CFF6493D97250 /* RemoteReflectionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68BD580CF093F6C3FE727999 /* RemoteReflectionProviderTests.swift */; };
 		BAC3ACB982530E659D428214 /* CheckInEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D4816ECD29B2D2802AD579 /* CheckInEntry.swift */; };
 		BBEF1E089C9514EFA5B1585F /* CheckInEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60DF51C817D16334A5BADBEE /* CheckInEntryTests.swift */; };
 		BD4E529EBF83C400CD8E068D /* TimelineUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BCC2CE60BBCDCC6A622C9E6 /* TimelineUITests.swift */; };
@@ -54,13 +56,12 @@
 		CACA6105CAB96DD9C003B3AA /* LocalReflectionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24398261CEF13004BDD7E129 /* LocalReflectionProvider.swift */; };
 		CDF07FB637C077E956F9422C /* UnavailableRemoteReflectionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB91E108BC2FD6EC9E0870A6 /* UnavailableRemoteReflectionProvider.swift */; };
 		CE1CF5E5E2C9B361EDFE9845 /* DataControlsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA0CD205D53962B83124E96 /* DataControlsUITests.swift */; };
-		CFE01B6A2B724A10AF9077C8 /* DeepSeekRemoteReflectionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE01B692B724A10AF9077C8 /* DeepSeekRemoteReflectionProvider.swift */; };
+		CFEA54724324607D22FE16C1 /* ReflectionAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAFBC06991A7C4EE1CECC109 /* ReflectionAPIClient.swift */; };
 		D2014C6A6867D42D879061CC /* TimelineExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A45F8891EA9A463B291D6D /* TimelineExportService.swift */; };
 		D3448533B7559810067AE3E8 /* CheckInViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F473DD42128F00D4E4183A1 /* CheckInViewModel.swift */; };
 		D58C609235BECA8E71E187FD /* CheckInDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = F327535148702B9178285129 /* CheckInDraft.swift */; };
 		D9599D4D4E3383AB89B5F729 /* AppBootstrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEA01A09787C67900A18B8B9 /* AppBootstrapper.swift */; };
 		EFC6E60E1B1B6B47B8E5D009 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29B8389D52FF69E45A813300 /* RootTabView.swift */; };
-		F4E0856116A34C8AA431ED58 /* DeviceTokenRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E0856016A34C8AA431ED58 /* DeviceTokenRecord.swift */; };
 		F79D227DB5EE3E0EEFF8434D /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 790C340950A3A7B368A8E443 /* SettingsView.swift */; };
 		FD1462BD7C65B8891408612C /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A8A3CE88C14AD8CB17B8DAC /* NotificationManager.swift */; };
 /* End PBXBuildFile section */
@@ -87,7 +88,6 @@
 		02A45F8891EA9A463B291D6D /* TimelineExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineExportService.swift; sourceTree = "<group>"; };
 		0A7A707C8287C938A517673D /* LocalReflectionProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReflectionProviderTests.swift; sourceTree = "<group>"; };
 		0A8A3CE88C14AD8CB17B8DAC /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
-		0F11A9B8B4B1497E85A95A11 /* DeviceTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTokenStore.swift; sourceTree = "<group>"; };
 		0F5C686D04BD48E24BD4DB24 /* CheckInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInView.swift; sourceTree = "<group>"; };
 		123A8C36869266189CFAB106 /* NavigationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationUITests.swift; sourceTree = "<group>"; };
 		1F473DD42128F00D4E4183A1 /* CheckInViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInViewModel.swift; sourceTree = "<group>"; };
@@ -95,7 +95,6 @@
 		22FEF4EBFBC6FEA938D48877 /* CheckInMigrationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInMigrationServiceTests.swift; sourceTree = "<group>"; };
 		24398261CEF13004BDD7E129 /* LocalReflectionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReflectionProvider.swift; sourceTree = "<group>"; };
 		29B8389D52FF69E45A813300 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
-		315BFA939F824ED8AA315B63 /* ReflectionAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionAPIClient.swift; sourceTree = "<group>"; };
 		34931D7A8C6ABEB31FE39A28 /* NotificationRouteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRouteStore.swift; sourceTree = "<group>"; };
 		3A5F981D53BC8C75AC25F86F /* CheckInViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInViewModelTests.swift; sourceTree = "<group>"; };
 		3B51E3BE7EE198A5D67B0EEB /* ProjectSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectSmokeTests.swift; sourceTree = "<group>"; };
@@ -110,7 +109,7 @@
 		62127CD01B7D82A284D96BFE /* TimelineExportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineExportServiceTests.swift; sourceTree = "<group>"; };
 		680B0E25188B19B86B34DA58 /* TimelineCalendarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineCalendarTests.swift; sourceTree = "<group>"; };
 		6817227CCB36D035362C2DCA /* MoodEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodEntry.swift; sourceTree = "<group>"; };
-		6D5D2068057142C59E9DB93F /* RemoteReflectionProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteReflectionProviderTests.swift; sourceTree = "<group>"; };
+		68BD580CF093F6C3FE727999 /* RemoteReflectionProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteReflectionProviderTests.swift; sourceTree = "<group>"; };
 		6E45B9C0672D798AB10596A9 /* CheckInMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInMigrationService.swift; sourceTree = "<group>"; };
 		744D32A4E37DAF42E62662F9 /* CheckInMood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInMood.swift; sourceTree = "<group>"; };
 		790C340950A3A7B368A8E443 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -121,14 +120,18 @@
 		8AF5CDD0CDD770C1730BC076 /* DailyBetterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyBetterApp.swift; sourceTree = "<group>"; };
 		8BCC2CE60BBCDCC6A622C9E6 /* TimelineUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineUITests.swift; sourceTree = "<group>"; };
 		8FF345CDA8B90ADFEAD54C2A /* Affirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Affirmation.swift; sourceTree = "<group>"; };
+		90D3509573789AD1E96BCA37 /* DeviceTokenRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTokenRecord.swift; sourceTree = "<group>"; };
 		AC71AE907568AF5CA64AEA0F /* AppPreferencesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferencesTests.swift; sourceTree = "<group>"; };
 		AF56F712E1C565F1B4689518 /* CheckInFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInFlowUITests.swift; sourceTree = "<group>"; };
 		AFF0D2F4EE4C6A5904140253 /* EntryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryDetailView.swift; sourceTree = "<group>"; };
+		B628019D9B77279E67AEF10C /* DeepSeekRemoteReflectionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekRemoteReflectionProvider.swift; sourceTree = "<group>"; };
 		BAC866538200772CBB578245 /* TimelineEntryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEntryRow.swift; sourceTree = "<group>"; };
+		BAFBC06991A7C4EE1CECC109 /* ReflectionAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionAPIClient.swift; sourceTree = "<group>"; };
+		C2DB50B631E3EE4332CA513D /* EntryComposerMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryComposerMode.swift; sourceTree = "<group>"; };
+		C4375599F646FA1DD5273056 /* DeviceTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTokenStore.swift; sourceTree = "<group>"; };
 		C6AF85A69598F32B4FF702B1 /* TimelineCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineCalendar.swift; sourceTree = "<group>"; };
 		C8B0E23D82ED987D0A73A239 /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
 		C8D4816ECD29B2D2802AD579 /* CheckInEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInEntry.swift; sourceTree = "<group>"; };
-		CFE01B692B724A10AF9077C8 /* DeepSeekRemoteReflectionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekRemoteReflectionProvider.swift; sourceTree = "<group>"; };
 		D92720DD7285F914B9088F17 /* DailyBetter.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DailyBetter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB69BD8CA32279BC5E77C4B2 /* DailyBetterBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyBetterBackground.swift; sourceTree = "<group>"; };
 		DB91E108BC2FD6EC9E0870A6 /* UnavailableRemoteReflectionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableRemoteReflectionProvider.swift; sourceTree = "<group>"; };
@@ -138,7 +141,6 @@
 		E4A6F5296AFF80CCD4FDCED9 /* DailyBetterTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DailyBetterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB424E985894F56E5984AEB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EFA7225FF424D0A3E3EE40E3 /* CheckInRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInRepositoryTests.swift; sourceTree = "<group>"; };
-		F4E0856016A34C8AA431ED58 /* DeviceTokenRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTokenRecord.swift; sourceTree = "<group>"; };
 		F03ED3CDEAF1DB637351C68C /* CompactTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompactTabBar.swift; sourceTree = "<group>"; };
 		F327535148702B9178285129 /* CheckInDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInDraft.swift; sourceTree = "<group>"; };
 		F78807A30775DC7642C08C80 /* SettingsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsUITests.swift; sourceTree = "<group>"; };
@@ -191,6 +193,7 @@
 				897D138E90ECCCF8DC2A7133 /* CheckInRepository.swift */,
 				0F5C686D04BD48E24BD4DB24 /* CheckInView.swift */,
 				1F473DD42128F00D4E4183A1 /* CheckInViewModel.swift */,
+				C2DB50B631E3EE4332CA513D /* EntryComposerMode.swift */,
 				22A2F7FAD6BB73C21D3E9924 /* MoodSelector.swift */,
 				3C46E4A0BE790461950C6191 /* ReflectionView.swift */,
 			);
@@ -316,8 +319,8 @@
 				3A5F981D53BC8C75AC25F86F /* CheckInViewModelTests.swift */,
 				0A7A707C8287C938A517673D /* LocalReflectionProviderTests.swift */,
 				3B51E3BE7EE198A5D67B0EEB /* ProjectSmokeTests.swift */,
-				6D5D2068057142C59E9DB93F /* RemoteReflectionProviderTests.swift */,
 				E47ED14BF2725646CDFDB368 /* ReminderConfigurationTests.swift */,
+				68BD580CF093F6C3FE727999 /* RemoteReflectionProviderTests.swift */,
 				680B0E25188B19B86B34DA58 /* TimelineCalendarTests.swift */,
 				62127CD01B7D82A284D96BFE /* TimelineExportServiceTests.swift */,
 			);
@@ -328,11 +331,11 @@
 		EB449A0FF5D995F9819595D5 /* Reflection */ = {
 			isa = PBXGroup;
 			children = (
-				CFE01B692B724A10AF9077C8 /* DeepSeekRemoteReflectionProvider.swift */,
-				F4E0856016A34C8AA431ED58 /* DeviceTokenRecord.swift */,
-				0F11A9B8B4B1497E85A95A11 /* DeviceTokenStore.swift */,
+				B628019D9B77279E67AEF10C /* DeepSeekRemoteReflectionProvider.swift */,
+				90D3509573789AD1E96BCA37 /* DeviceTokenRecord.swift */,
+				C4375599F646FA1DD5273056 /* DeviceTokenStore.swift */,
 				24398261CEF13004BDD7E129 /* LocalReflectionProvider.swift */,
-				315BFA939F824ED8AA315B63 /* ReflectionAPIClient.swift */,
+				BAFBC06991A7C4EE1CECC109 /* ReflectionAPIClient.swift */,
 				590D0756320218108663A660 /* ReflectionProviding.swift */,
 				0238B90291B261E75A97C2DA /* ReflectionTypes.swift */,
 				DB91E108BC2FD6EC9E0870A6 /* UnavailableRemoteReflectionProvider.swift */,
@@ -488,16 +491,17 @@
 				545716580075099533CD399D /* DailyBetterApp.swift in Sources */,
 				C4E7B7031B669D5903D66791 /* DailyBetterBackground.swift in Sources */,
 				C4744D19C3277BA558542A12 /* DailyBetterStyle.swift in Sources */,
+				74727E92C88D5235DC9E9836 /* DeepSeekRemoteReflectionProvider.swift in Sources */,
+				0ADE7630340F30DF18EA8CDD /* DeviceTokenRecord.swift in Sources */,
+				02E95AAB0366CC1445527AFB /* DeviceTokenStore.swift in Sources */,
+				7EBEAE3478118F0559861A6A /* EntryComposerMode.swift in Sources */,
 				9CFCBC447D2706FF9DA06B8F /* EntryDetailView.swift in Sources */,
-				CFE01B6A2B724A10AF9077C8 /* DeepSeekRemoteReflectionProvider.swift in Sources */,
-				F4E0856116A34C8AA431ED58 /* DeviceTokenRecord.swift in Sources */,
-				0F11A9B9B4B1497E85A95A11 /* DeviceTokenStore.swift in Sources */,
 				CACA6105CAB96DD9C003B3AA /* LocalReflectionProvider.swift in Sources */,
 				43154313CEDB22F3FEC92034 /* MoodEntry.swift in Sources */,
 				4E8CB939118D9DDD7A7D9915 /* MoodSelector.swift in Sources */,
 				FD1462BD7C65B8891408612C /* NotificationManager.swift in Sources */,
 				8CCFBC1E491974BC3131145C /* NotificationRouteStore.swift in Sources */,
-				315BFA949F824ED8AA315B63 /* ReflectionAPIClient.swift in Sources */,
+				CFEA54724324607D22FE16C1 /* ReflectionAPIClient.swift in Sources */,
 				3F586E5C75CA155E74B9C289 /* ReflectionProviding.swift in Sources */,
 				9980216F1789D096F8DEB4BF /* ReflectionTypes.swift in Sources */,
 				B22383D6AA4F5C4E56F4EACD /* ReflectionView.swift in Sources */,
@@ -523,8 +527,8 @@
 				0E932B60F9BAE8ED27EAE84F /* CheckInViewModelTests.swift in Sources */,
 				5579930E15F330E3A89AA0A0 /* LocalReflectionProviderTests.swift in Sources */,
 				AF71E0420B60C7CF68BA612F /* ProjectSmokeTests.swift in Sources */,
-				6D5D2069057142C59E9DB93F /* RemoteReflectionProviderTests.swift in Sources */,
 				95E56C2233A8066DAB6BCCCF /* ReminderConfigurationTests.swift in Sources */,
+				B631639E511CFF6493D97250 /* RemoteReflectionProviderTests.swift in Sources */,
 				62776B026AE6BA4CE5EECA85 /* TimelineCalendarTests.swift in Sources */,
 				30DC7F21584173A7887FB7A6 /* TimelineExportServiceTests.swift in Sources */,
 			);

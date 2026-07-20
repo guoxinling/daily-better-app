@@ -7,24 +7,37 @@ final class CheckInViewModel {
   var selectedMood: CheckInMood?
   var noteText = ""
   var presentedEntry: CheckInEntry?
+  var committedEntry: CheckInEntry?
   var failure: ReflectionError?
   var isReflecting = false
+  let mode: EntryComposerMode
+
+  var hasUnsavedChanges: Bool {
+    currentDraft != initialDraft
+  }
 
   private let repository: CheckInRepository
   private let localProvider: any ReflectionProviding
   private let remoteProvider: any ReflectionProviding
   private let onEntryCommitted: ((CheckInEntry) -> Void)?
+  private var initialDraft: CheckInDraft
 
   init(
     repository: CheckInRepository,
+    mode: EntryComposerMode = .create(createdAt: .now),
     localProvider: any ReflectionProviding = LocalReflectionProvider(),
     remoteProvider: any ReflectionProviding,
     onEntryCommitted: ((CheckInEntry) -> Void)? = nil
   ) {
+    let initialDraft = Self.draft(for: mode)
     self.repository = repository
+    self.mode = mode
     self.localProvider = localProvider
     self.remoteProvider = remoteProvider
     self.onEntryCommitted = onEntryCommitted
+    self.initialDraft = initialDraft
+    self.selectedMood = initialDraft.mood
+    self.noteText = initialDraft.noteText
   }
 
   func saveWithoutReflection() {
@@ -32,23 +45,18 @@ final class CheckInViewModel {
 
     failure = nil
     presentedEntry = nil
+    committedEntry = nil
 
-    let normalizedNote = CheckInDraft(
-      mood: selectedMood,
-      noteText: noteText
-    ).trimmedNote
-    let entry = CheckInEntry(
-      mood: selectedMood,
-      noteText: normalizedNote.isEmpty ? nil : normalizedNote
-    )
+    let draft = currentDraft
+    let normalizedNote = draft.noteText
 
     do {
-      try repository.save(entry)
-      resetDraft()
-      Task { @MainActor in
-        self.presentedEntry = entry
-        self.onEntryCommitted?(entry)
-      }
+      let entry = try persist(
+        mood: selectedMood,
+        noteText: normalizedNote.isEmpty ? nil : normalizedNote,
+        reflection: nil
+      )
+      commit(entry, ifDraftIsUnchangedSince: draft)
     } catch {
       failure = .unavailable
     }
@@ -56,14 +64,15 @@ final class CheckInViewModel {
 
   func reflect() async {
     guard let selectedMood, !isReflecting else { return }
-    let draft = CheckInDraft(mood: selectedMood, noteText: noteText)
+    let draft = currentDraft
 
     failure = nil
     presentedEntry = nil
+    committedEntry = nil
     isReflecting = true
     defer { isReflecting = false }
 
-    let normalizedNote = draft.trimmedNote
+    let normalizedNote = draft.noteText
     let request = ReflectionRequest(
       mood: selectedMood,
       noteText: normalizedNote,
@@ -75,20 +84,12 @@ final class CheckInViewModel {
       let provider = normalizedNote.isEmpty ? localProvider : remoteProvider
       let result = try await provider.reflect(request)
       try Task.checkCancellation()
-      let entry = CheckInEntry(
+      let entry = try persist(
         mood: selectedMood,
         noteText: normalizedNote.isEmpty ? nil : normalizedNote,
-        reflectionText: result.reflectionText,
-        suggestedActionText: result.suggestedActionText,
-        reflectionSource: result.source,
-        reflectionStatus: .completed
+        reflection: result
       )
-      try repository.save(entry)
-      presentedEntry = entry
-      onEntryCommitted?(entry)
-      if currentDraft == draft {
-        resetDraft()
-      }
+      commit(entry, ifDraftIsUnchangedSince: draft)
     } catch is CancellationError {
       return
     } catch let error as ReflectionError {
@@ -103,7 +104,71 @@ final class CheckInViewModel {
     noteText = ""
   }
 
+  private func persist(
+    mood: CheckInMood,
+    noteText: String?,
+    reflection: ReflectionResult?
+  ) throws -> CheckInEntry {
+    switch mode {
+    case .create(let createdAt):
+      let entry = CheckInEntry(createdAt: createdAt, mood: mood, noteText: noteText)
+      apply(reflection, to: entry)
+      try repository.save(entry)
+      return entry
+    case .edit(let entry):
+      try repository.update(entry, mood: mood, noteText: noteText, reflection: reflection)
+      return entry
+    }
+  }
+
+  private func apply(_ reflection: ReflectionResult?, to entry: CheckInEntry) {
+    if let reflection {
+      entry.reflectionText = reflection.reflectionText
+      entry.suggestedActionText = reflection.suggestedActionText
+      entry.reflectionSourceKey = reflection.source.rawValue
+      entry.reflectionStatusKey = ReflectionStatus.completed.rawValue
+    } else {
+      entry.reflectionText = nil
+      entry.suggestedActionText = nil
+      entry.reflectionSourceKey = ReflectionSource.none.rawValue
+      entry.reflectionStatusKey = ReflectionStatus.none.rawValue
+      entry.helpfulnessKey = Helpfulness.unanswered.rawValue
+    }
+  }
+
+  private func commit(_ entry: CheckInEntry, ifDraftIsUnchangedSince draft: CheckInDraft) {
+    committedEntry = entry
+    presentedEntry = entry
+    onEntryCommitted?(entry)
+
+    guard currentDraft == draft else { return }
+    switch mode {
+    case .create:
+      resetDraft()
+      initialDraft = currentDraft
+    case .edit:
+      initialDraft = draft
+    }
+  }
+
   private var currentDraft: CheckInDraft {
-    CheckInDraft(mood: selectedMood, noteText: noteText)
+    CheckInDraft(
+      mood: selectedMood,
+      noteText: noteText,
+      createdAt: mode.createdAt
+    ).normalized
+  }
+
+  private static func draft(for mode: EntryComposerMode) -> CheckInDraft {
+    switch mode {
+    case .create(let createdAt):
+      CheckInDraft(createdAt: createdAt)
+    case .edit(let entry):
+      CheckInDraft(
+        mood: entry.mood,
+        noteText: entry.noteText ?? "",
+        createdAt: entry.createdAt
+      ).normalized
+    }
   }
 }

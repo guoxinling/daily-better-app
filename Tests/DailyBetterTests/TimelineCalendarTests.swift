@@ -19,7 +19,7 @@ final class TimelineCalendarTests: XCTestCase {
     let calendar = Calendar(identifier: .gregorian)
     let selected = calendar.startOfDay(for: .now)
     let entries = [
-      CheckInEntry(createdAt: selected.addingTimeInterval(3600), mood: .good),
+      CheckInEntry(createdAt: selected.addingTimeInterval(3600), mood: .bright),
       CheckInEntry(createdAt: selected.addingTimeInterval(-3600), mood: .low)
     ]
 

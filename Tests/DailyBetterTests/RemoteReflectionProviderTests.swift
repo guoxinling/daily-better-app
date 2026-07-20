@@ -69,7 +69,7 @@ final class RemoteReflectionProviderTests: XCTestCase {
     )
 
     let result = try await provider.reflect(.init(
-      mood: .drained,
+      mood: .low,
       noteText: "I need a reset.",
       localeIdentifier: "en_US",
       requestID: UUID()
@@ -145,7 +145,7 @@ final class RemoteReflectionProviderTests: XCTestCase {
 
     do {
       _ = try await provider.reflect(.init(
-        mood: .good,
+        mood: .bright,
         noteText: "A good thing happened.",
         localeIdentifier: "en_US",
         requestID: UUID()

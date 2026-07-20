@@ -5,7 +5,7 @@ final class TimelineExportServiceTests: XCTestCase {
   func testExportContainsCurrentEntriesAndLegacyCustomWords() {
     let entry = CheckInEntry(
       createdAt: Date(timeIntervalSince1970: 1_700_000_000),
-      mood: .good,
+      mood: .bright,
       noteText: "The presentation went well."
     )
     let legacy = Affirmation(

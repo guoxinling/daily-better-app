@@ -67,9 +67,9 @@ final class CheckInFlowUITests: XCTestCase {
     let app = makeApp()
     app.launch()
 
-    let goodMood = app.buttons["mood.good"]
-    XCTAssertTrue(goodMood.waitForExistence(timeout: 5))
-    goodMood.tap()
+    let brightMood = app.buttons["mood.bright"]
+    XCTAssertTrue(brightMood.waitForExistence(timeout: 5))
+    brightMood.tap()
 
     let noteField = app.textViews["checkIn.note"]
     XCTAssertTrue(noteField.waitForExistence(timeout: 2))

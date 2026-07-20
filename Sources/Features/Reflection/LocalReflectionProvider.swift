@@ -25,20 +25,20 @@ struct LocalReflectionProvider: ReflectionProviding {
         "This moment feels heavy. You are allowed to lower the demands you place on yourself.",
         "Do one caring thing for your body: water, food, fresh air, or rest."
       )
-    case .frustrated:
-      (
-        "Something is pushing against what you expected or needed. A pause can keep frustration from choosing the next move.",
-        "Relax your jaw and shoulders, then write the outcome you actually need."
-      )
-    case .drained:
-      (
-        "Your energy is limited right now. A smaller version of the day still counts.",
-        "Reduce the next task until it can be started in two minutes."
-      )
-    case .good:
+    case .bright:
       (
         "Something feels good enough to notice. Let this moment be real without turning it into another task.",
         "Name one detail you want to remember from this moment."
+      )
+    case .calm:
+      (
+        "There is some steadiness here. You can let this moment be enough without asking it to become more.",
+        "Notice one thing helping you feel grounded and stay with it for one breath."
+      )
+    case .okay:
+      (
+        "You may not need to label this moment as good or bad. Being here is enough information for now.",
+        "Take one slow breath and name what you need next, if anything."
       )
     }
   }

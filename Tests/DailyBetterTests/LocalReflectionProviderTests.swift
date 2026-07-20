@@ -2,9 +2,9 @@ import XCTest
 @testable import DailyBetter
 
 final class LocalReflectionProviderTests: XCTestCase {
-  func testReflectingDrainedMoodWithoutNoteReturnsLocalContent() async throws {
+  func testReflectingLowMoodWithoutNoteReturnsLocalContent() async throws {
     let request = ReflectionRequest(
-      mood: .drained,
+      mood: .low,
       noteText: "",
       localeIdentifier: "en_US",
       requestID: UUID()
@@ -51,19 +51,19 @@ final class LocalReflectionProviderTests: XCTestCase {
         "Do one caring thing for your body: water, food, fresh air, or rest."
       ),
       (
-        .frustrated,
-        "Something is pushing against what you expected or needed. A pause can keep frustration from choosing the next move.",
-        "Relax your jaw and shoulders, then write the outcome you actually need."
-      ),
-      (
-        .drained,
-        "Your energy is limited right now. A smaller version of the day still counts.",
-        "Reduce the next task until it can be started in two minutes."
-      ),
-      (
-        .good,
+        .bright,
         "Something feels good enough to notice. Let this moment be real without turning it into another task.",
         "Name one detail you want to remember from this moment."
+      ),
+      (
+        .calm,
+        "There is some steadiness here. You can let this moment be enough without asking it to become more.",
+        "Notice one thing helping you feel grounded and stay with it for one breath."
+      ),
+      (
+        .okay,
+        "You may not need to label this moment as good or bad. Being here is enough information for now.",
+        "Take one slow breath and name what you need next, if anything."
       ),
     ]
 

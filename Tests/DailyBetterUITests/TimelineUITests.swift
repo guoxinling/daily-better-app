@@ -71,7 +71,7 @@ final class TimelineUITests: XCTestCase {
     app.launchArguments = ["-ui-testing", "-reset-store"]
     app.launch()
 
-    app.buttons["mood.good"].tap()
+    app.buttons["mood.bright"].tap()
     app.textViews["checkIn.note"].tap()
     app.textViews["checkIn.note"].typeText("The presentation went well.")
     if app.buttons["checkIn.dismissKeyboard"].exists {

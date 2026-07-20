@@ -4,7 +4,7 @@ import XCTest
 @MainActor
 final class CheckInViewModelTests: XCTestCase {
   func testDraftTrimsWhitespaceAndNewlines() {
-    let draft = CheckInDraft(mood: .good, noteText: "  A steady moment. \n")
+    let draft = CheckInDraft(mood: .bright, noteText: "  A steady moment. \n")
 
     XCTAssertEqual(draft.trimmedNote, "A steady moment.")
     XCTAssertEqual(CheckInDraft().trimmedNote, "")
@@ -19,7 +19,7 @@ final class CheckInViewModelTests: XCTestCase {
       localProvider: localProvider,
       remoteProvider: remoteProvider
     )
-    viewModel.selectedMood = .frustrated
+    viewModel.selectedMood = .overwhelmed
     viewModel.noteText = "  The meeting ran long. \n"
     viewModel.failure = .invalidResponse
     viewModel.presentedEntry = CheckInEntry(mood: .low)
@@ -30,7 +30,7 @@ final class CheckInViewModelTests: XCTestCase {
     let localCallCount = await localProvider.callCount
     let remoteCallCount = await remoteProvider.callCount
     XCTAssertEqual(repository.entries.count, 1)
-    XCTAssertEqual(repository.entries.first?.mood, .frustrated)
+    XCTAssertEqual(repository.entries.first?.mood, .overwhelmed)
     XCTAssertEqual(repository.entries.first?.noteText, "The meeting ran long.")
     XCTAssertEqual(repository.entries.first?.reflectionStatus, ReflectionStatus.none)
     XCTAssertNil(viewModel.selectedMood)
@@ -69,7 +69,7 @@ final class CheckInViewModelTests: XCTestCase {
       localProvider: localProvider,
       remoteProvider: remoteProvider
     )
-    viewModel.selectedMood = .drained
+    viewModel.selectedMood = .low
     viewModel.noteText = " \n\t "
 
     await viewModel.reflect()
@@ -133,7 +133,7 @@ final class CheckInViewModelTests: XCTestCase {
     let repository = InMemoryCheckInRepository()
     let remoteProvider = ReflectionProviderSpy(result: .success(.stub(source: .ai)))
     let viewModel = CheckInViewModel(repository: repository, remoteProvider: remoteProvider)
-    viewModel.selectedMood = .good
+    viewModel.selectedMood = .bright
     viewModel.noteText = "A good morning."
     await viewModel.reflect()
     XCTAssertNotNil(viewModel.presentedEntry)
@@ -190,7 +190,7 @@ final class CheckInViewModelTests: XCTestCase {
 
     let reflection = Task { await viewModel.reflect() }
     await fulfillment(of: [requestStarted], timeout: 1)
-    viewModel.selectedMood = .good
+    viewModel.selectedMood = .bright
     viewModel.noteText = "A newer draft"
 
     await remoteProvider.completeFirstRequest(with: .stub(source: .ai))
@@ -200,7 +200,7 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertEqual(repository.entries.first?.mood, .anxious)
     XCTAssertEqual(repository.entries.first?.noteText, "Original concern.")
     XCTAssertTrue(viewModel.presentedEntry === repository.entries.first)
-    XCTAssertEqual(viewModel.selectedMood, .good)
+    XCTAssertEqual(viewModel.selectedMood, .bright)
     XCTAssertEqual(viewModel.noteText, "A newer draft")
   }
 
@@ -232,7 +232,7 @@ final class CheckInViewModelTests: XCTestCase {
     let requestStarted = expectation(description: "Reflection request started")
     let remoteProvider = ControllableReflectionProvider { requestStarted.fulfill() }
     let viewModel = CheckInViewModel(repository: repository, remoteProvider: remoteProvider)
-    viewModel.selectedMood = .frustrated
+    viewModel.selectedMood = .overwhelmed
     viewModel.noteText = "Keep this cancelled draft"
 
     let reflection = Task { await viewModel.reflect() }
@@ -244,7 +244,7 @@ final class CheckInViewModelTests: XCTestCase {
 
     XCTAssertTrue(repository.entries.isEmpty)
     XCTAssertNil(viewModel.presentedEntry)
-    XCTAssertEqual(viewModel.selectedMood, .frustrated)
+    XCTAssertEqual(viewModel.selectedMood, .overwhelmed)
     XCTAssertEqual(viewModel.noteText, "Keep this cancelled draft")
     XCTAssertFalse(viewModel.isReflecting)
     XCTAssertNil(viewModel.failure)

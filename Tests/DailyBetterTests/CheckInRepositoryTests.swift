@@ -18,9 +18,9 @@ final class CheckInRepositoryTests: XCTestCase {
     XCTAssertEqual(state.pendingMoodEntryCount, 1)
     XCTAssertEqual(try storedCheckInMoods(in: storeURL, schema: schema), [])
 
-    try saveCheckIn(mood: .good, in: storeURL, schema: schema)
+    try saveCheckIn(mood: .bright, in: storeURL, schema: schema)
 
-    XCTAssertEqual(try storedCheckInMoods(in: storeURL, schema: schema), [.good])
+    XCTAssertEqual(try storedCheckInMoods(in: storeURL, schema: schema), [.bright])
   }
 
   func testDeleteFailureDoesNotRollbackCallerChangesOrLeakFailedDelete() throws {
@@ -35,14 +35,14 @@ final class CheckInRepositoryTests: XCTestCase {
     XCTAssertTrue(state.didThrow)
     XCTAssertTrue(state.callerHasChanges)
     XCTAssertEqual(state.pendingMigrationVersion, 7)
-    XCTAssertEqual(try storedCheckInMoods(in: storeURL, schema: schema), [.drained])
+    XCTAssertEqual(try storedCheckInMoods(in: storeURL, schema: schema), [.low])
     XCTAssertEqual(try storedMigrationVersion(in: storeURL, schema: schema), 0)
 
-    try saveCheckIn(mood: .good, in: storeURL, schema: schema)
+    try saveCheckIn(mood: .bright, in: storeURL, schema: schema)
 
     XCTAssertEqual(
       try storedCheckInMoods(in: storeURL, schema: schema).map(\.rawValue).sorted(),
-      ["drained", "good"]
+      ["bright", "low"]
     )
   }
 
@@ -70,7 +70,7 @@ final class CheckInRepositoryTests: XCTestCase {
   private func seedEntryAndPreferences(in storeURL: URL, schema: Schema) throws {
     try autoreleasepool {
       let context = try makeContext(in: storeURL, schema: schema)
-      context.insert(CheckInEntry(mood: .drained))
+      context.insert(CheckInEntry(mood: .low))
       context.insert(AppPreferences())
       try context.save()
     }
@@ -91,7 +91,7 @@ final class CheckInRepositoryTests: XCTestCase {
     var didThrow = false
 
     do {
-      try repository.save(CheckInEntry(mood: .good))
+      try repository.save(CheckInEntry(mood: .bright))
     } catch {
       didThrow = true
     }

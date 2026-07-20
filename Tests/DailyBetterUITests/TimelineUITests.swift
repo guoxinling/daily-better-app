@@ -46,10 +46,10 @@ final class TimelineUITests: XCTestCase {
     let app = launchLongEntryApp()
     app.descendants(matching: .any)["timeline.entry.row"].firstMatch.tap()
 
-    XCTAssertTrue(app.navigationBars["Reflection"].waitForExistence(timeout: 2))
+    XCTAssertTrue(app.navigationBars["Entry"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.staticTexts["reflection.title"].exists)
     XCTAssertTrue(app.staticTexts["reflection.action"].exists)
-    let originalNote = app.descendants(matching: .any)["reflection.originalNote"].firstMatch
+    let originalNote = app.descendants(matching: .any)["entry.note.full"].firstMatch
     XCTAssertTrue(originalNote.exists)
     XCTAssertEqual(originalNote.label, longReflectionNote)
   }
@@ -58,13 +58,28 @@ final class TimelineUITests: XCTestCase {
     let app = launchLongEntryApp()
     app.descendants(matching: .any)["timeline.entry.row"].firstMatch.tap()
 
-    let backButton = app.buttons["timeline.detail.back"]
+    let backButton = app.buttons["entry.back"]
     XCTAssertTrue(backButton.waitForExistence(timeout: 2))
 
     backButton.tap()
 
-    XCTAssertTrue(app.staticTexts["Timeline"].waitForExistence(timeout: 2))
-    XCTAssertFalse(app.buttons["timeline.detail.back"].exists)
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 2))
+    XCTAssertFalse(app.buttons["entry.back"].exists)
+  }
+
+  func testDeletingEntryConfirmsReturnsToTimelineAndRemovesSelectedRow() {
+    let app = launchLongEntryApp()
+    let selectedRow = app.descendants(matching: .any)["timeline.entry.row"].firstMatch
+    XCTAssertTrue(selectedRow.waitForExistence(timeout: 2))
+    selectedRow.tap()
+
+    app.buttons["entry.menu"].tap()
+    app.buttons["Delete entry"].tap()
+    XCTAssertTrue(app.buttons["Delete entry"].waitForExistence(timeout: 2))
+    app.buttons["Delete entry"].tap()
+
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 2))
+    XCTAssertFalse(app.descendants(matching: .any)["timeline.entry.row"].exists)
   }
 
   func testSaveWithoutReflectionAddsTimelineEntry() {
@@ -73,13 +88,21 @@ final class TimelineUITests: XCTestCase {
     app.launch()
 
     app.buttons["timeline.checkIn"].tap()
-    app.buttons["mood.bright"].tap()
-    app.textViews["checkIn.note"].tap()
-    app.textViews["checkIn.note"].typeText("The presentation went well.")
+    let brightMood = app.buttons["mood.bright"]
+    XCTAssertTrue(brightMood.waitForExistence(timeout: 5))
+    brightMood.tap()
+
+    let note = app.textViews["checkIn.note"]
+    XCTAssertTrue(note.waitForExistence(timeout: 5))
+    note.tap()
+    note.typeText("The presentation went well.")
     if app.buttons["checkIn.dismissKeyboard"].exists {
       app.buttons["checkIn.dismissKeyboard"].tap()
     }
-    app.buttons["checkIn.saveOnly"].tap()
+    app.buttons["checkIn.save"].tap()
+    let backButton = app.buttons["entry.back"]
+    XCTAssertTrue(backButton.waitForExistence(timeout: 3))
+    backButton.tap()
 
     XCTAssertTrue(app.staticTexts["The presentation went well."].waitForExistence(timeout: 3))
   }

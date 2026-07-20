@@ -31,61 +31,64 @@ struct ReflectionView: View {
     }
   }
 
+  @ViewBuilder
   private var reflectionContent: some View {
-    VStack(alignment: .leading, spacing: 24) {
-      if showsMoodSummary {
-        moodSummary
-      }
+    if hasSavedReflectionContent {
+      VStack(alignment: .leading, spacing: 24) {
+        if showsMoodSummary {
+          moodSummary
+        }
 
-      if showsOriginalNote, let note = normalized(entry.noteText) {
-        Text("\u{201c}\(note)\u{201d}")
-          .font(.system(size: noteFontSize, design: .serif))
-          .foregroundStyle(DailyBetterStyle.muted)
-          .accessibilityLabel("Your note: \(note)")
-      }
+        if showsOriginalNote, let note = normalized(entry.noteText) {
+          Text("\u{201c}\(note)\u{201d}")
+            .font(.system(size: noteFontSize, design: .serif))
+            .foregroundStyle(DailyBetterStyle.muted)
+            .accessibilityLabel("Your note: \(note)")
+        }
 
-      if let reflection = normalized(entry.reflectionText) {
-        Text(reflection)
-          .font(.system(size: reflectionFontSize, weight: .regular, design: .serif))
-          .foregroundStyle(DailyBetterStyle.ink)
-          .fixedSize(horizontal: false, vertical: true)
-          .accessibilityIdentifier("reflection.title")
-      }
-
-      if let action = normalized(entry.suggestedActionText) {
-        VStack(alignment: .leading, spacing: 10) {
-          Text("ONE SMALL STEP")
-            .font(.system(size: 12, weight: .bold, design: .rounded))
-            .tracking(1.2)
-            .foregroundStyle(DailyBetterStyle.tint)
-
-          Text(action)
-            .font(.system(size: actionFontSize, weight: .medium, design: .rounded))
+        if let reflection = normalized(entry.reflectionText) {
+          Text(reflection)
+            .font(.system(size: reflectionFontSize, weight: .regular, design: .serif))
             .foregroundStyle(DailyBetterStyle.ink)
             .fixedSize(horizontal: false, vertical: true)
-            .accessibilityIdentifier("reflection.action")
+            .accessibilityIdentifier("reflection.title")
         }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background {
-          RoundedRectangle(cornerRadius: 22, style: .continuous)
-            .fill(DailyBetterStyle.glass)
-            .stroke(DailyBetterStyle.hairline, lineWidth: 1)
-        }
-      }
 
-      if showsDoneButton {
-        Button("Done") {
-          dismiss()
+        if let action = normalized(entry.suggestedActionText) {
+          VStack(alignment: .leading, spacing: 10) {
+            Text("ONE SMALL STEP")
+              .font(.system(size: 12, weight: .bold, design: .rounded))
+              .tracking(1.2)
+              .foregroundStyle(DailyBetterStyle.tint)
+
+            Text(action)
+              .font(.system(size: actionFontSize, weight: .medium, design: .rounded))
+              .foregroundStyle(DailyBetterStyle.ink)
+              .fixedSize(horizontal: false, vertical: true)
+              .accessibilityIdentifier("reflection.action")
+          }
+          .padding(18)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .background {
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+              .fill(DailyBetterStyle.glass)
+              .stroke(DailyBetterStyle.hairline, lineWidth: 1)
+          }
         }
-        .font(.system(size: 17, weight: .bold, design: .rounded))
-        .foregroundStyle(.white)
-        .frame(maxWidth: .infinity, minHeight: 52)
-        .background(DailyBetterStyle.darkAction, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .accessibilityIdentifier("reflection.done")
+
+        if showsDoneButton {
+          Button("Done") {
+            dismiss()
+          }
+          .font(.system(size: 17, weight: .bold, design: .rounded))
+          .foregroundStyle(.white)
+          .frame(maxWidth: .infinity, minHeight: 52)
+          .background(DailyBetterStyle.darkAction, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+          .accessibilityIdentifier("reflection.done")
+        }
       }
+      .scrollDismissesKeyboard(.interactively)
     }
-    .scrollDismissesKeyboard(.interactively)
   }
 
   private var moodSummary: some View {
@@ -110,6 +113,10 @@ struct ReflectionView: View {
     guard let text else { return nil }
     let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
     return trimmed.isEmpty ? nil : trimmed
+  }
+
+  private var hasSavedReflectionContent: Bool {
+    normalized(entry.reflectionText) != nil || normalized(entry.suggestedActionText) != nil
   }
 }
 

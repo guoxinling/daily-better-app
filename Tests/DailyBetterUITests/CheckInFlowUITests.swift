@@ -11,7 +11,7 @@ final class CheckInFlowUITests: XCTestCase {
     XCTAssertTrue(reflectButton.isHittable)
     reflectButton.tap()
 
-    XCTAssertTrue(app.buttons["timeline.detail.back"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.buttons["entry.back"].waitForExistence(timeout: 5))
     XCTAssertTrue(app.staticTexts["reflection.title"].exists)
   }
 
@@ -24,8 +24,8 @@ final class CheckInFlowUITests: XCTestCase {
 
     app.buttons["checkIn.reflect"].tap()
 
-    XCTAssertTrue(app.buttons["timeline.detail.back"].waitForExistence(timeout: 5))
-    XCTAssertTrue(app.navigationBars["Reflection"].waitForExistence(timeout: 2))
+    XCTAssertTrue(app.buttons["entry.back"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.navigationBars["Entry"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.staticTexts["reflection.action"].exists)
   }
 
@@ -43,8 +43,8 @@ final class CheckInFlowUITests: XCTestCase {
 
     app.buttons["checkIn.reflect"].tap()
 
-    XCTAssertTrue(app.buttons["timeline.detail.back"].waitForExistence(timeout: 5))
-    XCTAssertTrue(app.navigationBars["Reflection"].waitForExistence(timeout: 2))
+    XCTAssertTrue(app.buttons["entry.back"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.navigationBars["Entry"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.staticTexts["reflection.action"].exists)
     XCTAssertTrue(app.staticTexts["You sound wound up, not broken. Your mind is still carrying the day forward."].exists)
     XCTAssertTrue(app.staticTexts["Set the phone down and take ten slow breaths before deciding what to do next."].exists)
@@ -64,8 +64,8 @@ final class CheckInFlowUITests: XCTestCase {
 
     app.buttons["checkIn.save"].tap()
 
-    XCTAssertTrue(app.buttons["timeline.detail.back"].waitForExistence(timeout: 5))
-    XCTAssertTrue(app.navigationBars["Reflection"].waitForExistence(timeout: 2))
+    XCTAssertTrue(app.buttons["entry.back"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.navigationBars["Entry"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.staticTexts["Your note"].exists)
     XCTAssertTrue(app.staticTexts["Today felt quieter than usual."].exists)
   }
@@ -78,6 +78,36 @@ final class CheckInFlowUITests: XCTestCase {
     noteField.tap()
 
     XCTAssertFalse(app.buttons["checkIn.dismissKeyboard"].exists)
+  }
+
+  func testSaveOpensDetailAndBackReturnsToTimeline() {
+    let app = launchComposer()
+    app.buttons["mood.calm"].tap()
+    app.buttons["checkIn.save"].tap()
+
+    XCTAssertTrue(app.navigationBars["Entry"].waitForExistence(timeout: 3))
+    assertSingleFullScreenJournalPage(app)
+    app.buttons["entry.back"].tap()
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 2))
+  }
+
+  func testEditingNoteClearsStaleReflectionAndUpdatesSameEntry() {
+    let app = launchReflectedEntryDetail()
+    app.buttons["entry.menu"].tap()
+    app.buttons["Edit entry"].tap()
+
+    let note = app.textViews["checkIn.note"]
+    XCTAssertTrue(note.waitForExistence(timeout: 2))
+    note.tap()
+    note.typeText(" Updated")
+    app.buttons["checkIn.save"].tap()
+
+    let updatedNote = app.descendants(matching: .any)["entry.note.full"].firstMatch
+    XCTAssertTrue(updatedNote.waitForExistence(timeout: 3))
+    XCTAssertTrue(updatedNote.label.contains("Updated"))
+    XCTAssertFalse(app.staticTexts["reflection.title"].exists)
+    XCTAssertFalse(app.staticTexts["reflection.action"].exists)
+    assertSingleFullScreenJournalPage(app)
   }
 
   func testLongTextKeepsFixedActionsVisibleAboveKeyboard() {
@@ -115,6 +145,19 @@ final class CheckInFlowUITests: XCTestCase {
     composeButton.tap()
     XCTAssertTrue(app.textViews["checkIn.note"].waitForExistence(timeout: 5))
     return app
+  }
+
+  private func launchReflectedEntryDetail() -> XCUIApplication {
+    let app = makeApp(additionalArguments: ["-seed-long-reflection-entry"])
+    app.launch()
+    app.descendants(matching: .any)["timeline.entry.row"].firstMatch.tap()
+    XCTAssertTrue(app.navigationBars["Entry"].waitForExistence(timeout: 5))
+    return app
+  }
+
+  private func assertSingleFullScreenJournalPage(_ app: XCUIApplication) {
+    XCTAssertFalse(app.buttons["tab.checkIn"].exists)
+    XCTAssertFalse(app.buttons["tab.timeline"].exists)
   }
 
   private func makeApp(

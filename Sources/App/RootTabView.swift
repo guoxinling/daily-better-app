@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 extension View {
@@ -21,6 +22,7 @@ private enum RootPresentation: Identifiable {
 }
 
 struct RootTabView: View {
+  @Environment(\.modelContext) private var modelContext
   @State private var notificationRouteStore = NotificationRouteStore.shared
   @State private var presentation: RootPresentation?
   @State private var timelineRefreshID = 0
@@ -47,7 +49,12 @@ struct RootTabView: View {
         }
       case .detail(let entry):
         NavigationStack {
-          EntryDetailView(entry: entry)
+          EntryDetailView(
+            entry: entry,
+            onBack: dismissPresentation,
+            onEdit: { showEditorAfterDetail(entry) },
+            onDelete: { delete(entry) }
+          )
         }
       }
     }
@@ -72,6 +79,24 @@ struct RootTabView: View {
 
   private func dismissPresentation() {
     presentation = nil
+  }
+
+  private func showEditorAfterDetail(_ entry: CheckInEntry) {
+    presentation = nil
+    Task { @MainActor in
+      await Task.yield()
+      presentation = .newEntry(.edit(entry))
+    }
+  }
+
+  private func delete(_ entry: CheckInEntry) {
+    do {
+      try SwiftDataCheckInRepository(context: modelContext).delete(entry)
+      presentation = nil
+      timelineRefreshID += 1
+    } catch {
+      return
+    }
   }
 
   @MainActor

@@ -50,6 +50,7 @@ struct TimelineView: View {
       reloadEntries()
     }
     .onChange(of: refreshToken) { _, _ in
+      selectedDate = Calendar.current.startOfDay(for: .now)
       reloadEntries()
     }
     .safeAreaInset(edge: .bottom) {
@@ -76,7 +77,7 @@ struct TimelineView: View {
       Spacer()
 
       NavigationLink {
-        SettingsView()
+        SettingsView(onEntriesDeleted: reloadEntries)
       } label: {
         Image(systemName: "gearshape.fill")
           .font(.system(size: 17, weight: .semibold))
@@ -98,10 +99,12 @@ struct TimelineView: View {
           Image(systemName: "chevron.left")
             .font(.system(size: 15, weight: .bold))
             .foregroundStyle(DailyBetterStyle.ink)
-            .frame(width: 36, height: 36)
+            .frame(width: 44, height: 44)
             .background(DailyBetterStyle.glass, in: Circle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("Previous week")
+        .accessibilityIdentifier("timeline.previousWeek")
 
         Spacer()
 
@@ -117,10 +120,12 @@ struct TimelineView: View {
           Image(systemName: "chevron.right")
             .font(.system(size: 15, weight: .bold))
             .foregroundStyle(DailyBetterStyle.ink)
-            .frame(width: 36, height: 36)
+            .frame(width: 44, height: 44)
             .background(DailyBetterStyle.glass, in: Circle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("Next week")
+        .accessibilityIdentifier("timeline.nextWeek")
       }
 
       HStack(spacing: 5) {
@@ -151,6 +156,11 @@ struct TimelineView: View {
             .frame(maxWidth: .infinity)
           }
           .buttonStyle(.plain)
+          .accessibilityLabel(date.formatted(date: .complete, time: .omitted))
+          .accessibilityHint(hasEntries(on: date) ? "Has entries" : "No entries")
+          .accessibilityAddTraits(
+            Calendar.current.isDate(date, inSameDayAs: selectedDate) ? .isSelected : []
+          )
         }
       }
       .padding(10)

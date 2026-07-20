@@ -12,8 +12,14 @@ struct SettingsView: View {
   @State private var notificationsDenied = false
   @State private var confirmsDeleteAll = false
 
+  private let onEntriesDeleted: () -> Void
+
   private let feedbackEmail = "guoxinling_xisu@163.com"
   private let privacyURL = URL(string: "https://guoxinling.github.io/privacy/")!
+
+  init(onEntriesDeleted: @escaping () -> Void = {}) {
+    self.onEntriesDeleted = onEntriesDeleted
+  }
 
   private var preferencesModel: AppPreferences? {
     preferences.first
@@ -41,6 +47,16 @@ struct SettingsView: View {
             displayedComponents: .hourAndMinute
           )
           .disabled(!preferencesModel.reminderEnabled)
+
+          if preferencesModel.reminderEnabled {
+            Label(
+              "Scheduled locally for \(reminderDate(for: preferencesModel).formatted(date: .omitted, time: .shortened))",
+              systemImage: "iphone"
+            )
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .accessibilityIdentifier("settings.reminder.status")
+          }
         }
 
         Section("AI & privacy") {
@@ -97,7 +113,12 @@ struct SettingsView: View {
     .dailyBetterBackground()
     .rootTabBarHidden()
     .alert("Notifications are off", isPresented: $notificationsDenied) {
-      Button("OK", role: .cancel) {}
+      Button("Open Settings") {
+        if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+          openURL(settingsURL)
+        }
+      }
+      Button("Not now", role: .cancel) {}
     } message: {
       Text("Enable notifications in Settings if you want Daily Better to send your daily reminder.")
     }
@@ -117,7 +138,12 @@ struct SettingsView: View {
     }
     .alert("Delete every Timeline entry?", isPresented: $confirmsDeleteAll) {
       Button("Delete all entries", role: .destructive) {
-        try? SwiftDataCheckInRepository(context: modelContext).deleteAll()
+        do {
+          try SwiftDataCheckInRepository(context: modelContext).deleteAll()
+          onEntriesDeleted()
+        } catch {
+          return
+        }
       }
       Button("Cancel", role: .cancel) {}
     } message: {
@@ -157,12 +183,7 @@ struct SettingsView: View {
 
   private func reminderDateBinding(_ preferencesModel: AppPreferences) -> Binding<Date> {
     Binding(
-      get: {
-        var components = DateComponents()
-        components.hour = preferencesModel.reminderHour
-        components.minute = preferencesModel.reminderMinute
-        return Calendar.current.date(from: components) ?? .now
-      },
+      get: { reminderDate(for: preferencesModel) },
       set: { newValue in
         let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
         preferencesModel.reminderHour = components.hour ?? 20
@@ -181,6 +202,13 @@ struct SettingsView: View {
         }
       }
     )
+  }
+
+  private func reminderDate(for preferencesModel: AppPreferences) -> Date {
+    var components = DateComponents()
+    components.hour = preferencesModel.reminderHour
+    components.minute = preferencesModel.reminderMinute
+    return Calendar.current.date(from: components) ?? .now
   }
 }
 

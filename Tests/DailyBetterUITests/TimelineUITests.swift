@@ -107,6 +107,25 @@ final class TimelineUITests: XCTestCase {
     XCTAssertTrue(app.staticTexts["The presentation went well."].waitForExistence(timeout: 3))
   }
 
+  func testSavingFromHistoricalWeekReturnsTimelineToToday() {
+    let app = launchSeededApp()
+    let previousWeek = app.buttons["timeline.previousWeek"]
+    XCTAssertTrue(previousWeek.waitForExistence(timeout: 3))
+    previousWeek.tap()
+    XCTAssertFalse(app.staticTexts["Everything piled up today."].exists)
+
+    app.buttons["timeline.checkIn"].tap()
+    app.buttons["mood.calm"].tap()
+    app.textViews["checkIn.note"].tap()
+    app.textViews["checkIn.note"].typeText("Back on today's page.")
+    app.buttons["checkIn.save"].tap()
+    let backButton = app.buttons["entry.back"]
+    XCTAssertTrue(backButton.waitForExistence(timeout: 3))
+    backButton.tap()
+
+    XCTAssertTrue(app.staticTexts["Back on today's page."].waitForExistence(timeout: 3))
+  }
+
   private func launchSeededApp() -> XCUIApplication {
     let app = XCUIApplication()
     app.launchArguments = ["-ui-testing", "-reset-store", "-seed-check-ins"]

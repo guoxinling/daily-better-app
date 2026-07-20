@@ -16,6 +16,19 @@ DEEPSEEK_API_KEY=replace-with-your-real-deepseek-key
 DEEPSEEK_MODEL=deepseek-v4-flash
 ```
 
+Local development and tests use an in-process rate limiter. Vercel Preview and Production
+deployments must also configure the shared Upstash Redis credentials:
+
+```env
+UPSTASH_REDIS_REST_URL=https://your-database.upstash.io
+UPSTASH_REDIS_REST_TOKEN=replace-with-your-upstash-rest-token
+```
+
+Provision Redis through the Vercel Marketplace or Upstash, then attach both variables to Preview
+and Production. Requests fail with `rate_limit_unavailable` and HTTP 503 when shared rate limiting
+is missing or unavailable in those environments; the service never silently falls back to a
+process-local production limiter.
+
 Generate a token secret with:
 
 ```bash
@@ -65,6 +78,10 @@ curl -X POST http://127.0.0.1:3000/api/reflect \
   - `reflectionText`
   - `suggestedActionText`
   - `source: "ai"`
+- Reflection requests are limited per anonymous device and IP
+- Device-token issuance is limited per source IP
+- Production metrics are emitted as sanitized structured Vercel logs and are not retained in an
+  in-process array
 
 ## Common failure cases
 

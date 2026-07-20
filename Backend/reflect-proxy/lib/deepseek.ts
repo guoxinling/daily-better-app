@@ -77,6 +77,7 @@ export async function requestReflectionFromDeepSeek(
           })
         }
       ],
+      thinking: { type: "disabled" },
       response_format: { type: "json_object" }
     })
   });

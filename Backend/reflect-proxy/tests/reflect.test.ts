@@ -50,7 +50,7 @@ test("reflect request schema accepts all current mood keys", () => {
   for (const mood of currentMoods) {
     const result = reflectRequestSchema.safeParse({
       deviceToken: "device-token",
-      requestId: "request-id",
+      requestId: "11111111-1111-4111-8111-111111111111",
       mood,
       noteText: "A note.",
       locale: "en_US",
@@ -67,7 +67,7 @@ test("reflect request schema rejects retired mood keys", () => {
   for (const mood of retiredMoods) {
     const result = reflectRequestSchema.safeParse({
       deviceToken: "device-token",
-      requestId: "request-id",
+      requestId: "11111111-1111-4111-8111-111111111111",
       mood,
       noteText: "A note.",
       locale: "en_US",
@@ -76,6 +76,37 @@ test("reflect request schema rejects retired mood keys", () => {
 
     expect(result.success, `expected retired mood ${mood} to be rejected`).toBe(false);
   }
+});
+
+test("reflect request schema rejects non-UUID request IDs", () => {
+  const result = reflectRequestSchema.safeParse({
+    deviceToken: "device-token",
+    requestId: "request-id",
+    mood: "calm",
+    noteText: "A note.",
+    locale: "en_US",
+    appVersion: "1.2.0"
+  });
+
+  expect(result.success).toBe(false);
+});
+
+test.each([
+  ["deviceToken", "x".repeat(2049)],
+  ["locale", "x".repeat(33)],
+  ["appVersion", "x".repeat(33)]
+])("reflect request schema bounds %s", (field, value) => {
+  const result = reflectRequestSchema.safeParse({
+    deviceToken: "device-token",
+    requestId: "11111111-1111-4111-8111-111111111111",
+    mood: "calm",
+    noteText: "A note.",
+    locale: "en_US",
+    appVersion: "1.2.0",
+    [field]: value
+  });
+
+  expect(result.success).toBe(false);
 });
 
 test("reflect returns structured ai payload", async () => {
@@ -98,7 +129,7 @@ test("reflect returns structured ai payload", async () => {
       headers: { "x-forwarded-for": "203.0.113.10" },
       body: {
         deviceToken: validToken,
-        requestId: "req-1",
+        requestId: "11111111-1111-4111-8111-111111111101",
         mood: "anxious",
         noteText: "I can't slow down tonight.",
         locale: "en_US",
@@ -129,7 +160,7 @@ test("reflect rejects invalid token with 401", async () => {
       method: "POST",
       body: {
         deviceToken: "invalid-token",
-        requestId: "req-2",
+        requestId: "11111111-1111-4111-8111-111111111102",
         mood: "bright",
         noteText: "A small good thing happened.",
         locale: "en_US",
@@ -163,7 +194,7 @@ test("reflect rejects over-limit request with 429", async () => {
         headers: { "x-forwarded-for": "203.0.113.20" },
         body: {
           deviceToken: validToken,
-          requestId: `req-ok-${index}`,
+          requestId: `11111111-1111-4111-8111-${String(index).padStart(12, "0")}`,
           mood: "overwhelmed",
           noteText: "Everything is competing for attention.",
           locale: "en_US",
@@ -181,7 +212,7 @@ test("reflect rejects over-limit request with 429", async () => {
       headers: { "x-forwarded-for": "203.0.113.20" },
       body: {
         deviceToken: validToken,
-        requestId: "req-limit",
+        requestId: "11111111-1111-4111-8111-111111111103",
         mood: "overwhelmed",
         noteText: "Everything is competing for attention.",
         locale: "en_US",
@@ -211,7 +242,7 @@ test("reflect rejects malformed model payload with 502", async () => {
       headers: { "x-forwarded-for": "203.0.113.30" },
       body: {
         deviceToken: validToken,
-        requestId: "req-bad-model",
+        requestId: "11111111-1111-4111-8111-111111111104",
         mood: "anxious",
         noteText: "I keep replaying the same sharp conversation.",
         locale: "en_US",

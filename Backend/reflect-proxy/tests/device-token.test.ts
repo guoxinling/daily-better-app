@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, test } from "vitest";
 
 import handler from "../api/device-token.js";
 import { resetConfigForTests } from "../lib/config.js";
+import { resetRateLimitsForTests } from "../lib/rate-limit.js";
 import { issueDeviceToken } from "../lib/tokens.js";
 import { verifyDeviceToken } from "../lib/tokens.js";
 
@@ -31,12 +32,14 @@ beforeEach(() => {
   process.env.DEVICE_TOKEN_SECRET = TEST_SECRET;
   delete process.env.DEVICE_TOKEN_TTL_DAYS;
   resetConfigForTests();
+  resetRateLimitsForTests();
 });
 
 afterEach(() => {
   delete process.env.DEVICE_TOKEN_SECRET;
   delete process.env.DEVICE_TOKEN_TTL_DAYS;
   resetConfigForTests();
+  resetRateLimitsForTests();
 });
 
 test("issueDeviceToken returns opaque token with expiry", async () => {
@@ -74,4 +77,32 @@ test("device-token handler returns 405 for non-POST requests", async () => {
 
   expect(state.statusCode).toBe(405);
   expect(state.body).toEqual({ error: "method_not_allowed" });
+});
+
+test("device-token handler rate limits issuance by source IP", async () => {
+  for (let index = 0; index < 10; index += 1) {
+    const { response, state } = makeResponseRecorder();
+
+    await handler(
+      {
+        method: "POST",
+        headers: { "x-forwarded-for": "203.0.113.42" }
+      },
+      response
+    );
+
+    expect(state.statusCode).toBe(200);
+  }
+
+  const { response, state } = makeResponseRecorder();
+  await handler(
+    {
+      method: "POST",
+      headers: { "x-forwarded-for": "203.0.113.42" }
+    },
+    response
+  );
+
+  expect(state.statusCode).toBe(429);
+  expect(state.body).toEqual({ error: "rate_limited" });
 });

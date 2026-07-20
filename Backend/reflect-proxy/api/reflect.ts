@@ -6,7 +6,11 @@ import {
   requestReflectionFromDeepSeek
 } from "../lib/deepseek.js";
 import { recordMetric } from "../lib/metrics.js";
-import { enforceRateLimit, RateLimitExceededError } from "../lib/rate-limit.js";
+import {
+  enforceRateLimit,
+  RateLimitExceededError,
+  RateLimitUnavailableError
+} from "../lib/rate-limit.js";
 import { reflectRequestSchema, type ReflectRequest } from "../lib/schema.js";
 import { verifyDeviceToken } from "../lib/tokens.js";
 
@@ -140,6 +144,10 @@ function statusForError(error: unknown): number {
     return 429;
   }
 
+  if (error instanceof RateLimitUnavailableError) {
+    return 503;
+  }
+
   if (error instanceof ProviderUnavailableError || error instanceof InvalidModelPayloadError) {
     return 502;
   }
@@ -149,6 +157,10 @@ function statusForError(error: unknown): number {
 
 function classifyError(error: unknown): string {
   if (error instanceof RateLimitExceededError) {
+    return error.code;
+  }
+
+  if (error instanceof RateLimitUnavailableError) {
     return error.code;
   }
 

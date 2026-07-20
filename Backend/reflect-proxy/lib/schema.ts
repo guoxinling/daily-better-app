@@ -3,7 +3,7 @@ import { z } from "zod";
 export const reflectRequestSchema = z.object({
   deviceToken: z.string().trim().min(1),
   requestId: z.string().trim().min(1),
-  mood: z.enum(["good", "low", "anxious", "frustrated", "drained", "overwhelmed"]),
+  mood: z.enum(["bright", "calm", "okay", "low", "anxious", "overwhelmed"]),
   noteText: z.string().trim().min(1).max(4000),
   locale: z.string().trim().min(2),
   appVersion: z.string().trim().min(1)

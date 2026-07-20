@@ -3,6 +3,7 @@ import { afterEach, beforeEach, expect, test } from "vitest";
 import { buildReflectHandler } from "../api/reflect.js";
 import { listMetricsForTests, resetMetricsForTests } from "../lib/metrics.js";
 import { resetRateLimitsForTests } from "../lib/rate-limit.js";
+import { reflectRequestSchema } from "../lib/schema.js";
 import { issueDeviceToken } from "../lib/tokens.js";
 
 const TEST_SECRET = "test-device-token-secret-value-2026";
@@ -41,6 +42,40 @@ afterEach(() => {
   delete process.env.DEEPSEEK_API_KEY;
   resetMetricsForTests();
   resetRateLimitsForTests();
+});
+
+test("reflect request schema accepts all current mood keys", () => {
+  const currentMoods = ["bright", "calm", "okay", "low", "anxious", "overwhelmed"];
+
+  for (const mood of currentMoods) {
+    const result = reflectRequestSchema.safeParse({
+      deviceToken: "device-token",
+      requestId: "request-id",
+      mood,
+      noteText: "A note.",
+      locale: "en_US",
+      appVersion: "1.2.0"
+    });
+
+    expect(result.success, `expected current mood ${mood} to be accepted`).toBe(true);
+  }
+});
+
+test("reflect request schema rejects retired mood keys", () => {
+  const retiredMoods = ["good", "frustrated", "drained"];
+
+  for (const mood of retiredMoods) {
+    const result = reflectRequestSchema.safeParse({
+      deviceToken: "device-token",
+      requestId: "request-id",
+      mood,
+      noteText: "A note.",
+      locale: "en_US",
+      appVersion: "1.2.0"
+    });
+
+    expect(result.success, `expected retired mood ${mood} to be rejected`).toBe(false);
+  }
 });
 
 test("reflect returns structured ai payload", async () => {
@@ -95,7 +130,7 @@ test("reflect rejects invalid token with 401", async () => {
       body: {
         deviceToken: "invalid-token",
         requestId: "req-2",
-        mood: "good",
+        mood: "bright",
         noteText: "A small good thing happened.",
         locale: "en_US",
         appVersion: "1.2.0"
@@ -177,7 +212,7 @@ test("reflect rejects malformed model payload with 502", async () => {
       body: {
         deviceToken: validToken,
         requestId: "req-bad-model",
-        mood: "frustrated",
+        mood: "anxious",
         noteText: "I keep replaying the same sharp conversation.",
         locale: "en_US",
         appVersion: "1.2.0"

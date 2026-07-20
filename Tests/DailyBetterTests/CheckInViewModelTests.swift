@@ -169,6 +169,55 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertTrue(viewModel.saveFailure)
   }
 
+  func testWrittenReflectionSaveFailureWarnsWritingMayAlreadyHaveBeenSent() async {
+    let repository = InMemoryCheckInRepository(saveError: RepositoryTestError.saveFailed)
+    let remoteProvider = ReflectionProviderSpy(result: .success(.stub(source: .ai)))
+    let viewModel = CheckInViewModel(repository: repository, remoteProvider: remoteProvider)
+    viewModel.selectedMood = .anxious
+    viewModel.noteText = "A private written reflection"
+
+    await viewModel.reflect()
+
+    XCTAssertEqual(
+      viewModel.saveFailureMessage,
+      "Your entry is still here. Your writing may already have been sent for reflection."
+    )
+  }
+
+  func testSaveWithoutReflectionFailureSaysEntryWasNotSent() {
+    let repository = InMemoryCheckInRepository(saveError: RepositoryTestError.saveFailed)
+    let viewModel = CheckInViewModel(
+      repository: repository,
+      remoteProvider: ReflectionProviderSpy(result: .success(.stub(source: .ai)))
+    )
+    viewModel.selectedMood = .calm
+    viewModel.noteText = "Keep this local"
+
+    viewModel.saveWithoutReflection()
+
+    XCTAssertEqual(
+      viewModel.saveFailureMessage,
+      "Your entry is still here and has not been sent anywhere."
+    )
+  }
+
+  func testMoodOnlyReflectionSaveFailureSaysEntryWasNotSent() async {
+    let repository = InMemoryCheckInRepository(saveError: RepositoryTestError.saveFailed)
+    let viewModel = CheckInViewModel(
+      repository: repository,
+      localProvider: ReflectionProviderSpy(result: .success(.stub(source: .local))),
+      remoteProvider: ReflectionProviderSpy(result: .success(.stub(source: .ai)))
+    )
+    viewModel.selectedMood = .bright
+
+    await viewModel.reflect()
+
+    XCTAssertEqual(
+      viewModel.saveFailureMessage,
+      "Your entry is still here and has not been sent anywhere."
+    )
+  }
+
   func testRetryAfterReflectionSaveFailureDoesNotCallRemoteProviderAgain() async {
     let repository = InMemoryCheckInRepository(saveError: RepositoryTestError.saveFailed)
     let remoteProvider = ReflectionProviderSpy(result: .success(.stub(source: .ai)))
@@ -256,10 +305,13 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertEqual(repository.entries.count, 1)
   }
 
-  func testSuccessfulReflectionPreservesDraftChangedWhileRequestIsActive() async {
+  func testSuccessfulReflectionDoesNotCommitSnapshotChangedWhileRequestIsActive() async {
     let repository = InMemoryCheckInRepository()
     let requestStarted = expectation(description: "Reflection request started")
-    let remoteProvider = ControllableReflectionProvider { requestStarted.fulfill() }
+    let remoteProvider = ControllableReflectionProvider(
+      subsequentResult: .stub(source: .ai),
+      onRequest: { requestStarted.fulfill() }
+    )
     let viewModel = CheckInViewModel(repository: repository, remoteProvider: remoteProvider)
     viewModel.selectedMood = .anxious
     viewModel.noteText = "  Original concern.  "
@@ -272,12 +324,44 @@ final class CheckInViewModelTests: XCTestCase {
     await remoteProvider.completeFirstRequest(with: .stub(source: .ai))
     await reflection.value
 
-    XCTAssertEqual(repository.entries.count, 1)
-    XCTAssertEqual(repository.entries.first?.mood, .anxious)
-    XCTAssertEqual(repository.entries.first?.noteText, "Original concern.")
-    XCTAssertTrue(viewModel.presentedEntry === repository.entries.first)
+    XCTAssertTrue(repository.entries.isEmpty)
+    XCTAssertNil(viewModel.presentedEntry)
+    XCTAssertNil(viewModel.committedEntry)
     XCTAssertEqual(viewModel.selectedMood, .bright)
     XCTAssertEqual(viewModel.noteText, "A newer draft")
+
+    await viewModel.reflect()
+
+    XCTAssertEqual(repository.entries.count, 1)
+    XCTAssertEqual(repository.entries.first?.mood, .bright)
+    XCTAssertEqual(repository.entries.first?.noteText, "A newer draft")
+  }
+
+  func testCancelReflectionPreventsTrackedRequestFromPersistingOrCommitting() async {
+    let repository = InMemoryCheckInRepository()
+    let requestStarted = expectation(description: "Reflection request started")
+    let remoteProvider = ControllableReflectionProvider { requestStarted.fulfill() }
+    var committedEntry: CheckInEntry?
+    let viewModel = CheckInViewModel(
+      repository: repository,
+      remoteProvider: remoteProvider,
+      onEntryCommitted: { committedEntry = $0 }
+    )
+    viewModel.selectedMood = .overwhelmed
+    viewModel.noteText = "Discard this active reflection"
+
+    viewModel.startReflection()
+    await fulfillment(of: [requestStarted], timeout: 1)
+    viewModel.cancelReflection()
+    await remoteProvider.completeFirstRequest(with: .stub(source: .ai))
+    while viewModel.isReflecting {
+      await Task.yield()
+    }
+
+    XCTAssertTrue(repository.entries.isEmpty)
+    XCTAssertNil(viewModel.presentedEntry)
+    XCTAssertNil(viewModel.committedEntry)
+    XCTAssertNil(committedEntry)
   }
 
   func testSaveWithoutReflectionIsNoOpWhileReflectionIsActive() async {
@@ -460,10 +544,15 @@ private actor ReflectionProviderSpy: ReflectionProviding {
 private actor ControllableReflectionProvider: ReflectionProviding {
   private(set) var requests: [ReflectionRequest] = []
   private let onRequest: @Sendable () -> Void
+  private let subsequentResult: ReflectionResult?
   private var firstRequestContinuation: CheckedContinuation<ReflectionResult, Never>?
   private var queuedResult: ReflectionResult?
 
-  init(onRequest: @escaping @Sendable () -> Void) {
+  init(
+    subsequentResult: ReflectionResult? = nil,
+    onRequest: @escaping @Sendable () -> Void
+  ) {
+    self.subsequentResult = subsequentResult
     self.onRequest = onRequest
   }
 
@@ -471,11 +560,14 @@ private actor ControllableReflectionProvider: ReflectionProviding {
 
   func reflect(_ request: ReflectionRequest) async throws -> ReflectionResult {
     requests.append(request)
-    onRequest()
 
     guard requests.count == 1 else {
+      if let subsequentResult {
+        return subsequentResult
+      }
       throw ReflectionError.unavailable
     }
+    onRequest()
 
     if let queuedResult {
       self.queuedResult = nil

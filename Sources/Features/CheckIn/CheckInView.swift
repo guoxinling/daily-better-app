@@ -83,8 +83,7 @@ struct CheckInView: View {
     }
     .confirmationDialog("Discard this entry?", isPresented: $confirmsDiscard) {
       Button("Discard entry", role: .destructive) {
-        dismissKeyboard()
-        onCancel()
+        dismissComposer(viewModel)
       }
       Button("Keep writing", role: .cancel) {}
     } message: {
@@ -92,7 +91,7 @@ struct CheckInView: View {
     }
     .alert("Couldn't reflect right now", isPresented: failureBinding(viewModel)) {
       Button("Try again") {
-        Task { await viewModel.reflect() }
+        viewModel.startReflection()
       }
       Button("Save without reflection") {
         viewModel.saveWithoutReflection()
@@ -111,7 +110,7 @@ struct CheckInView: View {
         viewModel.saveFailure = false
       }
     } message: {
-      Text("Your entry is still here and has not been sent anywhere.")
+      Text(viewModel.saveFailureMessage)
     }
   }
 
@@ -202,7 +201,7 @@ struct CheckInView: View {
       .disabled(!canSubmit)
 
       composerButton("Reflect", identifier: "checkIn.reflect", primary: true, isLoading: viewModel.isReflecting) {
-        Task { await viewModel.reflect() }
+        viewModel.startReflection()
       }
       .disabled(!canSubmit)
     }
@@ -279,8 +278,14 @@ struct CheckInView: View {
     if viewModel.hasUnsavedChanges {
       confirmsDiscard = true
     } else {
-      onCancel()
+      dismissComposer(viewModel)
     }
+  }
+
+  private func dismissComposer(_ viewModel: CheckInViewModel) {
+    viewModel.cancelReflection()
+    dismissKeyboard()
+    onCancel()
   }
 
   private func dismissKeyboard() {

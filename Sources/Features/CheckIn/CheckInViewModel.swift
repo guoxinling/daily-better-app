@@ -17,12 +17,20 @@ final class CheckInViewModel {
     currentDraft != initialDraft
   }
 
+  var saveFailureMessage: String {
+    if pendingSave?.wasSentForRemoteReflection == true {
+      return "Your entry is still here. Your writing may already have been sent for reflection."
+    }
+    return "Your entry is still here and has not been sent anywhere."
+  }
+
   private let repository: CheckInRepository
   private let localProvider: any ReflectionProviding
   private let remoteProvider: any ReflectionProviding
   private let onEntryCommitted: ((CheckInEntry) -> Void)?
   private var initialDraft: CheckInDraft
   private var pendingSave: PendingSave?
+  @ObservationIgnored private var reflectionTask: Task<Void, Never>?
 
   init(
     repository: CheckInRepository,
@@ -70,9 +78,23 @@ final class CheckInViewModel {
     persistAndCommit(pendingSave)
   }
 
+  func startReflection() {
+    guard reflectionTask == nil else { return }
+    reflectionTask = Task { [weak self] in
+      guard let self else { return }
+      await reflect()
+      reflectionTask = nil
+    }
+  }
+
+  func cancelReflection() {
+    reflectionTask?.cancel()
+  }
+
   func reflect() async {
     guard let selectedMood, !isReflecting else { return }
     let draft = currentDraft
+    let visibleNoteText = noteText
 
     failure = nil
     saveFailure = false
@@ -94,6 +116,7 @@ final class CheckInViewModel {
       let provider = normalizedNote.isEmpty ? localProvider : remoteProvider
       let result = try await provider.reflect(request)
       try Task.checkCancellation()
+      guard self.selectedMood == selectedMood, noteText == visibleNoteText else { return }
       persistAndCommit(
         PendingSave(
           mood: selectedMood,
@@ -205,5 +228,9 @@ final class CheckInViewModel {
     let noteText: String?
     let reflection: ReflectionResult?
     let draft: CheckInDraft
+
+    var wasSentForRemoteReflection: Bool {
+      noteText != nil && reflection != nil
+    }
   }
 }

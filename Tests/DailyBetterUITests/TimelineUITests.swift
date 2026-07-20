@@ -6,22 +6,23 @@ final class TimelineUITests: XCTestCase {
   private let savedSuggestedActionText = "Name one thing you can control in the next five minutes."
 
   func testTimelineShowsWeekAndEntry() {
-    let app = XCUIApplication()
-    app.launchArguments = ["-ui-testing", "-reset-store", "-seed-check-ins"]
-    app.launch()
-
-    app.buttons["tab.timeline"].tap()
+    let app = launchSeededApp()
 
     XCTAssertTrue(app.otherElements["timeline.week"].waitForExistence(timeout: 5))
     XCTAssertTrue(app.staticTexts["Everything piled up today."].exists)
   }
 
-  func testTimelineRowTruncatesLongNotesToSummaryOnly() {
-    let app = XCUIApplication()
-    app.launchArguments = ["-ui-testing", "-reset-store", "-seed-long-reflection-entry"]
-    app.launch()
+  func testTimelineHasFixedCheckInAction() {
+    let app = launchSeededApp()
+    let action = app.buttons["timeline.checkIn"]
 
-    app.buttons["tab.timeline"].tap()
+    XCTAssertTrue(action.waitForExistence(timeout: 5))
+    XCTAssertTrue(action.isHittable)
+    XCTAssertGreaterThan(action.frame.minY, app.otherElements["timeline.week"].frame.maxY)
+  }
+
+  func testTimelineRowTruncatesLongNotesToSummaryOnly() {
+    let app = launchLongEntryApp()
 
     let longNotePreview = app.descendants(matching: .staticText)
       .matching(NSPredicate(format: "label CONTAINS %@", "I am carrying too many threads"))
@@ -33,12 +34,16 @@ final class TimelineUITests: XCTestCase {
     XCTAssertTrue(app.staticTexts["Reflection saved"].exists)
   }
 
-  func testEntryDetailShowsFullSavedReflectionAndSuggestedAction() {
-    let app = XCUIApplication()
-    app.launchArguments = ["-ui-testing", "-reset-store", "-seed-long-reflection-entry"]
-    app.launch()
+  func testLongTimelineSummaryStaysAtThreeLines() {
+    let app = launchLongEntryApp()
+    let preview = app.staticTexts["timeline.entry.note.preview"]
 
-    app.buttons["tab.timeline"].tap()
+    XCTAssertTrue(preview.waitForExistence(timeout: 5))
+    XCTAssertLessThanOrEqual(preview.frame.height, 88)
+  }
+
+  func testEntryDetailShowsFullSavedReflectionAndSuggestedAction() {
+    let app = launchLongEntryApp()
     app.descendants(matching: .any)["timeline.entry.row"].firstMatch.tap()
 
     XCTAssertTrue(app.navigationBars["Reflection"].waitForExistence(timeout: 2))
@@ -50,11 +55,7 @@ final class TimelineUITests: XCTestCase {
   }
 
   func testEntryDetailShowsBackActionAndCanReturnToTimeline() {
-    let app = XCUIApplication()
-    app.launchArguments = ["-ui-testing", "-reset-store", "-seed-long-reflection-entry"]
-    app.launch()
-
-    app.buttons["tab.timeline"].tap()
+    let app = launchLongEntryApp()
     app.descendants(matching: .any)["timeline.entry.row"].firstMatch.tap()
 
     let backButton = app.buttons["timeline.detail.back"]
@@ -71,6 +72,7 @@ final class TimelineUITests: XCTestCase {
     app.launchArguments = ["-ui-testing", "-reset-store"]
     app.launch()
 
+    app.buttons["timeline.checkIn"].tap()
     app.buttons["mood.bright"].tap()
     app.textViews["checkIn.note"].tap()
     app.textViews["checkIn.note"].typeText("The presentation went well.")
@@ -78,8 +80,21 @@ final class TimelineUITests: XCTestCase {
       app.buttons["checkIn.dismissKeyboard"].tap()
     }
     app.buttons["checkIn.saveOnly"].tap()
-    app.buttons["tab.timeline"].tap()
 
     XCTAssertTrue(app.staticTexts["The presentation went well."].waitForExistence(timeout: 3))
+  }
+
+  private func launchSeededApp() -> XCUIApplication {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing", "-reset-store", "-seed-check-ins"]
+    app.launch()
+    return app
+  }
+
+  private func launchLongEntryApp() -> XCUIApplication {
+    let app = XCUIApplication()
+    app.launchArguments = ["-ui-testing", "-reset-store", "-seed-long-reflection-entry"]
+    app.launch()
+    return app
   }
 }

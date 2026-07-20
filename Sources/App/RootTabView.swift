@@ -29,20 +29,11 @@ struct RootTabView: View {
     NavigationStack {
       TimelineView(
         refreshToken: timelineRefreshID,
-        pendingEntryID: nil,
-        onPendingEntryConsumed: {}
-      )
-      .toolbar {
-        ToolbarItem(placement: .topBarTrailing) {
-          Button {
-            presentNewEntry()
-          } label: {
-            Image(systemName: "plus")
-          }
-          .accessibilityLabel("New entry")
-          .accessibilityIdentifier("timeline.checkIn")
+        onCheckIn: presentNewEntry,
+        onSelectEntry: { entry in
+          presentation = .detail(entry)
         }
-      }
+      )
     }
     .fullScreenCover(item: $presentation) { presentation in
       switch presentation {

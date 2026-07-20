@@ -5,12 +5,11 @@ struct TimelineView: View {
   @Environment(\.modelContext) private var modelContext
 
   let refreshToken: Int
-  let pendingEntryID: UUID?
-  let onPendingEntryConsumed: () -> Void
+  let onCheckIn: () -> Void
+  let onSelectEntry: (CheckInEntry) -> Void
 
   @State private var entries: [CheckInEntry] = []
   @State private var selectedDate = Calendar.current.startOfDay(for: .now)
-  @State private var selectedEntry: CheckInEntry?
 
   private var week: [Date] {
     TimelineCalendar.week(containing: selectedDate)
@@ -35,7 +34,7 @@ struct TimelineView: View {
             TimelineEntryRow(entry: entry)
               .contentShape(Rectangle())
               .onTapGesture {
-                selectedEntry = entry
+                onSelectEntry(entry)
               }
           }
         }
@@ -49,19 +48,21 @@ struct TimelineView: View {
     .dailyBetterBackground()
     .task {
       reloadEntries()
-      consumePendingEntryRoute()
     }
     .onChange(of: refreshToken) { _, _ in
       reloadEntries()
-      consumePendingEntryRoute()
     }
-    .onChange(of: pendingEntryID) { _, _ in
-      consumePendingEntryRoute()
-    }
-    .sheet(item: $selectedEntry) { entry in
-      NavigationStack {
-        EntryDetailView(entry: entry)
+    .safeAreaInset(edge: .bottom) {
+      Button(action: onCheckIn) {
+        Label("Check in", systemImage: "plus")
+          .font(.system(size: 17, weight: .semibold))
+          .foregroundStyle(.white)
+          .frame(maxWidth: .infinity, minHeight: 56)
+          .background(DailyBetterStyle.primaryAction, in: Capsule())
       }
+      .accessibilityIdentifier("timeline.checkIn")
+      .padding(.horizontal, 24)
+      .padding(.vertical, 12)
     }
   }
 
@@ -181,16 +182,5 @@ struct TimelineView: View {
       sortBy: [SortDescriptor(\CheckInEntry.createdAt, order: .reverse)]
     )
     entries = (try? modelContext.fetch(descriptor)) ?? []
-  }
-
-  private func consumePendingEntryRoute() {
-    guard let pendingEntryID,
-          let matchingEntry = entries.first(where: { $0.id == pendingEntryID }) else {
-      return
-    }
-
-    selectedDate = Calendar.current.startOfDay(for: matchingEntry.createdAt)
-    selectedEntry = matchingEntry
-    onPendingEntryConsumed()
   }
 }

@@ -36,6 +36,7 @@ struct TimelineEntryRow: View {
       }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
+    .accessibilityElement(children: .contain)
     .accessibilityIdentifier("timeline.entry.row")
   }
 

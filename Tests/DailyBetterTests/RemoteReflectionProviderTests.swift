@@ -3,6 +3,20 @@ import XCTest
 @testable import DailyBetter
 
 final class RemoteReflectionProviderTests: XCTestCase {
+  func testReflectionProviderFactoryUsesProductionBackendWhenEnvironmentIsUnset() {
+    let url = ReflectionProviderFactory.resolveBaseURL(environment: [:])
+
+    XCTAssertEqual(url, URL(string: "https://daily-better-alpha.vercel.app"))
+  }
+
+  func testReflectionProviderFactoryUsesEnvironmentOverrideWhenPresent() {
+    let url = ReflectionProviderFactory.resolveBaseURL(environment: [
+      "DAILYBETTER_REFLECTION_BASE_URL": "http://127.0.0.1:3000"
+    ])
+
+    XCTAssertEqual(url, URL(string: "http://127.0.0.1:3000"))
+  }
+
   func testRemoteProviderBootstrapsTokenBeforeReflecting() async throws {
     let payload = RemoteReflectionPayload(
       reflectionText: "A calm reflection.",

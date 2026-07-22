@@ -106,13 +106,16 @@ enum ReflectionProviderFactory {
     )
   }
 
-  private static var resolvedBaseURL: URL? {
-    let environment = ProcessInfo.processInfo.environment
+  static func resolveBaseURL(environment: [String: String]) -> URL? {
     if let configured = environment["DAILYBETTER_REFLECTION_BASE_URL"], !configured.isEmpty {
       return URL(string: configured)
     }
 
-    return URL(string: "https://daily-better-reflect.vercel.app")
+    return URL(string: "https://daily-better-alpha.vercel.app")
+  }
+
+  private static var resolvedBaseURL: URL? {
+    resolveBaseURL(environment: ProcessInfo.processInfo.environment)
   }
 }
 

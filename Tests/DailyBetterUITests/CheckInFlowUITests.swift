@@ -11,11 +11,11 @@ final class CheckInFlowUITests: XCTestCase {
     XCTAssertTrue(reflectButton.isHittable)
     reflectButton.tap()
 
-    XCTAssertTrue(app.buttons["entry.back"].waitForExistence(timeout: 5))
-    XCTAssertTrue(app.staticTexts["reflection.title"].exists)
+    XCTAssertTrue(app.buttons["checkIn.savePreviewedReflection"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.descendants(matching: .any)["checkIn.reflectionPreview"].waitForExistence(timeout: 2))
   }
 
-  func testMoodOnlyCheckInRoutesIntoTimelineDetail() {
+  func testMoodOnlyCheckInReflectsInComposerThenSavesToTimeline() {
     let app = launchComposer()
 
     let overwhelmedMood = app.buttons["mood.overwhelmed"]
@@ -24,12 +24,14 @@ final class CheckInFlowUITests: XCTestCase {
 
     app.buttons["checkIn.reflect"].tap()
 
-    XCTAssertTrue(app.buttons["entry.back"].waitForExistence(timeout: 5))
-    XCTAssertTrue(app.navigationBars["Entry"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.staticTexts["reflection.action"].exists)
+    XCTAssertTrue(app.buttons["checkIn.savePreviewedReflection"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.descendants(matching: .any)["checkIn.reflectionPreview"].waitForExistence(timeout: 2))
+    app.buttons["checkIn.savePreviewedReflection"].tap()
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 3))
+    XCTAssertTrue(app.staticTexts["Only a feeling was recorded."].waitForExistence(timeout: 2))
   }
 
-  func testWrittenCheckInReflectsAndOpensSavedReflection() {
+  func testWrittenCheckInReflectsInComposerAndSavesToTimeline() {
     let app = launchComposer(additionalArguments: ["-stub-remote-reflection-success"])
 
     let anxiousMood = app.buttons["mood.anxious"]
@@ -43,14 +45,19 @@ final class CheckInFlowUITests: XCTestCase {
 
     app.buttons["checkIn.reflect"].tap()
 
-    XCTAssertTrue(app.buttons["entry.back"].waitForExistence(timeout: 5))
-    XCTAssertTrue(app.navigationBars["Entry"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.staticTexts["reflection.action"].exists)
+    XCTAssertTrue(app.buttons["checkIn.savePreviewedReflection"].waitForExistence(timeout: 5))
+    XCTAssertTrue(app.descendants(matching: .any)["checkIn.reflectionPreview"].waitForExistence(timeout: 2))
     XCTAssertTrue(app.staticTexts["You sound wound up, not broken. Your mind is still carrying the day forward."].exists)
     XCTAssertTrue(app.staticTexts["Set the phone down and take ten slow breaths before deciding what to do next."].exists)
+
+    app.buttons["checkIn.savePreviewedReflection"].tap()
+
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 3))
+    XCTAssertTrue(app.staticTexts["I can't settle down tonight."].waitForExistence(timeout: 2))
+    XCTAssertTrue(app.staticTexts["Reflection saved"].exists)
   }
 
-  func testSaveWithoutReflectionRoutesIntoTimelineDetail() {
+  func testSaveWithoutReflectionReturnsToTimeline() {
     let app = launchComposer()
 
     let brightMood = app.buttons["mood.bright"]
@@ -64,31 +71,43 @@ final class CheckInFlowUITests: XCTestCase {
 
     app.buttons["checkIn.save"].tap()
 
-    XCTAssertTrue(app.buttons["entry.back"].waitForExistence(timeout: 5))
-    XCTAssertTrue(app.navigationBars["Entry"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.staticTexts["Your note"].exists)
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 3))
     XCTAssertTrue(app.staticTexts["Today felt quieter than usual."].exists)
   }
 
-  func testTextEntryDoesNotShowCustomDoneButton() {
+  func testTextEntryShowsCompactKeyboardDismissButton() {
     let app = launchComposer()
 
     let noteField = app.textViews["checkIn.note"]
     XCTAssertTrue(noteField.waitForExistence(timeout: 2))
     noteField.tap()
 
-    XCTAssertFalse(app.buttons["checkIn.dismissKeyboard"].exists)
+    XCTAssertTrue(app.buttons["checkIn.dismissKeyboard"].waitForExistence(timeout: 2))
+    XCTAssertTrue(app.buttons["checkIn.dismissKeyboard"].isHittable)
+    XCTAssertLessThan(app.buttons["checkIn.dismissKeyboard"].frame.width, 80)
   }
 
-  func testSaveOpensDetailAndBackReturnsToTimeline() {
+  func testTappingEmptyNoteAreaShowsKeyboard() {
+    let app = launchComposer()
+
+    let noteField = app.textViews["checkIn.note"]
+    XCTAssertTrue(noteField.waitForExistence(timeout: 2))
+
+    noteField.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.85)).tap()
+
+    XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 2))
+    XCTAssertTrue(app.buttons["checkIn.dismissKeyboard"].isHittable)
+    XCTAssertLessThan(app.buttons["checkIn.dismissKeyboard"].frame.width, 80)
+  }
+
+  func testSaveReturnsToTimelineWithoutOpeningDetail() {
     let app = launchComposer()
     app.buttons["mood.calm"].tap()
     app.buttons["checkIn.save"].tap()
 
-    XCTAssertTrue(app.navigationBars["Entry"].waitForExistence(timeout: 3))
-    assertSingleFullScreenJournalPage(app)
-    app.buttons["entry.back"].tap()
-    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 2))
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 3))
+    XCTAssertFalse(app.buttons["entry.back"].exists)
+    XCTAssertTrue(app.staticTexts["Only a feeling was recorded."].exists)
   }
 
   func testEditingNoteClearsStaleReflectionAndUpdatesSameEntry() {
@@ -102,12 +121,10 @@ final class CheckInFlowUITests: XCTestCase {
     note.typeText(" Updated")
     app.buttons["checkIn.save"].tap()
 
-    let updatedNote = app.descendants(matching: .any)["entry.note.full"].firstMatch
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 3))
+    let updatedNote = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Updated")).firstMatch
     XCTAssertTrue(updatedNote.waitForExistence(timeout: 3))
-    XCTAssertTrue(updatedNote.label.contains("Updated"))
-    XCTAssertFalse(app.staticTexts["reflection.title"].exists)
-    XCTAssertFalse(app.staticTexts["reflection.action"].exists)
-    assertSingleFullScreenJournalPage(app)
+    XCTAssertFalse(app.staticTexts["Reflection saved"].exists)
   }
 
   func testLongTextKeepsFixedActionsVisibleAboveKeyboard() {
@@ -118,8 +135,8 @@ final class CheckInFlowUITests: XCTestCase {
 
     XCTAssertTrue(app.buttons["checkIn.save"].isHittable)
     XCTAssertTrue(app.buttons["checkIn.reflect"].isHittable)
-    XCTAssertGreaterThan(app.buttons["checkIn.save"].frame.minY, app.keyboards.firstMatch.frame.minY - 120)
-    XCTAssertFalse(app.buttons["checkIn.dismissKeyboard"].exists)
+    XCTAssertTrue(app.buttons["checkIn.dismissKeyboard"].isHittable)
+    XCTAssertLessThan(app.buttons["checkIn.dismissKeyboard"].frame.width, 80)
   }
 
   func testClosingChangedDraftRequiresDiscardConfirmation() {

@@ -17,6 +17,10 @@ final class CheckInViewModel {
     currentDraft != initialDraft
   }
 
+  var hasPreviewedReflection: Bool {
+    pendingSave?.reflection != nil && presentedEntry != nil
+  }
+
   var saveFailureMessage: String {
     if pendingSave?.wasSentForRemoteReflection == true {
       return "Your entry is still here. Your writing may already have been sent for reflection."
@@ -72,6 +76,22 @@ final class CheckInViewModel {
     )
   }
 
+  func updateMood(_ mood: CheckInMood?) {
+    selectedMood = mood
+    clearPreviewedReflection()
+  }
+
+  func updateNoteText(_ text: String) {
+    noteText = text
+    clearPreviewedReflection()
+  }
+
+  func savePreviewedReflection() {
+    guard let pendingSave, pendingSave.reflection != nil, !isReflecting else { return }
+    saveFailure = false
+    persistAndCommit(pendingSave)
+  }
+
   func retryFailedSave() {
     guard let pendingSave, !isReflecting else { return }
     saveFailure = false
@@ -117,14 +137,22 @@ final class CheckInViewModel {
       let result = try await provider.reflect(request)
       try Task.checkCancellation()
       guard self.selectedMood == selectedMood, noteText == visibleNoteText else { return }
-      persistAndCommit(
-        PendingSave(
-          mood: selectedMood,
-          noteText: normalizedNote.isEmpty ? nil : normalizedNote,
-          reflection: result,
-          draft: draft
-        )
+      let preview = CheckInEntry(
+        createdAt: mode.createdAt,
+        mood: selectedMood,
+        noteText: normalizedNote.isEmpty ? nil : normalizedNote,
+        reflectionText: result.reflectionText,
+        suggestedActionText: result.suggestedActionText,
+        reflectionSource: result.source,
+        reflectionStatus: .completed
       )
+      pendingSave = PendingSave(
+        mood: selectedMood,
+        noteText: normalizedNote.isEmpty ? nil : normalizedNote,
+        reflection: result,
+        draft: draft
+      )
+      presentedEntry = preview
     } catch is CancellationError {
       return
     } catch let error as ReflectionError {
@@ -137,6 +165,12 @@ final class CheckInViewModel {
   private func resetDraft() {
     selectedMood = nil
     noteText = ""
+  }
+
+  private func clearPreviewedReflection() {
+    guard !isReflecting else { return }
+    presentedEntry = nil
+    pendingSave = nil
   }
 
   private func persist(
@@ -189,7 +223,7 @@ final class CheckInViewModel {
 
   private func commit(_ entry: CheckInEntry, ifDraftIsUnchangedSince draft: CheckInDraft) {
     committedEntry = entry
-    presentedEntry = entry
+    presentedEntry = nil
     onEntryCommitted?(entry)
 
     guard currentDraft == draft else { return }

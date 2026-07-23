@@ -75,7 +75,7 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertNil(viewModel.selectedMood)
     XCTAssertEqual(viewModel.noteText, "")
     XCTAssertNil(viewModel.failure)
-    XCTAssertTrue(viewModel.presentedEntry === repository.entries.first)
+    XCTAssertNil(viewModel.presentedEntry)
     XCTAssertEqual(localCallCount, 0)
     XCTAssertEqual(remoteCallCount, 0)
   }
@@ -98,7 +98,7 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertEqual(remoteCallCount, 1)
   }
 
-  func testWhitespaceOnlyNoteUsesLocalProviderAndPersistsNilNote() async {
+  func testWhitespaceOnlyNoteUsesLocalProviderAndPreviewsNilNote() async {
     let repository = InMemoryCheckInRepository()
     let localResult = ReflectionResult.stub(source: .local)
     let localProvider = ReflectionProviderSpy(result: .success(localResult))
@@ -117,13 +117,14 @@ final class CheckInViewModelTests: XCTestCase {
     let remoteCallCount = await remoteProvider.callCount
     XCTAssertEqual(localCallCount, 1)
     XCTAssertEqual(remoteCallCount, 0)
-    XCTAssertNil(repository.entries.first?.noteText)
-    XCTAssertEqual(repository.entries.first?.reflectionText, localResult.reflectionText)
-    XCTAssertEqual(repository.entries.first?.reflectionSource, .local)
-    XCTAssertEqual(repository.entries.first?.reflectionStatus, .completed)
+    XCTAssertTrue(repository.entries.isEmpty)
+    XCTAssertNil(viewModel.presentedEntry?.noteText)
+    XCTAssertEqual(viewModel.presentedEntry?.reflectionText, localResult.reflectionText)
+    XCTAssertEqual(viewModel.presentedEntry?.reflectionSource, .local)
+    XCTAssertEqual(viewModel.presentedEntry?.reflectionStatus, .completed)
   }
 
-  func testWrittenReflectionTrimsNotePersistsResultAndPresentsEntry() async {
+  func testWrittenReflectionTrimsNotePreviewsResultWithoutPersisting() async {
     let repository = InMemoryCheckInRepository()
     let result = ReflectionResult.stub(source: .ai)
     let remoteProvider = ReflectionProviderSpy(result: .success(result))
@@ -136,20 +137,46 @@ final class CheckInViewModelTests: XCTestCase {
 
     await viewModel.reflect()
 
-    let entry = repository.entries.first
     let remoteRequests = await remoteProvider.requests
     XCTAssertEqual(remoteRequests.count, 1)
     XCTAssertEqual(remoteRequests.first?.mood, .low)
     XCTAssertEqual(remoteRequests.first?.noteText, "A difficult afternoon.")
+    XCTAssertTrue(repository.entries.isEmpty)
+    XCTAssertEqual(viewModel.presentedEntry?.noteText, "A difficult afternoon.")
+    XCTAssertEqual(viewModel.presentedEntry?.reflectionText, result.reflectionText)
+    XCTAssertEqual(viewModel.presentedEntry?.suggestedActionText, result.suggestedActionText)
+    XCTAssertEqual(viewModel.presentedEntry?.reflectionSource, .ai)
+    XCTAssertEqual(viewModel.presentedEntry?.reflectionStatus, .completed)
+    XCTAssertEqual(viewModel.selectedMood, .low)
+    XCTAssertEqual(viewModel.noteText, " \n A difficult afternoon. \t")
+    XCTAssertNil(viewModel.failure)
+  }
+
+  func testSavingPreviewedReflectionPersistsAndCommitsEntry() async {
+    let repository = InMemoryCheckInRepository()
+    let result = ReflectionResult.stub(source: .ai)
+    let remoteProvider = ReflectionProviderSpy(result: .success(result))
+    var committedEntry: CheckInEntry?
+    let viewModel = CheckInViewModel(
+      repository: repository,
+      remoteProvider: remoteProvider,
+      onEntryCommitted: { committedEntry = $0 }
+    )
+    viewModel.selectedMood = .low
+    viewModel.noteText = "A difficult afternoon."
+
+    await viewModel.reflect()
+    viewModel.savePreviewedReflection()
+
+    let entry = repository.entries.first
+    XCTAssertEqual(repository.entries.count, 1)
+    XCTAssertTrue(committedEntry === entry)
     XCTAssertEqual(entry?.noteText, "A difficult afternoon.")
     XCTAssertEqual(entry?.reflectionText, result.reflectionText)
     XCTAssertEqual(entry?.suggestedActionText, result.suggestedActionText)
-    XCTAssertEqual(entry?.reflectionSource, .ai)
-    XCTAssertEqual(entry?.reflectionStatus, .completed)
-    XCTAssertTrue(viewModel.presentedEntry === entry)
     XCTAssertNil(viewModel.selectedMood)
     XCTAssertEqual(viewModel.noteText, "")
-    XCTAssertNil(viewModel.failure)
+    XCTAssertNil(viewModel.presentedEntry)
   }
 
   func testRepositorySaveFailureAfterReflectionPreservesDraftForLocalRetry() async {
@@ -160,11 +187,12 @@ final class CheckInViewModelTests: XCTestCase {
     viewModel.noteText = "  Too much at once.  "
 
     await viewModel.reflect()
+    viewModel.savePreviewedReflection()
 
     XCTAssertTrue(repository.entries.isEmpty)
     XCTAssertEqual(viewModel.selectedMood, .overwhelmed)
     XCTAssertEqual(viewModel.noteText, "  Too much at once.  ")
-    XCTAssertNil(viewModel.presentedEntry)
+    XCTAssertNotNil(viewModel.presentedEntry)
     XCTAssertNil(viewModel.failure)
     XCTAssertTrue(viewModel.saveFailure)
   }
@@ -274,7 +302,7 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertEqual(viewModel.failure, .invalidResponse)
     XCTAssertEqual(viewModel.selectedMood, .anxious)
     XCTAssertEqual(viewModel.noteText, "  A difficult afternoon.  ")
-    XCTAssertEqual(repository.entries.count, 1)
+    XCTAssertTrue(repository.entries.isEmpty)
     XCTAssertEqual(remoteCallCount, 2)
   }
 
@@ -302,7 +330,8 @@ final class CheckInViewModelTests: XCTestCase {
     let finalCallCount = await remoteProvider.callCount
     XCTAssertEqual(finalCallCount, 1)
     XCTAssertFalse(viewModel.isReflecting)
-    XCTAssertEqual(repository.entries.count, 1)
+    XCTAssertTrue(repository.entries.isEmpty)
+    XCTAssertNotNil(viewModel.presentedEntry)
   }
 
   func testSuccessfulReflectionDoesNotCommitSnapshotChangedWhileRequestIsActive() async {
@@ -332,9 +361,9 @@ final class CheckInViewModelTests: XCTestCase {
 
     await viewModel.reflect()
 
-    XCTAssertEqual(repository.entries.count, 1)
-    XCTAssertEqual(repository.entries.first?.mood, .bright)
-    XCTAssertEqual(repository.entries.first?.noteText, "A newer draft")
+    XCTAssertTrue(repository.entries.isEmpty)
+    XCTAssertEqual(viewModel.presentedEntry?.mood, .bright)
+    XCTAssertEqual(viewModel.presentedEntry?.noteText, "A newer draft")
   }
 
   func testCancelReflectionPreventsTrackedRequestFromPersistingOrCommitting() async {
@@ -384,7 +413,8 @@ final class CheckInViewModelTests: XCTestCase {
 
     await remoteProvider.completeFirstRequest(with: .stub(source: .ai))
     await reflection.value
-    XCTAssertEqual(repository.entries.count, 1)
+    XCTAssertTrue(repository.entries.isEmpty)
+    XCTAssertNotNil(viewModel.presentedEntry)
   }
 
   func testCancellationAfterProviderReturnsDoesNotPersistOrClearDraft() async {

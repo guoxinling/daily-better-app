@@ -100,10 +100,8 @@ final class TimelineUITests: XCTestCase {
       app.buttons["checkIn.dismissKeyboard"].tap()
     }
     app.buttons["checkIn.save"].tap()
-    let backButton = app.buttons["entry.back"]
-    XCTAssertTrue(backButton.waitForExistence(timeout: 3))
-    backButton.tap()
 
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 3))
     XCTAssertTrue(app.staticTexts["The presentation went well."].waitForExistence(timeout: 3))
   }
 
@@ -128,10 +126,8 @@ final class TimelineUITests: XCTestCase {
     let saveButton = app.buttons["checkIn.save"]
     XCTAssertTrue(saveButton.isEnabled)
     saveButton.tap()
-    let backButton = app.buttons["entry.back"]
-    XCTAssertTrue(backButton.waitForExistence(timeout: 3))
-    backButton.tap()
 
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 3))
     XCTAssertTrue(app.staticTexts["Back on today's page."].waitForExistence(timeout: 3))
   }
 
@@ -149,8 +145,7 @@ final class TimelineUITests: XCTestCase {
     note.typeText(" Historical edit")
     app.buttons["checkIn.save"].tap()
 
-    XCTAssertTrue(app.buttons["entry.back"].waitForExistence(timeout: 3))
-    app.buttons["entry.back"].tap()
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 3))
 
     let selectedDate = app.staticTexts["timeline.selectedDate"]
     XCTAssertTrue(selectedDate.waitForExistence(timeout: 3))

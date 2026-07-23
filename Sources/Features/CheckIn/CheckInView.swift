@@ -2,6 +2,10 @@ import SwiftData
 import SwiftUI
 import UIKit
 
+private enum CheckInComposerAnchor {
+  static let bottom = "checkInComposerBottom"
+}
+
 struct CheckInView: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @Environment(\.modelContext) private var modelContext
@@ -54,27 +58,56 @@ struct CheckInView: View {
   }
 
   private func checkInContent(_ viewModel: CheckInViewModel) -> some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: contentSpacing) {
-        VStack(alignment: .leading, spacing: 8) {
-          Text(navigationTitle)
-            .font(.system(size: 13, weight: .semibold))
-            .tracking(1.1)
-            .foregroundStyle(DailyBetterStyle.tint)
+    ScrollViewReader { proxy in
+      ScrollView {
+        VStack(alignment: .leading, spacing: contentSpacing) {
+          VStack(alignment: .leading, spacing: 8) {
+            Text(navigationTitle)
+              .font(.system(size: 13, weight: .semibold))
+              .tracking(1.1)
+              .foregroundStyle(DailyBetterStyle.tint)
 
-          Text("How are you?")
-            .font(.system(size: headingSize, weight: .bold, design: .rounded))
-            .foregroundStyle(DailyBetterStyle.ink)
+            Text("How are you?")
+              .font(.system(size: headingSize, weight: .bold, design: .rounded))
+              .foregroundStyle(DailyBetterStyle.ink)
+          }
+
+          MoodSelector(selection: moodBinding(viewModel))
+          noteEditor(viewModel)
+
+          if let entry = viewModel.presentedEntry, viewModel.hasPreviewedReflection {
+            ReflectionView(
+              entry: entry,
+              showsDoneButton: false,
+              showsNavigationChrome: false,
+              usesScrollView: false
+            )
+            .accessibilityIdentifier("checkIn.reflectionPreview")
+          }
+
+          Color.clear
+            .frame(height: 1)
+            .id(CheckInComposerAnchor.bottom)
         }
-
-        MoodSelector(selection: moodBinding(viewModel))
-        noteEditor(viewModel)
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        .padding(.bottom, 24)
       }
-      .padding(.horizontal, 20)
-      .padding(.top, 20)
-      .padding(.bottom, 24)
+      .scrollDismissesKeyboard(.interactively)
+      .onChange(of: viewModel.noteText) { _, _ in
+        guard isNoteFocused else { return }
+        withAnimation(.easeOut(duration: 0.2)) {
+          proxy.scrollTo(CheckInComposerAnchor.bottom, anchor: .bottom)
+        }
+      }
+      .onChange(of: viewModel.presentedEntry?.id) { _, entryID in
+        guard entryID != nil, viewModel.hasPreviewedReflection else { return }
+        dismissKeyboard()
+        withAnimation(.easeOut(duration: 0.25)) {
+          proxy.scrollTo(CheckInComposerAnchor.bottom, anchor: .bottom)
+        }
+      }
     }
-    .scrollDismissesKeyboard(.interactively)
     .safeAreaInset(edge: .top, spacing: 0) {
       composerHeader(viewModel)
     }
@@ -176,6 +209,10 @@ struct CheckInView: View {
         .accessibilityLabel("What's on your mind?")
         .accessibilityIdentifier("checkIn.note")
     }
+    .contentShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+    .onTapGesture {
+      isNoteFocused = true
+    }
     .frame(minHeight: noteEditorMinHeight)
   }
 
@@ -195,19 +232,60 @@ struct CheckInView: View {
     let canSubmit = viewModel.selectedMood != nil && !viewModel.isReflecting
 
     return HStack(spacing: 12) {
-      composerButton("Save", identifier: "checkIn.save", primary: false, isLoading: false) {
-        viewModel.saveWithoutReflection()
-      }
-      .disabled(!canSubmit)
+      if viewModel.hasPreviewedReflection {
+        composerButton("Edit note", identifier: "checkIn.editNote", primary: false, isLoading: false) {
+          isNoteFocused = true
+        }
+        .disabled(!canSubmit)
 
-      composerButton("Reflect", identifier: "checkIn.reflect", primary: true, isLoading: viewModel.isReflecting) {
-        viewModel.startReflection()
+        composerButton(
+          "Save to Timeline",
+          identifier: "checkIn.savePreviewedReflection",
+          primary: true,
+          isLoading: false
+        ) {
+          viewModel.savePreviewedReflection()
+        }
+        .disabled(!canSubmit)
+      } else {
+        composerButton("Save", identifier: "checkIn.save", primary: false, isLoading: false) {
+          viewModel.saveWithoutReflection()
+        }
+        .disabled(!canSubmit)
+
+        composerButton("Reflect", identifier: "checkIn.reflect", primary: true, isLoading: viewModel.isReflecting) {
+          viewModel.startReflection()
+        }
+        .disabled(!canSubmit)
       }
-      .disabled(!canSubmit)
+
+      if isNoteFocused {
+        keyboardDismissButton()
+          .transition(.scale.combined(with: .opacity))
+      }
     }
     .opacity(canSubmit ? 1 : 0.5)
     .padding(16)
     .background(.ultraThinMaterial)
+  }
+
+  private func keyboardDismissButton() -> some View {
+    Button {
+      dismissKeyboard()
+    } label: {
+      Image(systemName: "keyboard.chevron.compact.down")
+        .font(.system(size: 18, weight: .semibold))
+        .foregroundStyle(DailyBetterStyle.tint)
+        .frame(width: 52, height: 52)
+        .background {
+          RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .fill(DailyBetterStyle.glass)
+            .stroke(DailyBetterStyle.hairline, lineWidth: 1)
+        }
+    }
+    .buttonStyle(.plain)
+    .accessibilityLabel("Hide keyboard")
+    .accessibilityIdentifier("checkIn.dismissKeyboard")
   }
 
   private func composerButton(
@@ -241,14 +319,14 @@ struct CheckInView: View {
   private func moodBinding(_ viewModel: CheckInViewModel) -> Binding<CheckInMood?> {
     Binding(
       get: { viewModel.selectedMood },
-      set: { viewModel.selectedMood = $0 }
+      set: { viewModel.updateMood($0) }
     )
   }
 
   private func noteBinding(_ viewModel: CheckInViewModel) -> Binding<String> {
     Binding(
       get: { viewModel.noteText },
-      set: { viewModel.noteText = $0 }
+      set: { viewModel.updateNoteText($0) }
     )
   }
 

@@ -48,7 +48,7 @@ struct RootTabView: View {
             mode: mode,
             onCancel: dismissPresentation,
             onEntryCommitted: { entry in
-              showDetailAfterComposer(entry, mode: mode)
+              showTimelineAfterComposer(entry, mode: mode)
             }
           )
         }
@@ -112,7 +112,7 @@ struct RootTabView: View {
   }
 
   @MainActor
-  private func showDetailAfterComposer(_ entry: CheckInEntry, mode: EntryComposerMode) {
+  private func showTimelineAfterComposer(_ entry: CheckInEntry, mode: EntryComposerMode) {
     switch mode {
     case .create:
       refreshTimeline(selecting: .now)
@@ -120,10 +120,6 @@ struct RootTabView: View {
       refreshTimeline(selecting: entry.createdAt)
     }
     presentation = nil
-    Task { @MainActor in
-      await Task.yield()
-      presentation = .detail(entry)
-    }
   }
 
   private func refreshTimeline(selecting targetDate: Date) {

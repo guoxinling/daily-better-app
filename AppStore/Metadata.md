@@ -2,37 +2,32 @@
 
 ## Positioning
 - App name: Daily Better
-- Subtitle: Affirmations & Mood Notes
+- Subtitle: Private Mood Journal
 - Category: Health & Fitness
 - Pricing: Free
 - Age rating target: 4+
 
 ## Promotional Text
-One gentle affirmation, one emoji check-in, and a softer way to notice how you're doing.
+Private daily check-ins with a simple Timeline, optional written AI reflection, and one local reminder.
 
 ## Description
-Daily Better is a simple daily growth companion.
+Daily Better is a private emotional journal for short everyday check-ins.
 
-Read one affirmation at a time, save the words that help, and write your own when you need something more personal. Then log your day with a single emoji and build a quiet history of how your week has felt.
-
-Daily Better is designed to stay light:
-- One thoughtful affirmation each day
-- Emoji mood tracking with a simple history view
-- Favorites for the lines you want to keep
-- Custom affirmations in your own voice
-- Gentle daily reminder notifications
-- No account required
-
-Whether your day feels bright, steady, or a little heavy, Daily Better gives you a small place to check in and keep going.
+- Choose one mood and optionally write what is happening.
+- Get an optional AI-written reflection when you submit a written note.
+- Save multiple private entries each day.
+- Review entries through a week-based Timeline.
+- Use one optional local reminder at a time you choose.
+- No account or cloud Timeline sync.
 
 ## Keywords
-affirmations,mood,self care,wellness,daily motivation,growth,reflection,journal,mindset
+mood,journal,check in,mental wellness,reflection,timeline,private diary,emotion tracker
 
 ## Review Notes
-Daily Better stores affirmations, favorites, emoji mood entries, and reminder preferences on-device using local persistence. The app does not require sign-in, does not include user-generated public sharing, and only requests notification permission for optional daily reminders.
+Daily Better stores Timeline entries and reminder preferences on-device using local persistence. The app does not require sign-in and does not include public sharing. Mood-only reflections are generated on-device. If a user writes text and taps Reflect, the app sends only the current mood, current note, locale, app version, request identifier, and an anonymous device token to the Daily Better reflection service for a one-time response. The app only requests notification permission for one optional local reminder.
 
 ## Privacy Notes To Verify Before Submission
-- Data collection: none in the current build
+- Data collection: written reflection requests send the current note, mood, locale, app version, request identifier, and anonymous device token to the reflection service for processing
 - Tracking: none
 - Account creation: not required
 - Third-party analytics: none
@@ -40,10 +35,8 @@ Daily Better stores affirmations, favorites, emoji mood entries, and reminder pr
 ## Assets Needed In App Store Connect
 - App icon: included in the Xcode asset catalog
 - iPhone screenshots:
-  1. Today screen with affirmation card
-  2. Mood screen with weekly strip and history
-  3. Library screen with categories and favorites
-  4. Settings screen with reminders and themes
+  1. Check In screen
+  2. Timeline screen
 - Optional iPad screenshots if you choose to support iPad storefront presentation
 
 ## Before You Submit

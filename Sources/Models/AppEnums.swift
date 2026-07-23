@@ -1,4 +1,4 @@
-import SwiftUI
+import Foundation
 
 enum AffirmationCategory: String, CaseIterable, Identifiable {
   case confidence
@@ -85,83 +85,8 @@ enum MoodKind: String, CaseIterable, Identifiable {
   }
 }
 
-enum ThemeKey: String, CaseIterable, Identifiable {
-  case green
-  case sand
-  case sky
-
-  var id: String { rawValue }
-
-  var title: String {
-    switch self {
-    case .green:
-      "Soft Green"
-    case .sand:
-      "Warm Sand"
-    case .sky:
-      "Sky Blue"
-    }
-  }
-}
-
-enum TextScaleKey: String, CaseIterable, Identifiable {
-  case small
-  case medium
-  case large
-
-  var id: String { rawValue }
-
-  var title: String {
-    rawValue.capitalized
-  }
-
-  var multiplier: CGFloat {
-    switch self {
-    case .small:
-      0.92
-    case .medium:
-      1.0
-    case .large:
-      1.12
-    }
-  }
-}
-
-enum LibrarySection: String, CaseIterable, Identifiable {
-  case browse
-  case favorites
-  case mine
-
-  var id: String { rawValue }
-
-  var title: String {
-    switch self {
-    case .browse:
-      "Browse"
-    case .favorites:
-      "Favorites"
-    case .mine:
-      "Mine"
-    }
-  }
-}
-
-enum AppTab: String, Hashable {
-  case today
-  case mood
-  case library
-  case settings
-}
-
 enum AppLaunchOptions {
   static var screenshotMode: Bool {
     ProcessInfo.processInfo.environment["DAILYBETTER_SCREENSHOT_MODE"] == "1"
-  }
-
-  static var initialTab: AppTab {
-    guard let rawValue = ProcessInfo.processInfo.environment["DAILYBETTER_SCREEN"] else {
-      return .today
-    }
-    return AppTab(rawValue: rawValue) ?? .today
   }
 }

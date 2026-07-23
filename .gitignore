@@ -19,3 +19,11 @@ build/
 # App Store local exports
 AppStore/TestRun/
 
+# Local Superpowers design companion
+.superpowers/
+
+# Local isolated implementation worktrees
+.worktrees/
+
+# Backend workspace dependencies
+Backend/reflect-proxy/node_modules/

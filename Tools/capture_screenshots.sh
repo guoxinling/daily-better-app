@@ -65,11 +65,11 @@ capture_set() {
   xcrun simctl uninstall "${udid}" "${BUNDLE_ID}" >/dev/null 2>&1 || true
   xcrun simctl install "${udid}" "${APP_PATH}"
 
-  for screen in today mood library settings; do
+  for screen in checkIn timeline; do
     xcrun simctl terminate "${udid}" "${BUNDLE_ID}" >/dev/null 2>&1 || true
     SIMCTL_CHILD_DAILYBETTER_SCREENSHOT_MODE=1 \
     SIMCTL_CHILD_DAILYBETTER_SCREEN="${screen}" \
-      xcrun simctl launch "${udid}" "${BUNDLE_ID}" >/dev/null
+      xcrun simctl launch "${udid}" "${BUNDLE_ID}" --args -ui-testing -seed-check-ins >/dev/null
     sleep "${LAUNCH_SETTLE_SECONDS}"
     xcrun simctl io "${udid}" screenshot "${folder}/${screen}.png" >/dev/null
   done

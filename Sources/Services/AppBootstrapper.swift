@@ -3,47 +3,97 @@ import SwiftData
 
 enum AppBootstrapper {
   @MainActor
-  static func bootstrapIfNeeded(in context: ModelContext) {
-    var affirmationDescriptor = FetchDescriptor<Affirmation>()
-    affirmationDescriptor.fetchLimit = 1
-    let hasAffirmations = (try? context.fetch(affirmationDescriptor).isEmpty) == false
+  static func bootstrapIfNeeded(in context: ModelContext) throws {
+    let arguments = Set(ProcessInfo.processInfo.arguments)
+    let isUITesting = arguments.contains("-ui-testing")
+    let shouldResetStore = isUITesting && arguments.contains("-reset-store")
+    let shouldSeedCheckIns = isUITesting && arguments.contains("-seed-check-ins")
+    let shouldSeedLongReflectionEntry = isUITesting && arguments.contains("-seed-long-reflection-entry")
 
-    if !hasAffirmations {
-      for (index, seed) in SeedData.affirmations.enumerated() {
-        context.insert(
-          Affirmation(
-            text: seed.text,
-            category: seed.category,
-            createdAt: Date(timeIntervalSince1970: TimeInterval(index))
-          )
-        )
-      }
+    if shouldResetStore {
+      try deleteAll(CheckInEntry.self, in: context)
+      try deleteAll(MoodEntry.self, in: context)
+      try deleteAll(AppPreferences.self, in: context)
+      try context.save()
     }
 
-    var preferencesDescriptor = FetchDescriptor<AppPreferences>()
-    preferencesDescriptor.fetchLimit = 1
-    let hasPreferences = (try? context.fetch(preferencesDescriptor).isEmpty) == false
-
-    if !hasPreferences {
+    if try context.fetch(FetchDescriptor<AppPreferences>()).isEmpty {
       context.insert(AppPreferences())
     }
 
+    try context.save()
+    try CheckInMigrationService.runIfNeeded(in: context)
+
     if AppLaunchOptions.screenshotMode {
-      prepareScreenshotData(in: context)
+      try prepareScreenshotData(in: context)
     }
 
-    try? context.save()
+    if shouldSeedLongReflectionEntry {
+      try seedLongReflectionEntry(in: context)
+    } else if shouldSeedCheckIns {
+      try seedCheckInIfNeeded(in: context)
+    }
+
+    try context.save()
   }
 
   @MainActor
-  private static func prepareScreenshotData(in context: ModelContext) {
+  private static func deleteAll<T: PersistentModel>(
+    _ modelType: T.Type,
+    in context: ModelContext
+  ) throws {
+    let models = try context.fetch(FetchDescriptor<T>())
+    for model in models {
+      context.delete(model)
+    }
+  }
+
+  @MainActor
+  private static func seedCheckInIfNeeded(in context: ModelContext) throws {
+    guard try context.fetch(FetchDescriptor<CheckInEntry>()).isEmpty else {
+      return
+    }
+
+    let today = Calendar.current.startOfDay(for: .now)
+    context.insert(
+      CheckInEntry(
+        createdAt: today,
+        mood: .overwhelmed,
+        noteText: "Everything piled up today.",
+        reflectionSource: .none
+      )
+    )
+  }
+
+  @MainActor
+  private static func seedLongReflectionEntry(in context: ModelContext) throws {
+    try deleteAll(CheckInEntry.self, in: context)
+
+    let today = Calendar.current.startOfDay(for: .now)
+    let entry = CheckInEntry(
+      createdAt: today.addingTimeInterval(10 * 60 * 60),
+      mood: .anxious,
+      noteText: """
+      I am carrying too many threads at once, replaying every unfinished conversation, and trying to stay composed while my mind keeps spinning through the same worries without landing anywhere useful.
+      """,
+      reflectionText: "Your mind is looking ahead for what might go wrong. You only need to meet the next moment.",
+      suggestedActionText: "Name one thing you can control in the next five minutes.",
+      reflectionSource: .local,
+      reflectionStatus: .completed
+    )
+
+    context.insert(entry)
+  }
+
+  @MainActor
+  private static func prepareScreenshotData(in context: ModelContext) throws {
     let affirmationDescriptor = FetchDescriptor<Affirmation>(sortBy: [SortDescriptor(\.createdAt)])
     let moodDescriptor = FetchDescriptor<MoodEntry>(sortBy: [SortDescriptor(\.date)])
     let preferencesDescriptor = FetchDescriptor<AppPreferences>()
 
-    let affirmations = (try? context.fetch(affirmationDescriptor)) ?? []
-    let moodEntries = (try? context.fetch(moodDescriptor)) ?? []
-    let preferences = (try? context.fetch(preferencesDescriptor)) ?? []
+    let affirmations = try context.fetch(affirmationDescriptor)
+    let moodEntries = try context.fetch(moodDescriptor)
+    let preferences = try context.fetch(preferencesDescriptor)
 
     for (index, affirmation) in affirmations.enumerated() {
       affirmation.isFavorite = index < 5
@@ -71,8 +121,8 @@ enum AppBootstrapper {
     }
 
     if let preference = preferences.first {
-      preference.themeKey = ThemeKey.green.rawValue
-      preference.textScaleKey = TextScaleKey.medium.rawValue
+      preference.themeKey = "green"
+      preference.textScaleKey = "medium"
       preference.reminderEnabled = false
       preference.reminderHour = 20
       preference.reminderMinute = 30

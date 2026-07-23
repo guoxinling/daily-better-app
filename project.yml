@@ -1,6 +1,6 @@
 name: DailyBetter
 options:
-  minimumXcodeGenVersion: 2.42.0
+  minimumXcodeGenVersion: 2.45.3
 settings:
   base:
     SWIFT_VERSION: 5.0
@@ -8,7 +8,7 @@ settings:
     CURRENT_PROJECT_VERSION: 1
     IPHONEOS_DEPLOYMENT_TARGET: 17.0
     CODE_SIGN_STYLE: Automatic
-    DEVELOPMENT_TEAM: ""
+    DEVELOPMENT_TEAM: 6UYTZXY3H9
     TARGETED_DEVICE_FAMILY: "1,2"
 targets:
   DailyBetter:
@@ -16,9 +16,10 @@ targets:
     platform: iOS
     deploymentTarget: "17.0"
     sources:
+      # Feature source roots include mode-specific check-in composer files.
       - Sources
-    resources:
-      - Resources
+      - path: Resources/Assets.xcassets
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.guoxl.DailyBetter
@@ -26,9 +27,47 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Daily Better
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.healthcare-fitness
-        INFOPLIST_KEY_NSUserNotificationUsageDescription: Daily Better sends gentle reminders so you can check in with your mood and today's affirmation.
+        INFOPLIST_KEY_NSUserNotificationUsageDescription: Daily Better can send one optional daily reminder at the time you choose.
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
-        DEVELOPMENT_ASSET_PATHS: Resources/PreviewContent/Preview Assets.xcassets
+        DEVELOPMENT_ASSET_PATHS: '"Resources/PreviewContent/Preview Assets.xcassets"'
+        SWIFT_EMIT_LOC_STRINGS: YES
+  DailyBetterTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - Tests/DailyBetterTests
+    dependencies:
+      - target: DailyBetter
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+  DailyBetterUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - Tests/DailyBetterUITests
+    dependencies:
+      - target: DailyBetter
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  DailyBetter:
+    build:
+      targets:
+        DailyBetter: all
+        DailyBetterTests: [test]
+        DailyBetterUITests: [test]
+    test:
+      gatherCoverageData: true
+      targets:
+        - DailyBetterTests
+        - DailyBetterUITests

@@ -106,16 +106,37 @@ enum ReflectionProviderFactory {
     )
   }
 
-  static func resolveBaseURL(environment: [String: String]) -> URL? {
-    if let configured = environment["DAILYBETTER_REFLECTION_BASE_URL"], !configured.isEmpty {
-      return URL(string: configured)
+  static func resolveBaseURL(
+    environment: [String: String],
+    arguments: [String] = ProcessInfo.processInfo.arguments
+  ) -> URL? {
+    if let configured = environment["DAILYBETTER_REFLECTION_BASE_URL"], !configured.isEmpty,
+       let configuredURL = URL(string: configured) {
+      if configuredURL.isLocalReflectionBackend,
+         !arguments.contains("-allow-local-reflection-backend") {
+        return productionBaseURL
+      }
+
+      return configuredURL
     }
 
-    return URL(string: "https://daily-better-alpha.vercel.app")
+    return productionBaseURL
   }
 
   private static var resolvedBaseURL: URL? {
     resolveBaseURL(environment: ProcessInfo.processInfo.environment)
+  }
+
+  private static let productionBaseURL = URL(string: "https://daily-better-alpha.vercel.app")
+}
+
+private extension URL {
+  var isLocalReflectionBackend: Bool {
+    guard scheme == "http" else {
+      return false
+    }
+
+    return host == "127.0.0.1" || host == "localhost"
   }
 }
 

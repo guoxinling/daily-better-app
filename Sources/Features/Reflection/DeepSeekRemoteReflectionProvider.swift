@@ -37,6 +37,7 @@ struct DeepSeekRemoteReflectionProvider: ReflectionProviding {
     } catch let error as CancellationError {
       throw error
     } catch {
+      ReflectionDebugLog.logProviderError(error)
       throw ReflectionError.unavailable
     }
   }

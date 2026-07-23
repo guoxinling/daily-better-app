@@ -9,10 +9,24 @@ final class RemoteReflectionProviderTests: XCTestCase {
     XCTAssertEqual(url, URL(string: "https://daily-better-alpha.vercel.app"))
   }
 
-  func testReflectionProviderFactoryUsesEnvironmentOverrideWhenPresent() {
-    let url = ReflectionProviderFactory.resolveBaseURL(environment: [
-      "DAILYBETTER_REFLECTION_BASE_URL": "http://127.0.0.1:3000"
-    ])
+  func testReflectionProviderFactoryIgnoresLocalhostOverrideUnlessExplicitlyAllowed() {
+    let url = ReflectionProviderFactory.resolveBaseURL(
+      environment: [
+        "DAILYBETTER_REFLECTION_BASE_URL": "http://127.0.0.1:3000"
+      ],
+      arguments: []
+    )
+
+    XCTAssertEqual(url, URL(string: "https://daily-better-alpha.vercel.app"))
+  }
+
+  func testReflectionProviderFactoryUsesLocalhostOverrideWhenExplicitlyAllowed() {
+    let url = ReflectionProviderFactory.resolveBaseURL(
+      environment: [
+        "DAILYBETTER_REFLECTION_BASE_URL": "http://127.0.0.1:3000"
+      ],
+      arguments: ["-allow-local-reflection-backend"]
+    )
 
     XCTAssertEqual(url, URL(string: "http://127.0.0.1:3000"))
   }

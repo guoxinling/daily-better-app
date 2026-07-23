@@ -12,10 +12,20 @@ struct URLSessionReflectionAPITransport: ReflectionAPITransport {
   }
 
   func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
-    let (data, response) = try await session.data(for: request)
+    ReflectionDebugLog.logRequest(request)
+    let data: Data
+    let response: URLResponse
+    do {
+      (data, response) = try await session.data(for: request)
+    } catch {
+      ReflectionDebugLog.logTransportError(error, request: request)
+      throw error
+    }
     guard let httpResponse = response as? HTTPURLResponse else {
+      ReflectionDebugLog.logInvalidResponse(request)
       throw ReflectionAPIClientError.invalidResponse
     }
+    ReflectionDebugLog.logResponse(httpResponse, request: request)
     return (data, httpResponse)
   }
 }
@@ -49,6 +59,7 @@ actor ReflectionAPIClient {
     let request = makeRequest(path: "api/device-token")
     let (data, response) = try await transport.send(request)
     guard (200..<300).contains(response.statusCode) else {
+      ReflectionDebugLog.logRejectedStatus(response.statusCode, request: request, data: data)
       throw error(for: response.statusCode)
     }
     return try decode(DeviceTokenRecord.self, from: data)
@@ -97,6 +108,7 @@ actor ReflectionAPIClient {
     )
     let (data, response) = try await transport.send(urlRequest)
     guard (200..<300).contains(response.statusCode) else {
+      ReflectionDebugLog.logRejectedStatus(response.statusCode, request: urlRequest, data: data)
       throw error(for: response.statusCode)
     }
     return try decode(RemoteReflectionPayload.self, from: data)
@@ -134,6 +146,47 @@ actor ReflectionAPIClient {
       return .unauthorized
     }
     return .badStatusCode(statusCode)
+  }
+}
+
+enum ReflectionDebugLog {
+  static func logRequest(_ request: URLRequest) {
+    #if DEBUG
+    print("[ReflectionAPI] request \(request.httpMethod ?? "UNKNOWN") \(request.url?.absoluteString ?? "<missing-url>")")
+    #endif
+  }
+
+  static func logResponse(_ response: HTTPURLResponse, request: URLRequest) {
+    #if DEBUG
+    print("[ReflectionAPI] response \(response.statusCode) \(request.url?.absoluteString ?? "<missing-url>")")
+    #endif
+  }
+
+  static func logRejectedStatus(_ statusCode: Int, request: URLRequest, data: Data) {
+    #if DEBUG
+    let body = String(data: data, encoding: .utf8) ?? "<non-utf8-body>"
+    print("[ReflectionAPI] rejected status \(statusCode) \(request.url?.absoluteString ?? "<missing-url>") body=\(body)")
+    #endif
+  }
+
+  static func logTransportError(_ error: Error, request: URLRequest) {
+    #if DEBUG
+    let nsError = error as NSError
+    print("[ReflectionAPI] transport error \(nsError.domain)(\(nsError.code)) \(request.url?.absoluteString ?? "<missing-url>") \(nsError.localizedDescription)")
+    #endif
+  }
+
+  static func logInvalidResponse(_ request: URLRequest) {
+    #if DEBUG
+    print("[ReflectionAPI] invalid response \(request.url?.absoluteString ?? "<missing-url>")")
+    #endif
+  }
+
+  static func logProviderError(_ error: Error) {
+    #if DEBUG
+    let nsError = error as NSError
+    print("[ReflectionAPI] provider failed \(nsError.domain)(\(nsError.code)) \(nsError.localizedDescription)")
+    #endif
   }
 }
 

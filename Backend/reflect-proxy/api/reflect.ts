@@ -64,7 +64,13 @@ export function buildReflectHandler(dependencies: ReflectDependencies = {}) {
 
     const parsed = reflectRequestSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(400).json({ error: "invalid_request" });
+      res.status(400).json({
+        error: "invalid_request",
+        fieldErrors: parsed.error.issues.map((issue) => ({
+          field: issue.path.join(".") || "body",
+          reason: issue.code
+        }))
+      });
       return;
     }
 

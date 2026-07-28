@@ -2,26 +2,32 @@ import SwiftUI
 
 struct TimelineEntryRow: View {
   let entry: CheckInEntry
+  private let timelineMarkerTopPadding: CGFloat = 22
 
   var body: some View {
-    HStack(alignment: .top, spacing: 14) {
+    HStack(alignment: .top, spacing: 10) {
       Text(entry.createdAt.formatted(date: .omitted, time: .shortened))
-        .font(.caption2.monospacedDigit())
+        .font(.system(size: 13, weight: .medium).monospacedDigit())
         .foregroundStyle(DailyBetterStyle.muted)
-        .frame(width: 52, alignment: .trailing)
+        .frame(width: 44, alignment: .trailing)
+        .padding(.top, timelineMarkerTopPadding)
+        .accessibilityIdentifier("timeline.entry.time")
 
-      Circle()
-        .fill(DailyBetterStyle.tint)
-        .frame(width: 8, height: 8)
-        .padding(.top, 4)
+      timelineRail
 
-      VStack(alignment: .leading, spacing: 7) {
-        Text("\(entry.mood.emoji) \(entry.mood.title)")
-          .font(.caption.weight(.bold))
-          .foregroundStyle(DailyBetterStyle.tint)
+      VStack(alignment: .leading, spacing: 14) {
+        HStack(spacing: 8) {
+          Text(entry.mood.emoji)
+            .font(.system(size: 18))
+
+          Text(entry.mood.title)
+            .font(.system(size: 16, weight: .semibold, design: .rounded))
+            .foregroundStyle(DailyBetterStyle.tint)
+        }
 
         Text(entry.noteText ?? "Only a feeling was recorded.")
-          .font(.system(.body, design: .serif))
+          .font(.system(size: 17, design: .serif))
+          .lineSpacing(3)
           .foregroundStyle(DailyBetterStyle.ink)
           .lineLimit(3)
           .truncationMode(.tail)
@@ -29,15 +35,36 @@ struct TimelineEntryRow: View {
 
         if hasSavedReflection {
           Label("Reflection saved", systemImage: "sparkles")
-            .font(.caption)
+            .font(.system(size: 14, weight: .medium))
             .foregroundStyle(DailyBetterStyle.muted)
             .accessibilityIdentifier("timeline.entry.reflection.badge")
         }
       }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.horizontal, 16)
+      .padding(.vertical, 18)
+      .background(DailyBetterStyle.glass, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+      .overlay {
+        RoundedRectangle(cornerRadius: 18, style: .continuous)
+          .stroke(DailyBetterStyle.hairline, lineWidth: 1)
+      }
+      .shadow(color: DailyBetterStyle.ink.opacity(0.04), radius: 10, y: 5)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .accessibilityElement(children: .contain)
     .accessibilityIdentifier("timeline.entry.row")
+  }
+
+  private var timelineRail: some View {
+    Circle()
+      .fill(DailyBetterStyle.tint)
+      .frame(width: 10, height: 10)
+      .padding(.top, timelineMarkerTopPadding + 3)
+      .accessibilityElement()
+      .accessibilityLabel("Timeline marker")
+      .accessibilityIdentifier("timeline.entry.marker")
+    .frame(width: 18)
+    .frame(minHeight: 120, alignment: .top)
   }
 
   private var hasSavedReflection: Bool {

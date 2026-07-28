@@ -100,6 +100,7 @@ actor ReflectionAPIClient {
       appVersion: appVersion,
       deviceToken: token
     )
+    ReflectionDebugLog.logRequestBodySummary(body)
 
     let urlRequest = try makeRequest(
       path: "api/reflect",
@@ -153,6 +154,14 @@ enum ReflectionDebugLog {
   static func logRequest(_ request: URLRequest) {
     #if DEBUG
     print("[ReflectionAPI] request \(request.httpMethod ?? "UNKNOWN") \(request.url?.absoluteString ?? "<missing-url>")")
+    #endif
+  }
+
+  fileprivate static func logRequestBodySummary(_ body: RemoteReflectionRequestBody) {
+    #if DEBUG
+    print(
+      "[ReflectionAPI] request body summary mood=\(body.mood) noteLength=\(body.noteText.count) locale=\(body.locale) localeLength=\(body.locale.count) appVersion=\(body.appVersion) appVersionLength=\(body.appVersion.count) requestId=\(body.requestID) tokenLength=\(body.deviceToken.count)"
+    )
     #endif
   }
 

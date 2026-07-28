@@ -25,28 +25,23 @@ struct TimelineView: View {
   }
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 24) {
-        header
-        weekNavigation
+    ZStack(alignment: .topTrailing) {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 22) {
+          weekNavigation
 
-        Text(selectedDate.formatted(.dateTime.weekday(.wide).month(.wide).day()))
-          .font(.system(size: 22, weight: .bold, design: .rounded))
-          .foregroundStyle(DailyBetterStyle.ink)
-          .accessibilityIdentifier("timeline.selectedDate")
+          Text(selectedDate.formatted(.dateTime.weekday(.wide).month(.wide).day()))
+            .font(.system(size: 25, weight: .bold, design: .rounded))
+            .foregroundStyle(DailyBetterStyle.ink)
+            .accessibilityIdentifier("timeline.selectedDate")
 
-        LazyVStack(alignment: .leading, spacing: 28) {
-          ForEach(selectedEntries) { entry in
-            TimelineEntryRow(entry: entry)
-              .contentShape(Rectangle())
-              .onTapGesture {
-                onSelectEntry(entry)
-              }
-          }
+          timelineEntryList
         }
+        .padding(24)
+        .padding(.bottom, 90)
       }
-      .padding(24)
-      .padding(.bottom, 90)
+
+      settingsButton
     }
     .navigationTitle("Timeline")
     .navigationBarTitleDisplayMode(.inline)
@@ -74,40 +69,37 @@ struct TimelineView: View {
     }
   }
 
-  private var header: some View {
-    HStack {
-      Text("Timeline")
-        .font(.system(size: 13, weight: .bold, design: .rounded))
-        .tracking(1.1)
+  private var settingsButton: some View {
+    NavigationLink {
+      SettingsView(onEntriesDeleted: reloadEntries)
+    } label: {
+      Image(systemName: "gearshape.fill")
+        .font(.system(size: 21, weight: .semibold))
         .foregroundStyle(DailyBetterStyle.tint)
-
-      Spacer()
-
-      NavigationLink {
-        SettingsView(onEntriesDeleted: reloadEntries)
-      } label: {
-        Image(systemName: "gearshape.fill")
-          .font(.system(size: 17, weight: .semibold))
-          .foregroundStyle(DailyBetterStyle.tint)
-          .frame(width: 44, height: 44)
-          .background(DailyBetterStyle.glass, in: Circle())
-      }
-      .accessibilityLabel("Settings")
-      .accessibilityIdentifier("settings.open")
+        .contentShape(Rectangle())
     }
+    .buttonStyle(.plain)
+    .accessibilityLabel("Settings")
+    .accessibilityIdentifier("settings.open")
+    .padding(.top, -20)
+    .padding(.trailing, 29)
   }
 
   private var weekNavigation: some View {
-    VStack(alignment: .leading, spacing: 14) {
+    VStack(alignment: .leading, spacing: 18) {
       HStack {
         Button {
           shiftWeek(-1)
         } label: {
           Image(systemName: "chevron.left")
-            .font(.system(size: 15, weight: .bold))
+            .font(.system(size: 15, weight: .semibold))
             .foregroundStyle(DailyBetterStyle.ink)
-            .frame(width: 44, height: 44)
+            .frame(width: 34, height: 34)
             .background(DailyBetterStyle.glass, in: Circle())
+            .overlay {
+              Circle()
+                .stroke(DailyBetterStyle.hairline, lineWidth: 1)
+            }
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Previous week")
@@ -116,7 +108,7 @@ struct TimelineView: View {
         Spacer()
 
         Text(weekRangeTitle)
-          .font(.caption.weight(.semibold))
+          .font(.system(size: 17, weight: .medium))
           .foregroundStyle(DailyBetterStyle.muted)
 
         Spacer()
@@ -125,32 +117,36 @@ struct TimelineView: View {
           shiftWeek(1)
         } label: {
           Image(systemName: "chevron.right")
-            .font(.system(size: 15, weight: .bold))
+            .font(.system(size: 15, weight: .semibold))
             .foregroundStyle(DailyBetterStyle.ink)
-            .frame(width: 44, height: 44)
+            .frame(width: 34, height: 34)
             .background(DailyBetterStyle.glass, in: Circle())
+            .overlay {
+              Circle()
+                .stroke(DailyBetterStyle.hairline, lineWidth: 1)
+            }
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Next week")
         .accessibilityIdentifier("timeline.nextWeek")
       }
 
-      HStack(spacing: 5) {
+      HStack(spacing: 6) {
         ForEach(week, id: \.self) { date in
           Button {
             selectedDate = date
           } label: {
-            VStack(spacing: 5) {
+            VStack(spacing: 10) {
               Text(date.formatted(.dateTime.weekday(.narrow)))
-                .font(.caption2)
+                .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(DailyBetterStyle.muted)
 
               Text(date.formatted(.dateTime.day()))
-                .font(.caption.weight(.semibold))
-                .frame(width: 32, height: 32)
+                .font(.system(size: 17, weight: .medium))
+                .frame(width: 38, height: 38)
                 .background(
                   Calendar.current.isDate(date, inSameDayAs: selectedDate) ? DailyBetterStyle.tint : Color.clear,
-                  in: RoundedRectangle(cornerRadius: 11, style: .continuous)
+                  in: RoundedRectangle(cornerRadius: 13, style: .continuous)
                 )
                 .foregroundStyle(
                   Calendar.current.isDate(date, inSameDayAs: selectedDate) ? Color.white : DailyBetterStyle.ink
@@ -170,14 +166,39 @@ struct TimelineView: View {
           )
         }
       }
-      .padding(10)
+      .padding(.horizontal, 12)
+      .padding(.vertical, 16)
       .accessibilityElement(children: .contain)
-      .background(DailyBetterStyle.glass, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+      .background(DailyBetterStyle.glass, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
       .overlay {
-        RoundedRectangle(cornerRadius: 18, style: .continuous)
+        RoundedRectangle(cornerRadius: 20, style: .continuous)
           .stroke(DailyBetterStyle.hairline, lineWidth: 1)
       }
       .accessibilityIdentifier("timeline.week")
+    }
+  }
+
+  private var timelineEntryList: some View {
+    LazyVStack(alignment: .leading, spacing: 20) {
+      ForEach(selectedEntries) { entry in
+        TimelineEntryRow(entry: entry)
+          .contentShape(Rectangle())
+          .onTapGesture {
+            onSelectEntry(entry)
+          }
+      }
+    }
+    .background(alignment: .leading) {
+      if !selectedEntries.isEmpty {
+        Rectangle()
+          .fill(DailyBetterStyle.tint.opacity(0.18))
+          .frame(width: 1)
+          .padding(.leading, 63)
+          .padding(.vertical, 28)
+          .accessibilityElement()
+          .accessibilityLabel("Continuous timeline rail")
+          .accessibilityIdentifier("timeline.entry.rail.continuous")
+      }
     }
   }
 

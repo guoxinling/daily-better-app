@@ -180,6 +180,32 @@ test("reflect rejects invalid token with 401", async () => {
   expect(listMetricsForTests()).toHaveLength(0);
 });
 
+test("reflect returns safe field details for invalid request payloads", async () => {
+  const { response, state } = makeResponseRecorder();
+  const handler = buildReflectHandler();
+
+  await handler(
+    {
+      method: "POST",
+      body: {
+        deviceToken: "device-token",
+        requestId: "11111111-1111-4111-8111-111111111106",
+        mood: "low",
+        noteText: "I feel tired today.",
+        locale: "en_US",
+        appVersion: "x".repeat(33)
+      }
+    },
+    response
+  );
+
+  expect(state.statusCode).toBe(400);
+  expect(state.body).toEqual({
+    error: "invalid_request",
+    fieldErrors: [{ field: "appVersion", reason: "too_big" }]
+  });
+});
+
 test("reflect rejects over-limit request with 429", async () => {
   const validToken = (await issueDeviceToken(new Date("2026-07-06T00:00:00Z"))).deviceToken;
   const handler = buildReflectHandler({

@@ -12,6 +12,13 @@ final class TimelineUITests: XCTestCase {
     XCTAssertTrue(app.staticTexts["Everything piled up today."].exists)
   }
 
+  func testTimelineUsesSingleVisibleTitle() {
+    let app = launchSeededApp()
+
+    XCTAssertTrue(app.navigationBars["Timeline"].waitForExistence(timeout: 5))
+    XCTAssertLessThanOrEqual(app.staticTexts.matching(identifier: "Timeline").count, 1)
+  }
+
   func testTimelineHasFixedCheckInAction() {
     let app = launchSeededApp()
     let action = app.buttons["timeline.checkIn"]
@@ -40,6 +47,33 @@ final class TimelineUITests: XCTestCase {
 
     XCTAssertTrue(preview.waitForExistence(timeout: 5))
     XCTAssertLessThanOrEqual(preview.frame.height, 88)
+  }
+
+  func testTimelineDrawsSingleContinuousRailForEntries() {
+    let app = launchSeededApp()
+
+    XCTAssertTrue(app.otherElements["timeline.entry.rail.continuous"].waitForExistence(timeout: 5))
+  }
+
+  func testSettingsButtonDoesNotOverlapWeekNavigation() {
+    let app = launchSeededApp()
+    let settingsButton = app.buttons["settings.open"]
+    let nextWeekButton = app.buttons["timeline.nextWeek"]
+
+    XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
+    XCTAssertTrue(nextWeekButton.waitForExistence(timeout: 5))
+    XCTAssertFalse(settingsButton.frame.intersects(nextWeekButton.frame))
+    XCTAssertLessThan(settingsButton.frame.maxY, nextWeekButton.frame.minY)
+  }
+
+  func testTimelineEntryTimeAlignsWithMarker() {
+    let app = launchSeededApp()
+    let timeLabel = app.staticTexts["timeline.entry.time"].firstMatch
+    let marker = app.otherElements["timeline.entry.marker"].firstMatch
+
+    XCTAssertTrue(timeLabel.waitForExistence(timeout: 5))
+    XCTAssertTrue(marker.waitForExistence(timeout: 5))
+    XCTAssertLessThanOrEqual(abs(timeLabel.frame.midY - marker.frame.midY), 2)
   }
 
   func testEntryDetailShowsFullSavedReflectionAndSuggestedAction() {

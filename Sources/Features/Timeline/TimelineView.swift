@@ -180,12 +180,18 @@ struct TimelineView: View {
 
   private var timelineEntryList: some View {
     LazyVStack(alignment: .leading, spacing: 20) {
-      ForEach(selectedEntries) { entry in
-        TimelineEntryRow(entry: entry)
+      if selectedEntries.isEmpty {
+        EmptyTimelinePromptRow()
           .contentShape(Rectangle())
-          .onTapGesture {
-            onSelectEntry(entry)
-          }
+          .onTapGesture(perform: onCheckIn)
+      } else {
+        ForEach(selectedEntries) { entry in
+          TimelineEntryRow(entry: entry)
+            .contentShape(Rectangle())
+            .onTapGesture {
+              onSelectEntry(entry)
+            }
+        }
       }
     }
     .background(alignment: .leading) {

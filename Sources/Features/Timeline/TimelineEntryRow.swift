@@ -77,3 +77,59 @@ struct TimelineEntryRow: View {
     return trimmed.isEmpty ? nil : trimmed
   }
 }
+
+struct EmptyTimelinePromptRow: View {
+  private let markerTopPadding: CGFloat = 22
+  private let promptTitle = Color(red: 40 / 255, green: 122 / 255, blue: 92 / 255)
+  private let promptSubtitle = Color(red: 124 / 255, green: 139 / 255, blue: 132 / 255)
+
+  var body: some View {
+    HStack(alignment: .top, spacing: 10) {
+      Color.clear
+        .frame(width: 44, height: 1)
+        .padding(.top, markerTopPadding)
+
+      timelineStart
+
+      VStack(alignment: .leading, spacing: 6) {
+        Text("How are you feeling?")
+          .font(.system(size: 17, weight: .semibold))
+          .foregroundStyle(promptTitle)
+
+        Text("Take a moment to check in.")
+          .font(.system(size: 14, weight: .regular))
+          .foregroundStyle(promptSubtitle)
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.horizontal, 16)
+      .padding(.vertical, 18)
+      .background(DailyBetterStyle.glass, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+      .overlay {
+        RoundedRectangle(cornerRadius: 18, style: .continuous)
+          .stroke(DailyBetterStyle.hairline, lineWidth: 1)
+      }
+      .shadow(color: DailyBetterStyle.ink.opacity(0.04), radius: 10, y: 5)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .accessibilityElement(children: .contain)
+    .accessibilityIdentifier("timeline.empty.row")
+  }
+
+  private var timelineStart: some View {
+    VStack(spacing: 0) {
+      Circle()
+        .fill(DailyBetterStyle.tint)
+        .frame(width: 10, height: 10)
+        .accessibilityElement()
+        .accessibilityLabel("Timeline start")
+        .accessibilityIdentifier("timeline.empty.marker")
+
+      Rectangle()
+        .fill(DailyBetterStyle.tint.opacity(0.18))
+        .frame(width: 1, height: 42)
+    }
+    .padding(.top, markerTopPadding + 3)
+    .frame(width: 18)
+    .frame(minHeight: 96, alignment: .top)
+  }
+}

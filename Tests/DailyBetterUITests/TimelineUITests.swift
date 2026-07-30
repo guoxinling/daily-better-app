@@ -55,6 +55,18 @@ final class TimelineUITests: XCTestCase {
     XCTAssertTrue(app.otherElements["timeline.entry.rail.continuous"].waitForExistence(timeout: 5))
   }
 
+  func testTimelineShowsEmptyPromptOnDaysWithoutEntries() {
+    let app = launchSeededApp()
+    let nextWeek = app.buttons["timeline.nextWeek"]
+    XCTAssertTrue(nextWeek.waitForExistence(timeout: 5))
+    nextWeek.tap()
+
+    XCTAssertTrue(app.otherElements["timeline.empty.row"].waitForExistence(timeout: 3))
+    XCTAssertTrue(app.otherElements["timeline.empty.marker"].exists)
+    XCTAssertTrue(app.staticTexts["How are you feeling?"].exists)
+    XCTAssertTrue(app.staticTexts["Take a moment to check in."].exists)
+  }
+
   func testSettingsButtonDoesNotOverlapWeekNavigation() {
     let app = launchSeededApp()
     let settingsButton = app.buttons["settings.open"]

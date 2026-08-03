@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct TimelineEntryRow: View {
   let entry: CheckInEntry
@@ -32,6 +33,10 @@ struct TimelineEntryRow: View {
           .lineLimit(3)
           .truncationMode(.tail)
           .accessibilityIdentifier("timeline.entry.note.preview")
+
+        if !entry.orderedAttachments.isEmpty {
+          attachmentPreviewStrip
+        }
 
         if hasSavedReflection {
           Label("Reflection saved", systemImage: "sparkles")
@@ -71,10 +76,69 @@ struct TimelineEntryRow: View {
     normalized(entry.reflectionText) != nil
   }
 
+  private var attachmentPreviewStrip: some View {
+    HStack(spacing: 8) {
+      ForEach(Array(entry.orderedAttachments.prefix(3).enumerated()), id: \.element.id) { index, attachment in
+        ZStack {
+          StoredAttachmentImage(attachment: attachment)
+
+          if let overflowCount = overflowCount(index: index, total: entry.orderedAttachments.count) {
+            Color.black.opacity(0.38)
+            Text("+\(overflowCount)")
+              .font(.system(size: 15, weight: .semibold))
+              .foregroundStyle(.white)
+          }
+        }
+        .frame(width: 64, height: 64)
+        .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .accessibilityIdentifier("timeline.entry.photo.thumbnail")
+      }
+    }
+    .accessibilityIdentifier("timeline.entry.photo.strip")
+  }
+
+  private func overflowCount(index: Int, total: Int) -> Int? {
+    guard index == 2, total > 3 else { return nil }
+    return total - 3
+  }
+
   private func normalized(_ text: String?) -> String? {
     guard let text else { return nil }
     let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
     return trimmed.isEmpty ? nil : trimmed
+  }
+}
+
+struct StoredAttachmentImage: View {
+  let attachment: EntryAttachment
+
+  @State private var image: UIImage?
+  private let attachmentFileStore = EntryAttachmentFileStore()
+
+  var body: some View {
+    ZStack {
+      DailyBetterStyle.selectedMoodBackground
+
+      if let image {
+        Image(uiImage: image)
+          .resizable()
+          .scaledToFill()
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .clipped()
+      }
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .task(id: attachment.fileName) {
+      await loadImage()
+    }
+  }
+
+  private func loadImage() async {
+    let url = attachmentFileStore.imageURL(for: attachment)
+    image = await Task.detached(priority: .utility) {
+      guard let data = try? Data(contentsOf: url) else { return nil }
+      return UIImage(data: data)
+    }.value
   }
 }
 

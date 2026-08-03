@@ -4,8 +4,12 @@ import Observation
 @MainActor
 @Observable
 final class CheckInViewModel {
+  static let noteCharacterLimit = 500
+  static let maxAttachmentCount = 5
+
   var selectedMood: CheckInMood?
   var noteText = ""
+  var attachments: [DraftAttachment] = []
   var presentedEntry: CheckInEntry?
   var committedEntry: CheckInEntry?
   var failure: ReflectionError?
@@ -31,6 +35,7 @@ final class CheckInViewModel {
   private let repository: CheckInRepository
   private let localProvider: any ReflectionProviding
   private let remoteProvider: any ReflectionProviding
+  private let attachmentFileStore: EntryAttachmentFileStoring
   private let onEntryCommitted: ((CheckInEntry) -> Void)?
   private var initialDraft: CheckInDraft
   private var pendingSave: PendingSave?
@@ -40,7 +45,8 @@ final class CheckInViewModel {
     repository: CheckInRepository,
     mode: EntryComposerMode = .create(createdAt: .now),
     localProvider: any ReflectionProviding = LocalReflectionProvider(),
-    remoteProvider: any ReflectionProviding,
+    remoteProvider: any ReflectionProviding = ReflectionProviderFactory.makeRemoteProvider(),
+    attachmentFileStore: EntryAttachmentFileStoring = EntryAttachmentFileStore(),
     onEntryCommitted: ((CheckInEntry) -> Void)? = nil
   ) {
     let initialDraft = Self.draft(for: mode)
@@ -48,10 +54,12 @@ final class CheckInViewModel {
     self.mode = mode
     self.localProvider = localProvider
     self.remoteProvider = remoteProvider
+    self.attachmentFileStore = attachmentFileStore
     self.onEntryCommitted = onEntryCommitted
     self.initialDraft = initialDraft
     self.selectedMood = initialDraft.mood
     self.noteText = initialDraft.noteText
+    self.attachments = Self.draftAttachments(for: mode, fileStore: attachmentFileStore)
   }
 
   func saveWithoutReflection() {
@@ -71,7 +79,8 @@ final class CheckInViewModel {
         mood: selectedMood,
         noteText: normalizedNote.isEmpty ? nil : normalizedNote,
         reflection: nil,
-        draft: draft
+        draft: draft,
+        attachments: attachments
       )
     )
   }
@@ -82,7 +91,18 @@ final class CheckInViewModel {
   }
 
   func updateNoteText(_ text: String) {
-    noteText = text
+    noteText = String(text.prefix(Self.noteCharacterLimit))
+    clearPreviewedReflection()
+  }
+
+  func addAttachmentData(_ data: Data) throws {
+    guard attachments.count < Self.maxAttachmentCount else { return }
+    attachments.append(try attachmentFileStore.prepareAttachment(from: data))
+    clearPreviewedReflection()
+  }
+
+  func removeAttachment(id: DraftAttachment.ID) {
+    attachments.removeAll { $0.id == id }
     clearPreviewedReflection()
   }
 
@@ -144,13 +164,15 @@ final class CheckInViewModel {
         reflectionText: result.reflectionText,
         suggestedActionText: result.suggestedActionText,
         reflectionSource: result.source,
-        reflectionStatus: .completed
+        reflectionStatus: .completed,
+        attachments: previewAttachments()
       )
       pendingSave = PendingSave(
         mood: selectedMood,
         noteText: normalizedNote.isEmpty ? nil : normalizedNote,
         reflection: result,
-        draft: draft
+        draft: draft,
+        attachments: attachments
       )
       presentedEntry = preview
     } catch is CancellationError {
@@ -165,6 +187,7 @@ final class CheckInViewModel {
   private func resetDraft() {
     selectedMood = nil
     noteText = ""
+    attachments = []
   }
 
   private func clearPreviewedReflection() {
@@ -176,16 +199,32 @@ final class CheckInViewModel {
   private func persist(
     mood: CheckInMood,
     noteText: String?,
-    reflection: ReflectionResult?
+    reflection: ReflectionResult?,
+    attachments: [DraftAttachment]
   ) throws -> CheckInEntry {
+    let persistedAttachments = try attachments.enumerated().map { offset, attachment in
+      try attachmentFileStore.persist(attachment, sortIndex: offset)
+    }
+
     switch mode {
     case .create(let createdAt):
-      let entry = CheckInEntry(createdAt: createdAt, mood: mood, noteText: noteText)
+      let entry = CheckInEntry(
+        createdAt: createdAt,
+        mood: mood,
+        noteText: noteText,
+        attachments: persistedAttachments
+      )
       apply(reflection, to: entry)
       try repository.save(entry)
       return entry
     case .edit(let entry):
-      try repository.update(entry, mood: mood, noteText: noteText, reflection: reflection)
+      try repository.update(
+        entry,
+        mood: mood,
+        noteText: noteText,
+        reflection: reflection,
+        attachments: persistedAttachments
+      )
       return entry
     }
   }
@@ -210,7 +249,8 @@ final class CheckInViewModel {
       let entry = try persist(
         mood: pendingSave.mood,
         noteText: pendingSave.noteText,
-        reflection: pendingSave.reflection
+        reflection: pendingSave.reflection,
+        attachments: pendingSave.attachments
       )
       self.pendingSave = nil
       saveFailure = false
@@ -240,7 +280,8 @@ final class CheckInViewModel {
     CheckInDraft(
       mood: selectedMood,
       noteText: noteText,
-      createdAt: mode.createdAt
+      createdAt: mode.createdAt,
+      attachmentTokens: attachments.map(\.identityToken)
     ).normalized
   }
 
@@ -252,8 +293,29 @@ final class CheckInViewModel {
       CheckInDraft(
         mood: entry.mood,
         noteText: entry.noteText ?? "",
-        createdAt: entry.createdAt
+        createdAt: entry.createdAt,
+        attachmentTokens: entry.orderedAttachments.map(\.fileName)
       ).normalized
+    }
+  }
+
+  private static func draftAttachments(
+    for mode: EntryComposerMode,
+    fileStore: EntryAttachmentFileStoring
+  ) -> [DraftAttachment] {
+    guard case .edit(let entry) = mode else { return [] }
+    return entry.orderedAttachments.compactMap { fileStore.draftAttachment(for: $0) }
+  }
+
+  private func previewAttachments() -> [EntryAttachment] {
+    attachments.enumerated().map { offset, attachment in
+      EntryAttachment(
+        fileName: attachment.storedFileName ?? attachment.identityToken,
+        sortIndex: offset,
+        width: attachment.width,
+        height: attachment.height,
+        byteCount: attachment.byteCount
+      )
     }
   }
 
@@ -262,6 +324,7 @@ final class CheckInViewModel {
     let noteText: String?
     let reflection: ReflectionResult?
     let draft: CheckInDraft
+    let attachments: [DraftAttachment]
 
     var wasSentForRemoteReflection: Bool {
       noteText != nil && reflection != nil

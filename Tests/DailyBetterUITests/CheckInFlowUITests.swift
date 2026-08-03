@@ -75,16 +75,17 @@ final class CheckInFlowUITests: XCTestCase {
     XCTAssertTrue(app.staticTexts["Today felt quieter than usual."].exists)
   }
 
-  func testTextEntryShowsCompactKeyboardDismissButton() {
+  func testTextEntryKeepsActionsAnchoredAboveKeyboard() {
     let app = launchComposer()
 
     let noteField = app.textViews["checkIn.note"]
     XCTAssertTrue(noteField.waitForExistence(timeout: 2))
     noteField.tap()
 
-    XCTAssertTrue(app.buttons["checkIn.dismissKeyboard"].waitForExistence(timeout: 2))
-    XCTAssertTrue(app.buttons["checkIn.dismissKeyboard"].isHittable)
-    XCTAssertLessThan(app.buttons["checkIn.dismissKeyboard"].frame.width, 80)
+    XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 2))
+    XCTAssertTrue(app.buttons["checkIn.save"].isHittable)
+    XCTAssertTrue(app.buttons["checkIn.reflect"].isHittable)
+    assertCompactKeyboardDismissButtonBesideReflect(app)
   }
 
   func testTappingEmptyNoteAreaShowsKeyboard() {
@@ -96,8 +97,9 @@ final class CheckInFlowUITests: XCTestCase {
     noteField.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.85)).tap()
 
     XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 2))
-    XCTAssertTrue(app.buttons["checkIn.dismissKeyboard"].isHittable)
-    XCTAssertLessThan(app.buttons["checkIn.dismissKeyboard"].frame.width, 80)
+    XCTAssertTrue(app.buttons["checkIn.save"].isHittable)
+    XCTAssertTrue(app.buttons["checkIn.reflect"].isHittable)
+    assertCompactKeyboardDismissButtonBesideReflect(app)
   }
 
   func testSaveReturnsToTimelineWithoutOpeningDetail() {
@@ -135,8 +137,7 @@ final class CheckInFlowUITests: XCTestCase {
 
     XCTAssertTrue(app.buttons["checkIn.save"].isHittable)
     XCTAssertTrue(app.buttons["checkIn.reflect"].isHittable)
-    XCTAssertTrue(app.buttons["checkIn.dismissKeyboard"].isHittable)
-    XCTAssertLessThan(app.buttons["checkIn.dismissKeyboard"].frame.width, 80)
+    assertCompactKeyboardDismissButtonBesideReflect(app)
   }
 
   func testClosingChangedDraftRequiresDiscardConfirmation() {
@@ -175,6 +176,16 @@ final class CheckInFlowUITests: XCTestCase {
   private func assertSingleFullScreenJournalPage(_ app: XCUIApplication) {
     XCTAssertFalse(app.buttons["tab.checkIn"].exists)
     XCTAssertFalse(app.buttons["tab.timeline"].exists)
+  }
+
+  private func assertCompactKeyboardDismissButtonBesideReflect(_ app: XCUIApplication) {
+    let reflectButton = app.buttons["checkIn.reflect"]
+    let hideKeyboardButton = app.buttons["checkIn.hideKeyboard"]
+    XCTAssertTrue(hideKeyboardButton.waitForExistence(timeout: 2))
+    XCTAssertTrue(hideKeyboardButton.isHittable)
+    XCTAssertGreaterThan(hideKeyboardButton.frame.minX, reflectButton.frame.maxX - 1)
+    XCTAssertLessThan(abs(hideKeyboardButton.frame.midY - reflectButton.frame.midY), 8)
+    XCTAssertLessThan(hideKeyboardButton.frame.width, reflectButton.frame.width * 0.65)
   }
 
   private func makeApp(

@@ -16,6 +16,7 @@
 		12D727B323D95877170913B2 /* Affirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FF345CDA8B90ADFEAD54C2A /* Affirmation.swift */; };
 		177343E6DDF91D51FDFF77CE /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCF8F470A7F27B035E5AE350 /* TimelineView.swift */; };
 		23D5035A02EBB5986907105C /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45647BC46E58A1D023384127 /* AppPreferences.swift */; };
+		26EEC22FD1114E7F0DA01AFF /* EntryAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27BB4026B5BC56BF18B63590 /* EntryAttachment.swift */; };
 		28D863AEFDB1CD8D640F1823 /* TimelineCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6AF85A69598F32B4FF702B1 /* TimelineCalendar.swift */; };
 		30DC7F21584173A7887FB7A6 /* TimelineExportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62127CD01B7D82A284D96BFE /* TimelineExportServiceTests.swift */; };
 		3630D9F9BBBB492C244A2FDE /* CheckInRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFA7225FF424D0A3E3EE40E3 /* CheckInRepositoryTests.swift */; };
@@ -24,12 +25,14 @@
 		43154313CEDB22F3FEC92034 /* MoodEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6817227CCB36D035362C2DCA /* MoodEntry.swift */; };
 		4B7213F6D96F8C12D9B8B62D /* CheckInMigrationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FEF4EBFBC6FEA938D48877 /* CheckInMigrationServiceTests.swift */; };
 		4E8CB939118D9DDD7A7D9915 /* MoodSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A2F7FAD6BB73C21D3E9924 /* MoodSelector.swift */; };
+		4EA8C2351D7D77E30C34FCDF /* SpeechToTextController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D29480E7DFF01457E2F94CB /* SpeechToTextController.swift */; };
 		545716580075099533CD399D /* DailyBetterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AF5CDD0CDD770C1730BC076 /* DailyBetterApp.swift */; };
 		5579930E15F330E3A89AA0A0 /* LocalReflectionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A7A707C8287C938A517673D /* LocalReflectionProviderTests.swift */; };
 		5CF9A3F54183DFD35024400F /* AppPreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC71AE907568AF5CA64AEA0F /* AppPreferencesTests.swift */; };
 		62776B026AE6BA4CE5EECA85 /* TimelineCalendarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 680B0E25188B19B86B34DA58 /* TimelineCalendarTests.swift */; };
 		7227488C79582A99327FAD4B /* SettingsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F78807A30775DC7642C08C80 /* SettingsUITests.swift */; };
 		74727E92C88D5235DC9E9836 /* DeepSeekRemoteReflectionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B628019D9B77279E67AEF10C /* DeepSeekRemoteReflectionProvider.swift */; };
+		774349846FA2BC176645170F /* SpeechToTextControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2504768F64B76BF1F2CA719 /* SpeechToTextControllerTests.swift */; };
 		7EBEAE3478118F0559861A6A /* EntryComposerMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2DB50B631E3EE4332CA513D /* EntryComposerMode.swift */; };
 		825E31134119A7F314C5C7AD /* TimelineEntryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAC866538200772CBB578245 /* TimelineEntryRow.swift */; };
 		83956893F78D62D609F570E3 /* AppNotificationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409A07B03C880898E0AE22FC /* AppNotificationCoordinator.swift */; };
@@ -48,6 +51,7 @@
 		B22383D6AA4F5C4E56F4EACD /* ReflectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C46E4A0BE790461950C6191 /* ReflectionView.swift */; };
 		B631639E511CFF6493D97250 /* RemoteReflectionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68BD580CF093F6C3FE727999 /* RemoteReflectionProviderTests.swift */; };
 		BAC3ACB982530E659D428214 /* CheckInEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8D4816ECD29B2D2802AD579 /* CheckInEntry.swift */; };
+		BBC2E8C6BF73349B269ABCF8 /* EntryAttachmentFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4004EE4BD4177B0CE4060DA /* EntryAttachmentFileStore.swift */; };
 		BBEF1E089C9514EFA5B1585F /* CheckInEntryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60DF51C817D16334A5BADBEE /* CheckInEntryTests.swift */; };
 		BD4E529EBF83C400CD8E068D /* TimelineUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BCC2CE60BBCDCC6A622C9E6 /* TimelineUITests.swift */; };
 		C4744D19C3277BA558542A12 /* DailyBetterStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E48083D1966D2E09F07906E /* DailyBetterStyle.swift */; };
@@ -56,6 +60,7 @@
 		CDF07FB637C077E956F9422C /* UnavailableRemoteReflectionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB91E108BC2FD6EC9E0870A6 /* UnavailableRemoteReflectionProvider.swift */; };
 		CE1CF5E5E2C9B361EDFE9845 /* DataControlsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA0CD205D53962B83124E96 /* DataControlsUITests.swift */; };
 		CFEA54724324607D22FE16C1 /* ReflectionAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAFBC06991A7C4EE1CECC109 /* ReflectionAPIClient.swift */; };
+		D017619962ECC8E899F4D1E8 /* EntryAttachmentFileStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFAA89D2CF665612EBCD9230 /* EntryAttachmentFileStoreTests.swift */; };
 		D2014C6A6867D42D879061CC /* TimelineExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02A45F8891EA9A463B291D6D /* TimelineExportService.swift */; };
 		D3448533B7559810067AE3E8 /* CheckInViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F473DD42128F00D4E4183A1 /* CheckInViewModel.swift */; };
 		D58C609235BECA8E71E187FD /* CheckInDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = F327535148702B9178285129 /* CheckInDraft.swift */; };
@@ -93,6 +98,7 @@
 		22A2F7FAD6BB73C21D3E9924 /* MoodSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodSelector.swift; sourceTree = "<group>"; };
 		22FEF4EBFBC6FEA938D48877 /* CheckInMigrationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInMigrationServiceTests.swift; sourceTree = "<group>"; };
 		24398261CEF13004BDD7E129 /* LocalReflectionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReflectionProvider.swift; sourceTree = "<group>"; };
+		27BB4026B5BC56BF18B63590 /* EntryAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryAttachment.swift; sourceTree = "<group>"; };
 		29B8389D52FF69E45A813300 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		34931D7A8C6ABEB31FE39A28 /* NotificationRouteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationRouteStore.swift; sourceTree = "<group>"; };
 		3A5F981D53BC8C75AC25F86F /* CheckInViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInViewModelTests.swift; sourceTree = "<group>"; };
@@ -100,6 +106,7 @@
 		3C46E4A0BE790461950C6191 /* ReflectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionView.swift; sourceTree = "<group>"; };
 		409A07B03C880898E0AE22FC /* AppNotificationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNotificationCoordinator.swift; sourceTree = "<group>"; };
 		45647BC46E58A1D023384127 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
+		4D29480E7DFF01457E2F94CB /* SpeechToTextController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechToTextController.swift; sourceTree = "<group>"; };
 		4E48083D1966D2E09F07906E /* DailyBetterStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyBetterStyle.swift; sourceTree = "<group>"; };
 		56F93B2CD45FDFB6BB597437 /* LaunchSmokeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchSmokeUITests.swift; sourceTree = "<group>"; };
 		590D0756320218108663A660 /* ReflectionProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionProviding.swift; sourceTree = "<group>"; };
@@ -126,16 +133,19 @@
 		B628019D9B77279E67AEF10C /* DeepSeekRemoteReflectionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekRemoteReflectionProvider.swift; sourceTree = "<group>"; };
 		BAC866538200772CBB578245 /* TimelineEntryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineEntryRow.swift; sourceTree = "<group>"; };
 		BAFBC06991A7C4EE1CECC109 /* ReflectionAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionAPIClient.swift; sourceTree = "<group>"; };
+		BFAA89D2CF665612EBCD9230 /* EntryAttachmentFileStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryAttachmentFileStoreTests.swift; sourceTree = "<group>"; };
 		C2DB50B631E3EE4332CA513D /* EntryComposerMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryComposerMode.swift; sourceTree = "<group>"; };
 		C4375599F646FA1DD5273056 /* DeviceTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceTokenStore.swift; sourceTree = "<group>"; };
 		C6AF85A69598F32B4FF702B1 /* TimelineCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineCalendar.swift; sourceTree = "<group>"; };
 		C8B0E23D82ED987D0A73A239 /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
 		C8D4816ECD29B2D2802AD579 /* CheckInEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInEntry.swift; sourceTree = "<group>"; };
+		D2504768F64B76BF1F2CA719 /* SpeechToTextControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechToTextControllerTests.swift; sourceTree = "<group>"; };
 		D92720DD7285F914B9088F17 /* DailyBetter.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DailyBetter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB69BD8CA32279BC5E77C4B2 /* DailyBetterBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyBetterBackground.swift; sourceTree = "<group>"; };
 		DB91E108BC2FD6EC9E0870A6 /* UnavailableRemoteReflectionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnavailableRemoteReflectionProvider.swift; sourceTree = "<group>"; };
 		DCF8F470A7F27B035E5AE350 /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
 		DEA01A09787C67900A18B8B9 /* AppBootstrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBootstrapper.swift; sourceTree = "<group>"; };
+		E4004EE4BD4177B0CE4060DA /* EntryAttachmentFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryAttachmentFileStore.swift; sourceTree = "<group>"; };
 		E47ED14BF2725646CDFDB368 /* ReminderConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderConfigurationTests.swift; sourceTree = "<group>"; };
 		E4A6F5296AFF80CCD4FDCED9 /* DailyBetterTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = DailyBetterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB424E985894F56E5984AEB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -191,9 +201,12 @@
 				897D138E90ECCCF8DC2A7133 /* CheckInRepository.swift */,
 				0F5C686D04BD48E24BD4DB24 /* CheckInView.swift */,
 				1F473DD42128F00D4E4183A1 /* CheckInViewModel.swift */,
+				27BB4026B5BC56BF18B63590 /* EntryAttachment.swift */,
+				E4004EE4BD4177B0CE4060DA /* EntryAttachmentFileStore.swift */,
 				C2DB50B631E3EE4332CA513D /* EntryComposerMode.swift */,
 				22A2F7FAD6BB73C21D3E9924 /* MoodSelector.swift */,
 				3C46E4A0BE790461950C6191 /* ReflectionView.swift */,
+				4D29480E7DFF01457E2F94CB /* SpeechToTextController.swift */,
 			);
 			path = CheckIn;
 			sourceTree = "<group>";
@@ -314,10 +327,12 @@
 				22FEF4EBFBC6FEA938D48877 /* CheckInMigrationServiceTests.swift */,
 				EFA7225FF424D0A3E3EE40E3 /* CheckInRepositoryTests.swift */,
 				3A5F981D53BC8C75AC25F86F /* CheckInViewModelTests.swift */,
+				BFAA89D2CF665612EBCD9230 /* EntryAttachmentFileStoreTests.swift */,
 				0A7A707C8287C938A517673D /* LocalReflectionProviderTests.swift */,
 				3B51E3BE7EE198A5D67B0EEB /* ProjectSmokeTests.swift */,
 				E47ED14BF2725646CDFDB368 /* ReminderConfigurationTests.swift */,
 				68BD580CF093F6C3FE727999 /* RemoteReflectionProviderTests.swift */,
+				D2504768F64B76BF1F2CA719 /* SpeechToTextControllerTests.swift */,
 				680B0E25188B19B86B34DA58 /* TimelineCalendarTests.swift */,
 				62127CD01B7D82A284D96BFE /* TimelineExportServiceTests.swift */,
 			);
@@ -490,6 +505,8 @@
 				74727E92C88D5235DC9E9836 /* DeepSeekRemoteReflectionProvider.swift in Sources */,
 				0ADE7630340F30DF18EA8CDD /* DeviceTokenRecord.swift in Sources */,
 				02E95AAB0366CC1445527AFB /* DeviceTokenStore.swift in Sources */,
+				26EEC22FD1114E7F0DA01AFF /* EntryAttachment.swift in Sources */,
+				BBC2E8C6BF73349B269ABCF8 /* EntryAttachmentFileStore.swift in Sources */,
 				7EBEAE3478118F0559861A6A /* EntryComposerMode.swift in Sources */,
 				9CFCBC447D2706FF9DA06B8F /* EntryDetailView.swift in Sources */,
 				CACA6105CAB96DD9C003B3AA /* LocalReflectionProvider.swift in Sources */,
@@ -504,6 +521,7 @@
 				EFC6E60E1B1B6B47B8E5D009 /* RootTabView.swift in Sources */,
 				0384B1923312CFB8BBF9306F /* SeedData.swift in Sources */,
 				F79D227DB5EE3E0EEFF8434D /* SettingsView.swift in Sources */,
+				4EA8C2351D7D77E30C34FCDF /* SpeechToTextController.swift in Sources */,
 				28D863AEFDB1CD8D640F1823 /* TimelineCalendar.swift in Sources */,
 				825E31134119A7F314C5C7AD /* TimelineEntryRow.swift in Sources */,
 				D2014C6A6867D42D879061CC /* TimelineExportService.swift in Sources */,
@@ -521,10 +539,12 @@
 				4B7213F6D96F8C12D9B8B62D /* CheckInMigrationServiceTests.swift in Sources */,
 				3630D9F9BBBB492C244A2FDE /* CheckInRepositoryTests.swift in Sources */,
 				0E932B60F9BAE8ED27EAE84F /* CheckInViewModelTests.swift in Sources */,
+				D017619962ECC8E899F4D1E8 /* EntryAttachmentFileStoreTests.swift in Sources */,
 				5579930E15F330E3A89AA0A0 /* LocalReflectionProviderTests.swift in Sources */,
 				AF71E0420B60C7CF68BA612F /* ProjectSmokeTests.swift in Sources */,
 				95E56C2233A8066DAB6BCCCF /* ReminderConfigurationTests.swift in Sources */,
 				B631639E511CFF6493D97250 /* RemoteReflectionProviderTests.swift in Sources */,
+				774349846FA2BC176645170F /* SpeechToTextControllerTests.swift in Sources */,
 				62776B026AE6BA4CE5EECA85 /* TimelineCalendarTests.swift in Sources */,
 				30DC7F21584173A7887FB7A6 /* TimelineExportServiceTests.swift in Sources */,
 			);
@@ -658,6 +678,9 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Daily Better";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Daily Better uses the microphone only while you speak to turn your words into editable journal text. Audio is not saved.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Daily Better lets you choose photos from your library to attach to your private journal entries.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Daily Better uses Apple speech recognition to turn your voice into editable journal text.";
 				INFOPLIST_KEY_NSUserNotificationUsageDescription = "Daily Better can send one optional daily reminder at the time you choose.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -782,6 +805,9 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Daily Better";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Daily Better uses the microphone only while you speak to turn your words into editable journal text. Audio is not saved.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Daily Better lets you choose photos from your library to attach to your private journal entries.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Daily Better uses Apple speech recognition to turn your voice into editable journal text.";
 				INFOPLIST_KEY_NSUserNotificationUsageDescription = "Daily Better can send one optional daily reminder at the time you choose.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

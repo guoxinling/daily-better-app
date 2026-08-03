@@ -13,6 +13,7 @@ struct DailyBetterApp: App {
         for: Affirmation.self,
         MoodEntry.self,
         CheckInEntry.self,
+        EntryAttachment.self,
         AppPreferences.self
       )
       sharedModelContainer = container

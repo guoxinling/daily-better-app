@@ -152,6 +152,7 @@ final class CheckInRepositoryTests: XCTestCase {
     )
     let schema = Schema([
       CheckInEntry.self,
+      EntryAttachment.self,
       MoodEntry.self,
       AppPreferences.self,
     ])

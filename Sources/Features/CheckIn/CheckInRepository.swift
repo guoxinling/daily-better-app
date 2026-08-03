@@ -8,7 +8,8 @@ protocol CheckInRepository: AnyObject {
     _ entry: CheckInEntry,
     mood: CheckInMood,
     noteText: String?,
-    reflection: ReflectionResult?
+    reflection: ReflectionResult?,
+    attachments: [EntryAttachment]
   ) throws
   func setHelpfulness(_ helpfulness: Helpfulness, for entry: CheckInEntry) throws
   func delete(_ entry: CheckInEntry) throws
@@ -16,11 +17,34 @@ protocol CheckInRepository: AnyObject {
 }
 
 @MainActor
+extension CheckInRepository {
+  func update(
+    _ entry: CheckInEntry,
+    mood: CheckInMood,
+    noteText: String?,
+    reflection: ReflectionResult?
+  ) throws {
+    try update(
+      entry,
+      mood: mood,
+      noteText: noteText,
+      reflection: reflection,
+      attachments: entry.orderedAttachments
+    )
+  }
+}
+
+@MainActor
 final class SwiftDataCheckInRepository: CheckInRepository {
   private let context: ModelContext
+  private let attachmentFileStore: EntryAttachmentFileDeleting
 
-  init(context: ModelContext) {
+  init(
+    context: ModelContext,
+    attachmentFileStore: EntryAttachmentFileDeleting = EntryAttachmentFileStore()
+  ) {
     self.context = ModelContext(context.container)
+    self.attachmentFileStore = attachmentFileStore
   }
 
   func save(_ entry: CheckInEntry) throws {
@@ -37,14 +61,25 @@ final class SwiftDataCheckInRepository: CheckInRepository {
     _ entry: CheckInEntry,
     mood: CheckInMood,
     noteText: String?,
-    reflection: ReflectionResult?
+    reflection: ReflectionResult?,
+    attachments: [EntryAttachment]
   ) throws {
     let storedEntry = try resolve(entry)
     let snapshot = EntrySnapshot(storedEntry)
-    apply(mood: mood, noteText: noteText, reflection: reflection, to: storedEntry)
+    let previousFileNames = Set(storedEntry.orderedAttachments.map(\.fileName))
+    let replacementAttachments = attachments.map(copy(of:))
+    let nextFileNames = Set(replacementAttachments.map(\.fileName))
+    apply(
+      mood: mood,
+      noteText: noteText,
+      reflection: reflection,
+      attachments: replacementAttachments,
+      to: storedEntry
+    )
 
     do {
       try context.save()
+      try attachmentFileStore.delete(fileNames: Array(previousFileNames.subtracting(nextFileNames)))
     } catch {
       snapshot.restore(on: storedEntry)
       context.rollback()
@@ -57,6 +92,7 @@ final class SwiftDataCheckInRepository: CheckInRepository {
   func delete(_ entry: CheckInEntry) throws {
     let storedEntry = try resolve(entry)
     let legacyEntry = try resolveLegacyMoodEntry(id: storedEntry.legacyMoodEntryID)
+    let attachmentFileNames = storedEntry.orderedAttachments.map(\.fileName)
 
     do {
       context.delete(storedEntry)
@@ -64,6 +100,7 @@ final class SwiftDataCheckInRepository: CheckInRepository {
         context.delete(legacyEntry)
       }
       try context.save()
+      try attachmentFileStore.delete(fileNames: attachmentFileNames)
     } catch {
       context.rollback()
       throw error
@@ -88,9 +125,12 @@ final class SwiftDataCheckInRepository: CheckInRepository {
 
   func deleteAll() throws {
     do {
+      let entries = try context.fetch(FetchDescriptor<CheckInEntry>())
+      let attachmentFileNames = entries.flatMap { $0.orderedAttachments.map(\.fileName) }
       try context.delete(model: CheckInEntry.self)
       try context.delete(model: MoodEntry.self)
       try context.save()
+      try attachmentFileStore.delete(fileNames: attachmentFileNames)
     } catch {
       context.rollback()
       throw error
@@ -120,10 +160,12 @@ final class SwiftDataCheckInRepository: CheckInRepository {
     mood: CheckInMood,
     noteText: String?,
     reflection: ReflectionResult?,
+    attachments: [EntryAttachment],
     to entry: CheckInEntry
   ) {
     entry.moodKey = mood.rawValue
     entry.noteText = noteText
+    entry.attachments = attachments
 
     if let reflection {
       entry.reflectionText = reflection.reflectionText
@@ -151,7 +193,8 @@ final class SwiftDataCheckInRepository: CheckInRepository {
       reflectionStatus: entry.reflectionStatus,
       helpfulness: entry.helpfulness,
       safetyRouteShown: entry.safetyRouteShown,
-      legacyMoodEntryID: entry.legacyMoodEntryID
+      legacyMoodEntryID: entry.legacyMoodEntryID,
+      attachments: entry.orderedAttachments.map(copy(of:))
     )
     copy.moodKey = entry.moodKey
     copy.reflectionSourceKey = entry.reflectionSourceKey
@@ -168,6 +211,19 @@ final class SwiftDataCheckInRepository: CheckInRepository {
     entry.reflectionSourceKey = storedEntry.reflectionSourceKey
     entry.reflectionStatusKey = storedEntry.reflectionStatusKey
     entry.helpfulnessKey = storedEntry.helpfulnessKey
+    entry.attachments = storedEntry.orderedAttachments.map(copy(of:))
+  }
+
+  private func copy(of attachment: EntryAttachment) -> EntryAttachment {
+    EntryAttachment(
+      id: attachment.id,
+      fileName: attachment.fileName,
+      sortIndex: attachment.sortIndex,
+      createdAt: attachment.createdAt,
+      width: attachment.width,
+      height: attachment.height,
+      byteCount: attachment.byteCount
+    )
   }
 
   private struct EntrySnapshot {
@@ -178,6 +234,7 @@ final class SwiftDataCheckInRepository: CheckInRepository {
     let reflectionSourceKey: String
     let reflectionStatusKey: String
     let helpfulnessKey: String
+    let attachments: [EntryAttachment]
 
     init(_ entry: CheckInEntry) {
       moodKey = entry.moodKey
@@ -187,6 +244,17 @@ final class SwiftDataCheckInRepository: CheckInRepository {
       reflectionSourceKey = entry.reflectionSourceKey
       reflectionStatusKey = entry.reflectionStatusKey
       helpfulnessKey = entry.helpfulnessKey
+      attachments = entry.orderedAttachments.map {
+        EntryAttachment(
+          id: $0.id,
+          fileName: $0.fileName,
+          sortIndex: $0.sortIndex,
+          createdAt: $0.createdAt,
+          width: $0.width,
+          height: $0.height,
+          byteCount: $0.byteCount
+        )
+      }
     }
 
     func restore(on entry: CheckInEntry) {
@@ -197,6 +265,7 @@ final class SwiftDataCheckInRepository: CheckInRepository {
       entry.reflectionSourceKey = reflectionSourceKey
       entry.reflectionStatusKey = reflectionStatusKey
       entry.helpfulnessKey = helpfulnessKey
+      entry.attachments = attachments
     }
   }
 }

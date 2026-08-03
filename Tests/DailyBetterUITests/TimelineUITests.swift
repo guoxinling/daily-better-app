@@ -142,8 +142,8 @@ final class TimelineUITests: XCTestCase {
     XCTAssertTrue(note.waitForExistence(timeout: 5))
     note.tap()
     note.typeText("The presentation went well.")
-    if app.buttons["checkIn.dismissKeyboard"].exists {
-      app.buttons["checkIn.dismissKeyboard"].tap()
+    if app.buttons["checkIn.hideKeyboard"].exists {
+      app.buttons["checkIn.hideKeyboard"].tap()
     }
     app.buttons["checkIn.save"].tap()
 

@@ -70,4 +70,21 @@ final class CheckInEntryTests: XCTestCase {
     XCTAssertEqual(entry.helpfulnessKey, "better")
     XCTAssertEqual(entry.helpfulness, .better)
   }
+
+  func testAttachmentsArePresentedInStableOrder() {
+    let entry = CheckInEntry(
+      mood: .calm,
+      attachments: [
+        EntryAttachment(fileName: "second.jpg", sortIndex: 1),
+        EntryAttachment(fileName: "first.jpg", sortIndex: 0),
+        EntryAttachment(fileName: "third.jpg", sortIndex: 2),
+      ]
+    )
+
+    XCTAssertEqual(entry.orderedAttachments.map(\.fileName), [
+      "first.jpg",
+      "second.jpg",
+      "third.jpg",
+    ])
+  }
 }

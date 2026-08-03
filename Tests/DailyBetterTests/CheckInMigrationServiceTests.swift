@@ -151,6 +151,7 @@ final class CheckInMigrationServiceTests: XCTestCase {
       Affirmation.self,
       MoodEntry.self,
       CheckInEntry.self,
+      EntryAttachment.self,
       AppPreferences.self,
     ])
     let storeDirectory = FileManager.default.temporaryDirectory
@@ -218,6 +219,7 @@ final class CheckInMigrationServiceTests: XCTestCase {
       Affirmation.self,
       MoodEntry.self,
       CheckInEntry.self,
+      EntryAttachment.self,
       AppPreferences.self,
     ])
     let storeDirectory = FileManager.default.temporaryDirectory
@@ -288,6 +290,7 @@ final class CheckInMigrationServiceTests: XCTestCase {
       Affirmation.self,
       MoodEntry.self,
       CheckInEntry.self,
+      EntryAttachment.self,
       AppPreferences.self,
     ])
     let configuration = ModelConfiguration(isStoredInMemoryOnly: true)

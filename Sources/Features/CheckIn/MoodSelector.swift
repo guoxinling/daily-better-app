@@ -30,18 +30,18 @@ struct MoodSelector: View {
           .font(.system(size: 25))
 
         Text(mood.title)
-          .font(.system(size: 13, weight: .semibold))
+          .font(.system(size: 14, weight: .semibold))
           .lineLimit(1)
           .minimumScaleFactor(0.75)
       }
       .foregroundStyle(DailyBetterStyle.ink)
       .frame(maxWidth: .infinity, minHeight: dynamicTypeSize.isAccessibilitySize ? 82 : 72)
       .background {
-        RoundedRectangle(cornerRadius: 18, style: .continuous)
-          .fill(isSelected ? DailyBetterStyle.tint.opacity(0.16) : DailyBetterStyle.glass)
+        RoundedRectangle(cornerRadius: 16, style: .continuous)
+          .fill(isSelected ? DailyBetterStyle.selectedMoodBackground : DailyBetterStyle.card)
           .stroke(
             isSelected ? DailyBetterStyle.tint : DailyBetterStyle.hairline,
-            lineWidth: isSelected ? 2 : 1
+            lineWidth: isSelected ? 1.5 : 1
           )
       }
     }

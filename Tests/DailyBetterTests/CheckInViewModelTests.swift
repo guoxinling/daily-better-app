@@ -80,6 +80,31 @@ final class CheckInViewModelTests: XCTestCase {
     XCTAssertEqual(remoteCallCount, 0)
   }
 
+  func testUpdateNoteTextLimitsDraftToFiveHundredCharacters() {
+    let viewModel = CheckInViewModel(repository: InMemoryCheckInRepository())
+
+    viewModel.updateNoteText(String(repeating: "a", count: 520))
+
+    XCTAssertEqual(viewModel.noteText.count, 500)
+  }
+
+  func testSavePersistsSelectedPhotoAsAttachmentAndClearsDraft() throws {
+    let repository = InMemoryCheckInRepository()
+    let attachmentFileStore = InMemoryEntryAttachmentFileStore()
+    let viewModel = CheckInViewModel(
+      repository: repository,
+      attachmentFileStore: attachmentFileStore
+    )
+    viewModel.selectedMood = .bright
+    try viewModel.addAttachmentData(Data([1, 2, 3, 4]))
+
+    viewModel.saveWithoutReflection()
+
+    XCTAssertEqual(repository.entries.count, 1)
+    XCTAssertEqual(repository.entries.first?.orderedAttachments.map(\.fileName), ["stored-0.jpg"])
+    XCTAssertTrue(viewModel.attachments.isEmpty)
+  }
+
   func testUnavailableRemoteReflectionPreservesDraftAndPersistsNothing() async {
     let repository = InMemoryCheckInRepository()
     let remoteProvider = ReflectionProviderSpy(result: .failure(.unavailable))
@@ -506,7 +531,8 @@ private final class InMemoryCheckInRepository: CheckInRepository {
     _ entry: CheckInEntry,
     mood: CheckInMood,
     noteText: String?,
-    reflection: ReflectionResult?
+    reflection: ReflectionResult?,
+    attachments: [EntryAttachment]
   ) throws {
     if let saveError {
       throw saveError
@@ -514,6 +540,7 @@ private final class InMemoryCheckInRepository: CheckInRepository {
 
     entry.moodKey = mood.rawValue
     entry.noteText = noteText
+    entry.attachments = attachments
     if let reflection {
       entry.reflectionText = reflection.reflectionText
       entry.suggestedActionText = reflection.suggestedActionText
@@ -539,6 +566,50 @@ private final class InMemoryCheckInRepository: CheckInRepository {
   func deleteAll() throws {
     entries.removeAll()
   }
+}
+
+private final class InMemoryEntryAttachmentFileStore: EntryAttachmentFileStoring {
+  private var nextIndex = 0
+
+  func prepareAttachment(from data: Data) throws -> DraftAttachment {
+    DraftAttachment(
+      id: UUID(),
+      previewData: data,
+      storedFileName: nil,
+      width: 1,
+      height: 1,
+      byteCount: data.count
+    )
+  }
+
+  func persist(_ attachment: DraftAttachment, sortIndex: Int) throws -> EntryAttachment {
+    let fileName = attachment.storedFileName ?? "stored-\(nextIndex).jpg"
+    nextIndex += 1
+    return EntryAttachment(
+      fileName: fileName,
+      sortIndex: sortIndex,
+      width: attachment.width,
+      height: attachment.height,
+      byteCount: attachment.byteCount
+    )
+  }
+
+  func imageURL(for attachment: EntryAttachment) -> URL {
+    URL(filePath: "/tmp/\(attachment.fileName)")
+  }
+
+  func draftAttachment(for attachment: EntryAttachment) -> DraftAttachment? {
+    DraftAttachment(
+      id: attachment.id,
+      previewData: Data(),
+      storedFileName: attachment.fileName,
+      width: attachment.width,
+      height: attachment.height,
+      byteCount: attachment.byteCount
+    )
+  }
+
+  func delete(fileNames: [String]) throws {}
 }
 
 private actor ReflectionProviderSpy: ReflectionProviding {

@@ -14,6 +14,7 @@ final class CheckInEntry {
   var helpfulnessKey: String
   var safetyRouteShown: Bool
   var legacyMoodEntryID: UUID?
+  @Relationship(deleteRule: .cascade) var attachments: [EntryAttachment]
 
   init(
     id: UUID = UUID(),
@@ -26,7 +27,8 @@ final class CheckInEntry {
     reflectionStatus: ReflectionStatus = .none,
     helpfulness: Helpfulness = .unanswered,
     safetyRouteShown: Bool = false,
-    legacyMoodEntryID: UUID? = nil
+    legacyMoodEntryID: UUID? = nil,
+    attachments: [EntryAttachment] = []
   ) {
     self.id = id
     self.createdAt = createdAt
@@ -39,6 +41,7 @@ final class CheckInEntry {
     self.helpfulnessKey = helpfulness.rawValue
     self.safetyRouteShown = safetyRouteShown
     self.legacyMoodEntryID = legacyMoodEntryID
+    self.attachments = attachments
   }
 
   var mood: CheckInMood {
@@ -56,5 +59,14 @@ final class CheckInEntry {
   var helpfulness: Helpfulness {
     get { Helpfulness(rawValue: helpfulnessKey) ?? .unanswered }
     set { helpfulnessKey = newValue.rawValue }
+  }
+
+  var orderedAttachments: [EntryAttachment] {
+    attachments.sorted {
+      if $0.sortIndex == $1.sortIndex {
+        return $0.createdAt < $1.createdAt
+      }
+      return $0.sortIndex < $1.sortIndex
+    }
   }
 }
